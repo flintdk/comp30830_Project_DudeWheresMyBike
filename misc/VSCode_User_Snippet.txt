@@ -1,7 +1,7 @@
 	"Def Main": {
 		"prefix": ["main", "def-main"],
 		"body": [
-			"# $CURRENT_YEAR-$CURRENT_MONTH-${CURRENT_DATE} TK; Practical Assignment - 'Question '",
+			"# $CURRENT_YEAR-$CURRENT_MONTH-${CURRENT_DATE} TK/JS/WO'D; \"Dude Where's My Bike\" Project",
 			"#          Comp30830 Software Engineering ",
 			"\"\"\"",
 			"PseudoCode Solution:",
