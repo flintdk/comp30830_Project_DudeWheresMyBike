@@ -1,5 +1,5 @@
 #!/bin/bash
-# scraper.sh; Wrapper script to start, stop and display the scraper job
+# DWMB_Data_Loader.sh; Wrapper script to start, stop and display the DWMB_Data_Loader job
 #
 # The cron utility runs based on commands specified in a cron table (crontab).
 # The crontab does not exist for a user by default.
@@ -13,11 +13,11 @@ home_dir="$(pwd)"
 # Helper function - save me keying command summary twice, ensures consistancy in
 # user docs (such as they are)
 function echoClientCommandDocs() {
-    #cmdMsg="Scraper Commands Processed:\n"
+    #cmdMsg="DWMB_Data_Loader.sh Commands Processed:\n"
     cmdMsg="  \e[3mhelp\e[0m - See this help text\n"
     cmdMsg+="  \e[3mshow\e[0m - Show the current state of the Cron table\n"
-    cmdMsg+="  \e[3mschedule\e[0m - Schedule the scraper to run, using default timings\n"
-    cmdMsg+="  \e[3mstop\e[0m - Remove the scraper from the Cron scheduler\n"
+    cmdMsg+="  \e[3mschedule\e[0m - Schedule the DWMB_Data_Loader to run, using default timings\n"
+    cmdMsg+="  \e[3mstop\e[0m - Remove the DWMB_Data_Loader from the Cron scheduler\n"
     echo -e "$cmdMsg"
 }
 
@@ -59,36 +59,36 @@ if [[ ${valid_commands[*]} =~ $1 ]]; then
     case "$1" in  # CASE_ClientOrServer?
     help)
         # help: print a list of supported commands
-        echo -e "scraper.sh: The Scraper supports the following Commands:"
+        echo -e "DWMB_Data_Loader.sh: The DWMB_Data_Loader supports the following Commands:"
         echoClientCommandDocs
         ;;
     show)
         # show: print out the current crontab table
-        echo "scraper.sh: The current state of the Crontab is as follows:"
+        echo "DWMB_Data_Loader.sh: The current state of the Crontab is as follows:"
         crontab -l
         ;;
     schedule)
         # schedule
-        echo "scraper.sh: NOT YET IMPLEMENTED!¬!!!!!!:"
+        echo "DWMB_Data_Loader.sh: NOT YET IMPLEMENTED!¬!!!!!!:"
         ?!?!? Look at putting cron entries into cron.d - test this on Ubuntu!!!!!
         exit 0
         ;;
     stop)
         # shutdown: exit with a return code of 0
-        echo "scraper.sh: About to erase the current Crontab..."
+        echo "DWMB_Data_Loader.sh: About to erase the current Crontab..."
         read -r -p "            Are you sure? [Y/N] " response
         if [[ "$response" =~ ^([yY][eE][sS]|[yY])$ ]]
         then
             crontab -r
-            echo "scraper.sh: Crontab erased."
+            echo "DWMB_Data_Loader.sh: Crontab erased."
         else
-            echo "scraper.sh: Aborting..."
+            echo "DWMB_Data_Loader.sh: Aborting..."
         fi
         exit 0
         ;;
     *)
         # All other commands  - we just abort...
-        errMsg="SCRAPER.SH: ERROR Bad command. I don't understand -> \"$1\"\n";
+        errMsg="DWMB_Data_Loader.sh: ERROR Bad command. I don't understand -> \"$1\"\n";
         errMsg+="Bad Luck :-(.  You can always try again??";
         echo -e "$errMsg"
         ;;
