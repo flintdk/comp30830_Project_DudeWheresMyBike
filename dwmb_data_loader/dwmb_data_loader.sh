@@ -9,6 +9,10 @@
 
 # Set up home directory and include shared resources
 home_dir="$(pwd)"
+# I popped the following into variables as it was handier for testing
+cron_dir="${home_dir}"
+#cron_dir="/etc/cron.d"
+script_to_schedule="${home_dir}/test.sh"
 
 # Helper function - save me keying command summary twice, ensures consistancy in
 # user docs (such as they are)
@@ -42,7 +46,7 @@ function usage() {
     exit "$1"  # exit with error status
 }
 if [ -z "$1" ]; then
-    usage 1 "ERROR You must supply an instruction (help|show|schedule|stop).";
+    usage 1 "DWMB_Data_Loader.sh: ERROR You must supply an instruction.";
 fi
 
 #===============================================================================
@@ -51,46 +55,67 @@ fi
 # We clear the terminal, removes any clutter, hopefully helps the user
 clear
 
-# I store an array of valid commands, to allow for some quick, simple validation
-valid_commands=("help" "show" "schedule" "stop")
-
 # Check if the user supplied command is a valid command.
-if [[ ${valid_commands[*]} =~ $1 ]]; then
-    case "$1" in  # CASE_ClientOrServer?
-    help)
-        # help: print a list of supported commands
-        echo -e "DWMB_Data_Loader.sh: The DWMB_Data_Loader supports the following Commands:"
-        echoClientCommandDocs
-        ;;
-    show)
-        # show: print out the current crontab table
+case "$1" in  # CASE_ClientOrServer?
+help)
+    # help: print a list of supported commands
+    echo -e "DWMB_Data_Loader.sh: The DWMB_Data_Loader supports the following Commands:"
+    echoClientCommandDocs
+    ;;
+show)
+    # show: print out the current crontab table
+    #crontab -l
+    if [ -e "${cron_dir}/dwmb_data_loader" ]; then
         echo "DWMB_Data_Loader.sh: The current state of the Crontab is as follows:"
-        crontab -l
-        ;;
-    schedule)
-        # schedule
-        echo "DWMB_Data_Loader.sh: NOT YET IMPLEMENTED!¬!!!!!!:"
-        ?!?!? Look at putting cron entries into cron.d - test this on Ubuntu!!!!!
-        exit 0
-        ;;
-    stop)
-        # shutdown: exit with a return code of 0
-        echo "DWMB_Data_Loader.sh: About to erase the current Crontab..."
-        read -r -p "            Are you sure? [Y/N] " response
-        if [[ "$response" =~ ^([yY][eE][sS]|[yY])$ ]]
-        then
-            crontab -r
+        cat "${cron_dir}/dwmb_data_loader"
+    else
+        echo "DWMB_Data_Loader.sh: ERROR schedule not found! Aborting..."
+        exit 1
+    fi
+    ;;
+schedule)
+    # schedule
+    
+    # We're using a custom timer file in the cron.d directory rather than the
+    # crontab as it's much easier to automate...
+    echo "DWMB_Data_Loader.sh: Creating cron file..."
+    touch "${cron_dir}/dwmb_data_loader"
+    #
+    # To define the time we have to provide concrete values for:
+    #   minute (m)
+    #   hour (h)
+    #   day of month (dom)
+    #   month (mon)
+    #   day of week (dow)
+    # ... or use '*' in these fields (for 'any').
+    echo "                     Generating default schedule entries..."
+    echo "0/2 5-23 * * * \"${script_to_schedule}" >> "${cron_dir}/dwmb_data_loader"
+    echo "0 24 * * * \"${script_to_schedule}" >> "${cron_dir}/dwmb_data_loader"
+    exit 0
+    ;;
+stop)
+    # shutdown: exit with a return code of 0
+    echo "DWMB_Data_Loader.sh: About to erase the current Crontab..."
+    read -r -p "                     Are you sure? [Y/N] " response
+    if [[ "$response" =~ ^([yY][eE][sS]|[yY])$ ]]
+    then
+        #crontab -r
+        if [ -e "${cron_dir}/dwmb_data_loader" ]; then
+            rm "${cron_dir}/dwmb_data_loader"
             echo "DWMB_Data_Loader.sh: Crontab erased."
         else
-            echo "DWMB_Data_Loader.sh: Aborting..."
+            echo "DWMB_Data_Loader.sh: ERROR schedule not found! Aborting..."
+            exit 1
         fi
-        exit 0
-        ;;
-    *)
-        # All other commands  - we just abort...
-        errMsg="DWMB_Data_Loader.sh: ERROR Bad command. I don't understand -> \"$1\"\n";
-        errMsg+="Bad Luck :-(.  You can always try again??";
-        echo -e "$errMsg"
-        ;;
-    esac
-fi
+    else
+        echo "                     Coward! Perhaps you'll have the guts to delete it later..."
+    fi
+    exit 0
+    ;;
+*)
+    # All other commands  - we just abort...
+    errMsg="DWMB_Data_Loader.sh: ERROR Bad command. I don't understand \"$1\"\n";
+    errMsg+="                     Bad Luck :-(.  You can always try again??";
+    echo -e "$errMsg"
+    ;;
+esac
