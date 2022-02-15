@@ -37,12 +37,12 @@ def loadCredentials():
 def saveToDatabase(jsonData, credentials):
     """
     """
-    connectionString = "mysql://" \
+    connectionString = "mysql+mysqlconnector://" \
         + credentials['amazonrds']['username'] + ":" + credentials['amazonrds']['password'] \
         + "@" \
         + credentials['amazonrds']['endpoint'] + ":3306" \
         + "/dudeWMB?charset=utf8mb4"
-    print("Connection String: " + connectionString)
+    print("Connection String: " + connectionString + "\n")
     engine = db.create_engine(connectionString)
 
     connection = engine.connect()
