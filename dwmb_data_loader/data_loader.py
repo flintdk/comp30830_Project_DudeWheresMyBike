@@ -35,7 +35,9 @@ def loadCredentials():
     return credentials
 
 def saveToDatabase(jsonData, credentials):
-    connectionString = "mysql+mysqlconnector://" \
+    """
+    """
+    connectionString = "mysql://" \
         + credentials['amazonrds']['username'] + ":" + credentials['amazonrds']['password'] \
         + "@" \
         + credentials['amazonrds']['endpoint'] + ":3306" \
