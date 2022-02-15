@@ -1,4 +1,4 @@
-name: c30830py39_dudeWMB
+name: comp30830py39_dudeWMB
 channels:
   - defaults
 dependencies:
