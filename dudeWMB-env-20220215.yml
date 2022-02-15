@@ -23,4 +23,4 @@ dependencies:
     - requests==2.27.1
     - sqlalchemy==1.4.31
     - urllib3==1.26.8
-prefix: C:\Users\kelly\anaconda3\envs\c30830py39_dudeWMB
+prefix: C:\Users\kelly\anaconda3\envs\comp30830py39_dudeWMB
