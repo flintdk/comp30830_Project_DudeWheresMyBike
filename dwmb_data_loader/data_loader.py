@@ -49,16 +49,12 @@ def saveToDatabase(jsonData, credentials):
         + "@" \
         + credentials['amazonrds']['endpoint'] + ":3306" \
         + "/dudeWMB?charset=utf8mb4"
-    print("Connection String: " + connectionString + "\n")
+    #print("Connection String: " + connectionString + "\n")
     engine = db.create_engine(connectionString)
-
-    connection = engine.connect()
 
     # Look over the jsonData, which contains a both static and dynamic information
     # in a big soup...
     for row in jsonData:
-        #print("Data:", row['number'], row['contract_name'], row['name'], row['address'], \
-        #               row['position']['lat'], row['position']['lng'], row['banking'], row['bonus'])
 
         # Each row contains both 'Station' (almost static) data AND activity
         # data for that station.  I seperate them out just to make the code
@@ -66,41 +62,90 @@ def saveToDatabase(jsonData, credentials):
         station = extractStation(row)
         stationSate = extractStationState(row)
 
-        # Have we already stored this station?
-        if (stationExists(connection, station)):
-            # If the stationExists we update it
-            # (It's not efficient to update every time... but... yeah...)
-            updateStation(connection, station)
-        else:
-            insertStation(connection, station)
-        
-        # Once we're confident the station exists and is up to date we insert
-        # the Status Updata data for this station!
-        insertStationState(connection, stationSate)
+        # engine.begin() runs a transaction
+        with engine.begin() as connection:
+
+            # Would prefer to use ORM rather than straight SQL - but the
+            # priority for now is to have something working. Will return to this
+            # if time (and the burndown chart) permits...
+            # Session = db.sessionmaker(bind=engine)
+            # session = Session()
+
+            stationId = 0 # We don't know the station Id yet...
+
+            # Have we already stored this station?
+            if (stationExists(connection, station)):
+                # If the stationExists we update it
+                # (It's not efficient to update every time... but... yeah...)
+                stationId = updateStation(connection, station)
+            else:
+                stationId = insertStation(connection, station)
+            
+            # Once we're confident the station exists and is up to date we insert
+            # the Status Updata data for this station!
+            insertStationState(connection, stationId, stationSate)
 
     connection.close()
 
     return
 
 def stationExists(connection, station):
-    stationExists = False
-    result = connection.execute("select * from station where \'id\' = " + station['number'])
-    if (result != ""):
-        stationExists = True
+    stationExists = True
+    query = db.text("select * from station "
+        + "where number = " + str(station['number']) + " "\
+        + "and contractName = 'dublin';")
+    id_count = connection.execute(query).rowcount
+    if (id_count == 0):
+        stationExists = False
+
     return stationExists
 
 def updateStation(connection, station):
-    # result = connection.execute("update station where \'id\' = " + station['number'])
-    # ... and... iterate through keys...
-    # if (result != ""):
-    #     stationExists = True
-    return
+    result = connection.execute(
+        db.text("UPDATE station " \
+            + "SET stationName = \"" + station['name'] + "\", " \
+            + "address = \"" + station['address'] + "\", " \
+            + "latitude = " + str(station['lat']) + ", " \
+            + "longitude = " + str(station['lng']) + ", " \
+            + "banking = " + str(station['banking']) + ", " \
+            + "bonus = " + str(station['bonus']) + " " \
+            + "WHERE number = " + str(station['number']) + " " \
+            + "and contractName = \"dublin\";")
+    )
+    stationId = result.lastrowid
+    print("after station update, stationId is " + str(stationId))
+
+    return stationId
 
 def insertStation(connection, station):
-    return True
+    result = connection.execute(
+        db.text("INSERT station " \
+            + "SET number = " + str(station['number']) + ", " \
+            + "contractName = \"dublin\", " \
+            + "stationName = \"" + station['name'] + "\", " \
+            + "address = \"" + station['address'] + "\", " \
+            + "latitude = " + str(station['lat']) + ", " \
+            + "longitude = " + str(station['lng']) + ", " \
+            + "banking = " + str(station['banking']) + ", " \
+            + "bonus = " + str(station['bonus']) + ";")
+    )
+    stationId = result.lastrowid
+    print("after station insert, stationId is " + str(stationId))
 
-def insertStationState(connection, stationSate):
-    return True
+    return stationId
+
+def insertStationState(connection, stationId, stationSate):
+    connection.execute(
+        db.text("INSERT stationState " \
+            + "SET stationId = " + str(stationId) + ", " \
+            + "status = \"" + stationSate['status'] + "\", " \
+            + "bike_stands = " + str(stationSate['bike_stands']) + ", " \
+            + "available_bike_stands = " + str(stationSate['available_bike_stands']) + ", " \
+            + "available_bikes = \"" + str(stationSate['available_bikes']) + "\", " \
+            + "lastUpdate = " + str(stationSate['last_update']) + ";")
+    )
+
+    return
 
 def extractStation(jsonRow):
     station = {} # Declare a dict to hold the station data
@@ -120,7 +165,7 @@ def extractStationState(jsonRow):
     stationState['number'] = jsonRow['number']
     stationState['bike_stands'] = jsonRow['bike_stands']
     stationState['available_bike_stands'] = jsonRow['available_bike_stands']
-    stationState['available_bikes'] = jsonRow['name']
+    stationState['available_bikes'] = jsonRow['available_bikes']
     stationState['status'] = jsonRow['status']
     stationState['last_update'] = jsonRow['last_update']
 
