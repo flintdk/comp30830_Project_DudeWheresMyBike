@@ -37,6 +37,13 @@ def loadCredentials():
 def saveToDatabase(jsonData, credentials):
     """
     """
+
+    # Station Data:
+    # number ('Id'), contract_name, name, address, position {lat, lng}, banking, bonus
+    # (banking indicates whether this station has a payment terminal,
+    #  bonus indicates whether this is a bonus station)
+    # Availability Data (For station)
+    # number ('Id'), bike_stands, available_bike_stands, available_bikes, status, last_update
     connectionString = "mysql+mysqlconnector://" \
         + credentials['amazonrds']['username'] + ":" + credentials['amazonrds']['password'] \
         + "@" \
@@ -46,12 +53,78 @@ def saveToDatabase(jsonData, credentials):
     engine = db.create_engine(connectionString)
 
     connection = engine.connect()
-    result = connection.execute("select * from Users")
-    for row in result:
-        print("firstname:", row['firstname'], "lastname:", row['lastname'])
+
+    # Look over the jsonData, which contains a both static and dynamic information
+    # in a big soup...
+    for row in jsonData:
+        #print("Data:", row['number'], row['contract_name'], row['name'], row['address'], \
+        #               row['position']['lat'], row['position']['lng'], row['banking'], row['bonus'])
+
+        # Each row contains both 'Station' (almost static) data AND activity
+        # data for that station.  I seperate them out just to make the code
+        # more legible
+        station = extractStation(row)
+        stationSate = extractStationState(row)
+
+        # Have we already stored this station?
+        if (stationExists(connection, station)):
+            # If the stationExists we update it
+            # (It's not efficient to update every time... but... yeah...)
+            updateStation(connection, station)
+        else:
+            insertStation(connection, station)
+        
+        # Once we're confident the station exists and is up to date we insert
+        # the Status Updata data for this station!
+        insertStationState(connection, stationSate)
+
     connection.close()
 
     return
+
+def stationExists(connection, station):
+    stationExists = False
+    result = connection.execute("select * from station where \'id\' = " + station['number'])
+    if (result != ""):
+        stationExists = True
+    return stationExists
+
+def updateStation(connection, station):
+    # result = connection.execute("update station where \'id\' = " + station['number'])
+    # ... and... iterate through keys...
+    # if (result != ""):
+    #     stationExists = True
+    return
+
+def insertStation(connection, station):
+    return True
+
+def insertStationState(connection, stationSate):
+    return True
+
+def extractStation(jsonRow):
+    station = {} # Declare a dict to hold the station data
+    station['number'] = jsonRow['number']
+    station['contract_name'] = jsonRow['contract_name']
+    station['name'] = jsonRow['name']
+    station['address'] = jsonRow['address']
+    station['lat'] = jsonRow['position']['lat']
+    station['lng'] = jsonRow['position']['lng']
+    station['banking'] = jsonRow['banking']
+    station['bonus'] = jsonRow['bonus']
+
+    return station
+
+def extractStationState(jsonRow):
+    stationState = {} # Declare a dict to hold the station data
+    stationState['number'] = jsonRow['number']
+    stationState['bike_stands'] = jsonRow['bike_stands']
+    stationState['available_bike_stands'] = jsonRow['available_bike_stands']
+    stationState['available_bikes'] = jsonRow['name']
+    stationState['status'] = jsonRow['status']
+    stationState['last_update'] = jsonRow['last_update']
+
+    return stationState
 
 def main():
     """Load Data from the JCDecaux API
