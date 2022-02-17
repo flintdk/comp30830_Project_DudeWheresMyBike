@@ -13,6 +13,7 @@ if script is being run as a script (not imported) call main() function
 
 """
 
+from sqlite3 import complete_statement
 import sys
 import requests
 import json
@@ -176,7 +177,17 @@ def main():
 
 
     """
+
     credentials = loadCredentials()
+
+    # The DudeWMB Data Loader uses the 'Cronitor' web service (https://cronitor.io/)
+    # to monitor the running data loader process.  This way if there is a failure
+    # in the job etc. our team is notified by email.  In addition, if the job
+    # or the EC2 instance suspends for some reason, cronitor informs us of the 
+    # lack of activity so we can log in and investigate.
+    # Send a request to log the start of a run
+    cronitorURI = credentials['cronitor']['TelemetryURL']
+    requests.get(cronitorURI + "?state=run")
 
     # "username": "tomas.kelly1@ucdconnect.ie",
         # "password": "lD6>hD4_aP2+yV6?",
@@ -200,9 +211,14 @@ def main():
             print("ERROR: Call to JCDecaux API failed with status code: ", response.status_code)
             print("       The response reason was \'" + str(response.reason) + "\'")
 
+        # Send a Cronitor request to signal our process has completed.
+        requests.get(cronitorURI + "?state=complete")
+
     except:
         # if there is any problem, print the traceback
         print(traceback.format_exc())
+        # Send a Cronitor request to signal our process has failed.
+        requests.get(cronitorURI + "?state=fail")
     
     print('\r\nFinished!')
     sys.exit()

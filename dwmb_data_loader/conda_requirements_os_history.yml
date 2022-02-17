@@ -1,7 +1,0 @@
-name: temp
-channels:
-  - defaults
-dependencies:
-  - requests
-  - sqlalchemy
-prefix: /opt/anaconda3/envs/temp
