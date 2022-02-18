@@ -91,7 +91,7 @@ def saveToDatabase(jsonData, credentials):
 
     return
 
-def stationExists(connection, station):
+def stationExists(connection, station): # todo: change here....
     stationExists = True
     query = db.text("select * from station "
         + "where number = " + str(station['number']) + " "\
