@@ -1,5 +1,6 @@
 # To create a source distribution for the dwmb_data_loader using this file:
-#   python dwmb_data_loader\setup.py sdist --formats=gztar,zip
+#   1) MAKE SURE YOU ARE IN THE ROOT FOLDER OF THE PROJECT!!
+#   2) python dwmb_data_loader\setup.py sdist --formats=gztar,zip
 #
 # To install the dwmb_data_loader on your EC2 instance using the resources
 # created by this file:
