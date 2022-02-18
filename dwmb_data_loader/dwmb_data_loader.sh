@@ -10,9 +10,9 @@
 # Set up home directory and include shared resources
 home_dir="$(pwd)"
 # I popped the following into variables as it was handier for testing
-cron_dir="${home_dir}"
+cron_dir="/etc/cron.d"
 #cron_dir="/etc/cron.d"
-script_to_schedule="${home_dir}/test.sh"
+module_to_schedule="${home_dir}/github/comp30830_project_2022/dwmb_data_loader/data_loader.py"
 
 # Helper function - save me keying command summary twice, ensures consistancy in
 # user docs (such as they are)
@@ -89,8 +89,10 @@ schedule)
     #   day of week (dow)
     # ... or use '*' in these fields (for 'any').
     echo "                     Generating default schedule entries..."
-    echo "0/2 5-23 * * * \"${script_to_schedule}" >> "${cron_dir}/dwmb_data_loader"
-    echo "0 24 * * * \"${script_to_schedule}" >> "${cron_dir}/dwmb_data_loader"
+    # echo SHELL=/bin/sh >> "${cron_dir}/dwmb_data_loader"
+    # PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin >> "${cron_dir}/dwmb_data_loader"
+    echo "0/2 5-23 * * * \"/home/ubuntu/miniconda3/envs/comp30830py39_dudeWMB/bin/python ${module_to_schedule}\"" >> "${cron_dir}/dwmb_data_loader"
+    echo "0 24 * * * \"/home/ubuntu/miniconda3/envs/comp30830py39_dudeWMB/bin/python ${module_to_schedule}\"" >> "${cron_dir}/dwmb_data_loader"
     exit 0
     ;;
 stop)
