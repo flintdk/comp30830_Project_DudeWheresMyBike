@@ -1,3 +1,0 @@
-[console_scripts]
-dwmy_data_loader = dwmy_data_loader.data_loader:main
-
