@@ -1,5 +1,5 @@
 Metadata-Version: 2.1
-Name: dudeWMBdataLoader
+Name: dwmb-data-loader
 Version: 0.1.0
 Summary: Schedule a job to collect data on Dublin Bikes usage from JCDecaux.
 Home-page: https://github.com/flintdk/comp30830_project_2022

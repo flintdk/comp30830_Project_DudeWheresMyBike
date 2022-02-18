@@ -1,12 +1,12 @@
-# To create a source distribution for the dwmb_data_loader using this file:
+# To create a source distribution for the dwmb-data-loader using this file:
 #   1) MAKE SURE YOU ARE IN THE ROOT FOLDER OF THE PROJECT!!
-#   2) python dwmb_data_loader\setup.py sdist --formats=gztar,zip
+#   2) python dwmb-data-loader\setup.py sdist --formats=gztar,zip
 #
-# To install the dwmb_data_loader on your EC2 instance using the resources
+# To install the dwmb-data-loader on your EC2 instance using the resources
 # created by this file:
 #   1) MAKE SURE YOU ARE IN THE ROOT FOLDER OF THE PROJECT!!
-#   2) python -m pip install -e "git+https://github.com/flintdk/comp30830_project_2022/#egg=dwmb_data_loader&subdirectory=dwmb_data_loader"
-#python -m pip install -e "git+https://github.com/flintdk/comp30830_project_2022/dwmb_data_loader/#egg=dwmb_data_loader&subdirectory=dwmb_data_loader@data_load_scheduler"
+#   2) python -m pip install -e "git+https://github.com/flintdk/comp30830_project_2022/#egg=dwmb-data-loader&subdirectory=dwmb-data-loader"
+#python -m pip install -e "git+https://github.com/flintdk/comp30830_project_2022/dwmb-data-loader/#egg=dwmb-data-loader&subdirectory=dwmb-data-loader@data_load_scheduler"
 
 # NOTES
 # To install an entire GitHub project on the EC2 instance you might use:
@@ -20,7 +20,7 @@
 #   egg: For specifying the “project name” for use in pip’s dependency resolution logic. eg: egg=project_name
 #   subdirectory: For specifying the path to the Python package, when it is not in the root of the VCS directory. eg: pkg_dir
 # e.g.
-#   python -m pip install -e "git+https://github.com/flintdk/comp30830_project_2022/#egg=dwmb_data_loader&subdirectory=dwmb_data_loader"
+#   python -m pip install -e "git+https://github.com/flintdk/comp30830_project_2022/#egg=dwmb-data-loader&subdirectory=dwmb-data-loader"
 
 from setuptools import setup
 from setuptools import find_packages
@@ -31,7 +31,7 @@ from setuptools import find_packages
 
 setup(
       # Define the library name, this is what is used along with `pip install`.
-      name='dudeWMBdataLoader',
+      name='dwmb-data-loader',
 
       # Define the author of the repository.
       author='Tomas Kelly, Will O\'Donohoe, Jörg Striebel',
@@ -70,7 +70,7 @@ setup(
       python_requires='>=3.9',
 
       license='MIT',
-      packages=['dwmb_data_loader'],
+      packages=['dwmb-data-loader'],
       zip_safe=False,
 
       # Additional classifiers that give some characteristics about the package.
@@ -102,7 +102,7 @@ setup(
 
             ],
       
-      scripts=['dwmb_data_loader.sh'],
+      scripts=['dwmb-data-loader.sh'],
 
       entry_points={
             'console_scripts': [
