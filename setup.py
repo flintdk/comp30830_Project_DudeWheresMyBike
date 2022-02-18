@@ -1,11 +1,11 @@
-# To create a source distribution for the dwmb-data-loader using this file:
+# To create a source distribution for the dwmb_data_loader using this file:
 #   1) MAKE SURE YOU ARE IN THE ROOT FOLDER OF THE PROJECT!!
 #   2) python setup.py sdist --formats=gztar,zip
 #
-# To install the dwmb-data-loader on your EC2 instance using the resources
+# To install the dwmb_data_loader on your EC2 instance using the resources
 # created by this file:
 #   1) MAKE SURE YOU ARE IN THE ROOT FOLDER OF THE PROJECT!!
-#   2) python -m pip install -e "git+https://github.com/flintdk/comp30830_project_2022/#egg=dwmb-data-loader&subdirectory=dwmb-data-loader"
+#   2) python -m pip install -e "git+https://github.com/flintdk/comp30830_project_2022/#egg=dwmb_data_loader&subdirectory=dwmb_data_loader"
 #python -m pip install -e "git+https://github.com/flintdk/comp30830_project_2022/@feature/data_load_scheduler#egg=comp30830_project_2022"
 # NOTES
 # To install an entire GitHub project on the EC2 instance you might use:
@@ -19,7 +19,7 @@
 #   egg: For specifying the “project name” for use in pip’s dependency resolution logic. eg: egg=project_name
 #   subdirectory: For specifying the path to the Python package, when it is not in the root of the VCS directory. eg: pkg_dir
 # e.g.
-#   python -m pip install -e "git+https://github.com/flintdk/comp30830_project_2022/#egg=dwmb-data-loader&subdirectory=dwmb-data-loader"
+#   python -m pip install -e "git+https://github.com/flintdk/comp30830_project_2022/#egg=dwmb_data_loader&subdirectory=dwmb_data_loader"
 
 from setuptools import setup
 from setuptools import find_packages
@@ -69,7 +69,7 @@ setup(
       python_requires='>=3.9',
 
       license='MIT',
-      packages=['dwmb-data-loader'],
+      packages=['dwmb_data_loader'],
       zip_safe=False,
 
       # Additional classifiers that give some characteristics about the package.
@@ -101,7 +101,7 @@ setup(
 
             ],
       
-      #scripts=['dwmb-data-loader.sh'],
+      #scripts=['dwmb_data_loader.sh'],
 
       entry_points={
             'console_scripts': [
