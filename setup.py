@@ -1,16 +1,12 @@
 # To create a source distribution for the dwmb-data-loader using this file:
 #   1) MAKE SURE YOU ARE IN THE ROOT FOLDER OF THE PROJECT!!
-#   2) python dwmb-data-loader\setup.py sdist --formats=gztar,zip
+#   2) python setup.py sdist --formats=gztar,zip
 #
 # To install the dwmb-data-loader on your EC2 instance using the resources
 # created by this file:
 #   1) MAKE SURE YOU ARE IN THE ROOT FOLDER OF THE PROJECT!!
 #   2) python -m pip install -e "git+https://github.com/flintdk/comp30830_project_2022/#egg=dwmb-data-loader&subdirectory=dwmb-data-loader"
-#python -m pip install -e "git+https://github.com/flintdk/comp30830_project_2022/dwmb-data-loader/#egg=dwmb-data-loader&subdirectory=dwmb-data-loader@data_load_scheduler"
-
-
-#python -m pip install -e "git+https://github.com/flintdk/comp30830_project_2022/@data_load_scheduler#egg=dwmb-data-loader&subdirectory=dwmb-data-loader
-
+#python -m pip install -e "git+https://github.com/flintdk/comp30830_project_2022/@feature/data_load_scheduler#egg=comp30830_project_2022"
 # NOTES
 # To install an entire GitHub project on the EC2 instance you might use:
 #   python -m pip install git+https://github.com/flintdk/comp30830_project_2022/    
@@ -109,7 +105,7 @@ setup(
 
       entry_points={
             'console_scripts': [
-                  'dwmy_data_loader = dwmb_data_loader.data_loader:main',
+                  'dwmb_data_loader = dwmb_data_loader.data_loader:main',
             ]
       }
 )

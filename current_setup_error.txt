@@ -1,45 +1,40 @@
-(comp30830py39_dudeWMB) ubuntu@ip-172-31-2-153:~/github$ python -m pip install -e "git+https://github.com/flintdk/comp30830_project_2022/@feature/data_load_scheduler#egg=dwmb-data-loader&subdirectory=dwmb-data-loader"
-Obtaining dwmb-data-loader from git+https://github.com/flintdk/comp30830_project_2022/@feature/data_load_scheduler#egg=dwmb-data-loader&subdirectory=dwmb-data-loader
-  Cloning https://github.com/flintdk/comp30830_project_2022/ (to revision feature/data_load_scheduler) to ./src/dwmb-data-loader
-  Running command git clone -q https://github.com/flintdk/comp30830_project_2022/ /home/ubuntu/github/src/dwmb-data-loader
-  Running command git checkout -b feature/data_load_scheduler --track origin/feature/data_load_scheduler
-  Switched to a new branch 'feature/data_load_scheduler'
-  Branch 'feature/data_load_scheduler' set up to track remote branch 'feature/data_load_scheduler' from 'origin'.
-  Resolved https://github.com/flintdk/comp30830_project_2022/ to commit 56d43e426ae96f4a8015ac97faa7f7163d1a53de
-Requirement already satisfied: mysql-connector-python>=8.0.0 in /home/ubuntu/miniconda3/envs/comp30830py39_dudeWMB/lib/python3.9/site-packages (from dwmb-data-loader) (8.0.28)
-Requirement already satisfied: requests==2.27.1 in /home/ubuntu/miniconda3/envs/comp30830py39_dudeWMB/lib/python3.9/site-packages (from dwmb-data-loader) (2.27.1)
-Collecting sqlalchemy==1.4.27
-  Downloading SQLAlchemy-1.4.27-cp39-cp39-manylinux_2_5_x86_64.manylinux1_x86_64.manylinux_2_17_x86_64.manylinux2014_x86_64.whl (1.6 MB)
-     |████████████████████████████████| 1.6 MB 9.5 MB/s 
-Requirement already satisfied: urllib3<1.27,>=1.21.1 in /home/ubuntu/miniconda3/envs/comp30830py39_dudeWMB/lib/python3.9/site-packages (from requests==2.27.1->dwmb-data-loader) (1.26.8)
-Requirement already satisfied: charset-normalizer~=2.0.0 in /home/ubuntu/miniconda3/envs/comp30830py39_dudeWMB/lib/python3.9/site-packages (from requests==2.27.1->dwmb-data-loader) (2.0.12)
-Requirement already satisfied: idna<4,>=2.5 in /home/ubuntu/miniconda3/envs/comp30830py39_dudeWMB/lib/python3.9/site-packages (from requests==2.27.1->dwmb-data-loader) (3.3)
-Requirement already satisfied: certifi>=2017.4.17 in /home/ubuntu/miniconda3/envs/comp30830py39_dudeWMB/lib/python3.9/site-packages (from requests==2.27.1->dwmb-data-loader) (2021.10.8)
-Requirement already satisfied: greenlet!=0.4.17 in /home/ubuntu/miniconda3/envs/comp30830py39_dudeWMB/lib/python3.9/site-packages (from sqlalchemy==1.4.27->dwmb-data-loader) (1.1.2)
-Requirement already satisfied: protobuf>=3.0.0 in /home/ubuntu/miniconda3/envs/comp30830py39_dudeWMB/lib/python3.9/site-packages (from mysql-connector-python>=8.0.0->dwmb-data-loader) (3.19.4)
-Installing collected packages: sqlalchemy, dwmb-data-loader
-  Attempting uninstall: sqlalchemy
-    Found existing installation: SQLAlchemy 1.4.31
-    Uninstalling SQLAlchemy-1.4.31:
-      Successfully uninstalled SQLAlchemy-1.4.31
-  Running setup.py develop for dwmb-data-loader
-    ERROR: Command errored out with exit status 1:
-     command: /home/ubuntu/miniconda3/envs/comp30830py39_dudeWMB/bin/python -c 'import io, os, sys, setuptools, tokenize; sys.argv[0] = '"'"'/home/ubuntu/github/src/dwmb-data-loader/dwmb-data-loader/setup.py'"'"'; __file__='"'"'/home/ubuntu/github/src/dwmb-data-loader/dwmb-data-loader/setup.py'"'"';f = getattr(tokenize, '"'"'open'"'"', open)(__file__) if os.path.exists(__file__) else io.StringIO('"'"'from setuptools import setup; setup()'"'"');code = f.read().replace('"'"'\r\n'"'"', '"'"'\n'"'"');f.close();exec(compile(code, __file__, '"'"'exec'"'"'))' develop --no-deps
-         cwd: /home/ubuntu/github/src/dwmb-data-loader/dwmb-data-loader
-    Complete output (14 lines):
-    running develop
-    running egg_info
-    writing dwmb_data_loader.egg-info/PKG-INFO
-    writing dependency_links to dwmb_data_loader.egg-info/dependency_links.txt
-    writing entry points to dwmb_data_loader.egg-info/entry_points.txt
-    writing requirements to dwmb_data_loader.egg-info/requires.txt
-    writing top-level names to dwmb_data_loader.egg-info/top_level.txt
-    reading manifest file 'dwmb_data_loader.egg-info/SOURCES.txt'
-    writing manifest file 'dwmb_data_loader.egg-info/SOURCES.txt'
-    running build_ext
-    Creating /home/ubuntu/miniconda3/envs/comp30830py39_dudeWMB/lib/python3.9/site-packages/dwmb-data-loader.egg-link (link to .)
-    Adding dwmb-data-loader 0.1.0 to easy-install.pth file
-    Installing dwmy_data_loader script to /home/ubuntu/miniconda3/envs/comp30830py39_dudeWMB/bin
-    error: [Errno 2] No such file or directory: '/home/ubuntu/github/src/dwmb-data-loader/dwmb-data-loader/dwmb-data-loader.sh'
-    ----------------------------------------
-ERROR: Command errored out with exit status 1: /home/ubuntu/miniconda3/envs/comp30830py39_dudeWMB/bin/python -c 'import io, os, sys, setuptools, tokenize; sys.argv[0] = '"'"'/home/ubuntu/github/src/dwmb-data-loader/dwmb-data-loader/setup.py'"'"'; __file__='"'"'/home/ubuntu/github/src/dwmb-data-loader/dwmb-data-loader/setup.py'"'"';f = getattr(tokenize, '"'"'open'"'"', open)(__file__) if os.path.exists(__file__) else io.StringIO('"'"'from setuptools import setup; setup()'"'"');code = f.read().replace('"'"'\r\n'"'"', '"'"'\n'"'"');f.close();exec(compile(code, __file__, '"'"'exec'"'"'))' develop --no-deps Check the logs for full command output.
+$ python -m pip install -e "git+https://github.com/flintdk/comp30830_project_2022/@feature/data_load_scheduler#egg=comp30830_project_2022"
+Obtaining comp30830_project_2022 from git+https://github.com/flintdk/comp30830_project_2022/@feature/data_load_scheduler#egg=comp30830_project_2022
+  Updating ./src/comp30830-project-2022 clone (to revision feature/data_load_scheduler)
+  Running command git fetch -q --tags
+  Running command git reset --hard -q 74f64e9a8627361c84831e6c81e186c3e4b5a01c
+Requirement already satisfied: mysql-connector-python>=8.0.0 in /home/ubuntu/miniconda3/envs/comp30830py39_dudeWMB/lib/python3.9/site-packages (from comp30830_project_2022) (8.0.28)
+Requirement already satisfied: requests==2.27.1 in /home/ubuntu/miniconda3/envs/comp30830py39_dudeWMB/lib/python3.9/site-packages (from comp30830_project_2022) (2.27.1)
+Requirement already satisfied: sqlalchemy==1.4.27 in /home/ubuntu/miniconda3/envs/comp30830py39_dudeWMB/lib/python3.9/site-packages (from comp30830_project_2022) (1.4.27)
+Requirement already satisfied: certifi>=2017.4.17 in /home/ubuntu/miniconda3/envs/comp30830py39_dudeWMB/lib/python3.9/site-packages (from requests==2.27.1->comp30830_project_2022) (2021.10.8)
+Requirement already satisfied: idna<4,>=2.5 in /home/ubuntu/miniconda3/envs/comp30830py39_dudeWMB/lib/python3.9/site-packages (from requests==2.27.1->comp30830_project_2022) (3.3)
+Requirement already satisfied: charset-normalizer~=2.0.0 in /home/ubuntu/miniconda3/envs/comp30830py39_dudeWMB/lib/python3.9/site-packages (from requests==2.27.1->comp30830_project_2022) (2.0.12)
+Requirement already satisfied: urllib3<1.27,>=1.21.1 in /home/ubuntu/miniconda3/envs/comp30830py39_dudeWMB/lib/python3.9/site-packages (from requests==2.27.1->comp30830_project_2022) (1.26.8)
+Requirement already satisfied: greenlet!=0.4.17 in /home/ubuntu/miniconda3/envs/comp30830py39_dudeWMB/lib/python3.9/site-packages (from sqlalchemy==1.4.27->comp30830_project_2022) (1.1.2)
+Requirement already satisfied: protobuf>=3.0.0 in /home/ubuntu/miniconda3/envs/comp30830py39_dudeWMB/lib/python3.9/site-packages (from mysql-connector-python>=8.0.0->comp30830_project_2022) (3.19.4)
+Installing collected packages: comp30830-project-2022
+  Running setup.py develop for comp30830-project-2022
+Successfully installed comp30830-project-2022-0.1.0
+(comp30830py39_dudeWMB) ubuntu@ip-172-31-2-153:~/github$ dir
+dudeWMB-env.yml  src
+(comp30830py39_dudeWMB) ubuntu@ip-172-31-2-153:~/github$ dymy_data_loader
+dymy_data_loader: command not found
+(comp30830py39_dudeWMB) ubuntu@ip-172-31-2-153:~/github$ dwmy_data_loader
+Traceback (most recent call last):
+  File "/home/ubuntu/miniconda3/envs/comp30830py39_dudeWMB/bin/dwmy_data_loader", line 33, in <module>
+    sys.exit(load_entry_point('comp30830-project-2022', 'console_scripts', 'dwmy_data_loader')())
+  File "/home/ubuntu/miniconda3/envs/comp30830py39_dudeWMB/bin/dwmy_data_loader", line 25, in importlib_load_entry_point
+    return next(matches).load()
+  File "/home/ubuntu/miniconda3/envs/comp30830py39_dudeWMB/lib/python3.9/importlib/metadata.py", line 77, in load
+    module = import_module(match.group('module'))
+  File "/home/ubuntu/miniconda3/envs/comp30830py39_dudeWMB/lib/python3.9/importlib/__init__.py", line 127, in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+  File "<frozen importlib._bootstrap>", line 1030, in _gcd_import
+  File "<frozen importlib._bootstrap>", line 1007, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 972, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 228, in _call_with_frames_removed
+  File "<frozen importlib._bootstrap>", line 1030, in _gcd_import
+  File "<frozen importlib._bootstrap>", line 1007, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 984, in _find_and_load_unlocked
+ModuleNotFoundError: No module named 'dwmb_data_loader'
+(comp30830py39_dudeWMB) ubuntu@ip-172-31-2-153:~/github$ 
