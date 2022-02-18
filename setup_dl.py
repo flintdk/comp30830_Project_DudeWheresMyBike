@@ -5,6 +5,9 @@ from setuptools import find_packages
 # with open(file="README.md", mode="r") as readme_handle:
 #     long_description = readme_handle.read()
 
+# To create a source distribution using this file:
+#   python setup.py sdist --formats=gztar,zip
+
 setup(
       # Define the library name, this is what is used along with `pip install`.
       name='dudeWMBdataLoader',
