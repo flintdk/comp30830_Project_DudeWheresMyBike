@@ -1,17 +1,30 @@
+# To create a source distribution for the dwmb_data_loader using this file:
+#   python dwmb_data_loader\setup.py sdist --formats=gztar,zip
+#
+# To install the dwmb_data_loader on your EC2 instance using the resources
+# created by this file:
+#   python -m pip install -e "git+https://github.com/flintdk/comp30830_project_2022/#egg=dwmb_data_loader&subdirectory=dwmb_data_loader"
+
+# NOTES
+# To install an entire GitHub project on the EC2 instance you might use:
+#   python -m pip install git+https://github.com/flintdk/comp30830_project_2022/    
+#
+# BRANCHES: It is also possible to specify a “git ref” such as branch name, a commit hash or a tag name:
+#   python -m pip install git+https://github.com/flintdk/comp30830_project_2022/@dev
+#
+# PACKAGES:
+# pip looks at 2 fragments for VCS URLs:
+#   egg: For specifying the “project name” for use in pip’s dependency resolution logic. eg: egg=project_name
+#   subdirectory: For specifying the path to the Python package, when it is not in the root of the VCS directory. eg: pkg_dir
+# e.g.
+#   python -m pip install -e "git+https://github.com/flintdk/comp30830_project_2022/#egg=dwmb_data_loader&subdirectory=dwmb_data_loader"
+
 from setuptools import setup
 from setuptools import find_packages
 
 # Load the README file.
 # with open(file="README.md", mode="r") as readme_handle:
 #     long_description = readme_handle.read()
-
-# To create a source distribution using this file:
-#   python setup.py sdist --formats=gztar,zip
-
-# To install this on the EC2 instance you can use:
-# pip install git+https://https://github.com/flintdk/comp30830_project_2022/tree/feature/data_load_scheduler.git#egg=httpie
-
-#https://github.com/flintdk/comp30830_project_2022/tree/dev
 
 setup(
       # Define the library name, this is what is used along with `pip install`.

@@ -1,5 +1,4 @@
 README.md
-setup_dl.py
 dudeWMBdataLoader.egg-info/PKG-INFO
 dudeWMBdataLoader.egg-info/SOURCES.txt
 dudeWMBdataLoader.egg-info/dependency_links.txt
@@ -9,4 +8,5 @@ dudeWMBdataLoader.egg-info/requires.txt
 dudeWMBdataLoader.egg-info/top_level.txt
 dwmb_data_loader/__init__.py
 dwmb_data_loader/data_loader.py
+dwmb_data_loader/setup.py
 dwmb_data_loader/weather.py
