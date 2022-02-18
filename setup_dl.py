@@ -8,6 +8,11 @@ from setuptools import find_packages
 # To create a source distribution using this file:
 #   python setup.py sdist --formats=gztar,zip
 
+# To install this on the EC2 instance you can use:
+# pip install git+https://https://github.com/flintdk/comp30830_project_2022/tree/feature/data_load_scheduler.git#egg=httpie
+
+#https://github.com/flintdk/comp30830_project_2022/tree/dev
+
 setup(
       # Define the library name, this is what is used along with `pip install`.
       name='dudeWMBdataLoader',
@@ -79,5 +84,13 @@ setup(
             # Here are the topics that my library covers.
             'Topic :: Education',
 
+            ],
+      
+      scripts=['dwmb_data_loader.sh'],
+
+      entry_points={
+            'console_scripts': [
+                  'dwmy_data_loader = dwmy_data_loader.data_loader:main',
             ]
+      }
 )
