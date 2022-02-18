@@ -24,7 +24,7 @@ setup(
 
       # Here is a small description of the library. This appears
       # when someone searches for the library on https://pypi.org/search.
-      description='Plan a Dublin Bikes trip on a future date.',
+      description='Schedule a job to collect data on Dublin Bikes usage from JCDecaux.',
 
       # I have a long description but that will just be my README
       # file, note the variable up above where I read the file.
@@ -37,14 +37,16 @@ setup(
 
       # These are the dependencies the library needs in order to run.
       install_requires=[
-       
+            'mysql-connector-python=8.0.18',
+            'requests=2.27.1',
+            'sqlalchemy=1.4.27'
        ],
 
       # Here I can specify the python version necessary to run this library.
-      python_requires='>=3.7',
+      python_requires='>=3.9',
 
       license='MIT',
-      packages=['scraper'],
+      packages=['dwmb_data_loader'],
       zip_safe=False,
 
       # Additional classifiers that give some characteristics about the package.
