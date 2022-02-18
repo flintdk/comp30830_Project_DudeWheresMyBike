@@ -6,6 +6,7 @@
 # created by this file:
 #   1) MAKE SURE YOU ARE IN THE ROOT FOLDER OF THE PROJECT!!
 #   2) python -m pip install -e "git+https://github.com/flintdk/comp30830_project_2022/#egg=dwmb_data_loader&subdirectory=dwmb_data_loader"
+#python -m pip install -e "git+https://github.com/flintdk/comp30830_project_2022/dwmb_data_loader/#egg=dwmb_data_loader&subdirectory=dwmb_data_loader@data_load_scheduler"
 
 # NOTES
 # To install an entire GitHub project on the EC2 instance you might use:
