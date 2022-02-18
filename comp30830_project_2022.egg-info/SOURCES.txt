@@ -1,0 +1,12 @@
+README.md
+setup.py
+comp30830_project_2022.egg-info/PKG-INFO
+comp30830_project_2022.egg-info/SOURCES.txt
+comp30830_project_2022.egg-info/dependency_links.txt
+comp30830_project_2022.egg-info/entry_points.txt
+comp30830_project_2022.egg-info/not-zip-safe
+comp30830_project_2022.egg-info/requires.txt
+comp30830_project_2022.egg-info/top_level.txt
+dwmb-data-loader/__init__.py
+dwmb-data-loader/data_loader.py
+dwmb-data-loader/weather.py
