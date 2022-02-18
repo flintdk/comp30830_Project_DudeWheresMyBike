@@ -37,9 +37,9 @@ setup(
 
       # These are the dependencies the library needs in order to run.
       install_requires=[
-            'mysql-connector-python=8.0.18',
-            'requests=2.27.1',
-            'sqlalchemy=1.4.27'
+            'mysql-connector-python>=8.0.0',
+            'requests==2.27.1',
+            'sqlalchemy==1.4.27'
        ],
 
       # Here I can specify the python version necessary to run this library.
