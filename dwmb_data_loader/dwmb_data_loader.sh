@@ -6,9 +6,14 @@
 # It can be created in the /var/spool/cron/crontabs directory using the
 # 'crontab -e' command that's also used to edit a cron file.
 #
+# To check, start, stop Cron on Ubuntu you can use:
+#    sudo service cron status
+#    sudo service cron stop
+#    sudo service cron start
+#    sudo service cron restart
 
 # Set up home directory and include shared resources
-home_dir="$(pwd)"
+home_dir="/home/ubuntu"
 # I popped the following into variables as it was handier for testing
 cron_dir="/etc/cron.d"
 #cron_dir="/etc/cron.d"
@@ -87,6 +92,7 @@ schedule)
     #   day of month (dom)
     #   month (mon)
     #   day of week (dow)
+    #   username (name of the user to run the command)
     # ... or use '*' in these fields (for 'any').
     echo "                     Generating default schedule entries..."
     #
@@ -94,8 +100,12 @@ schedule)
     #   -> That dwmb_data_loader is *installed* and configured as a command
     #   -> That the project conda virtual environment 'comp30830_dudeWMB' is configured
     #   -> That dudewmb.json (with our credentials) are available in the account login directory
-    echo "0/2 5-23 * * * \"conda activate comp30830py39_dudeWMB && ${module_to_schedule} && conda deactivate\"" >> "${cron_dir}/dwmb_data_loader"
-    echo "0 24 * * * \"conda activate comp30830py39_dudeWMB && ${module_to_schedule} && conda deactivate\"" >> "${cron_dir}/dwmb_data_loader"
+    echo "SHELL=/bin/bash" >> "${cron_dir}/dwmb_data_loader"
+    echo "BASH_ENV=~/.bashrc_conda" >> "${cron_dir}/dwmb_data_loader"
+    echo "*/2 5-23 * * * ubuntu conda activate comp30830py39_dudeWMB && cd /home/ubuntu && ${module_to_schedule} >> ${home_dir}/dwmb_data_loader.log 2>&1 && conda deactivate" >> "${cron_dir}/dwmb_data_loader"
+    echo "0   0    * * * ubuntu conda activate comp30830py39_dudeWMB && cd /home/ubuntu && ${module_to_schedule} >> ${home_dir}/dwmb_data_loader.log 2>&1 && conda deactivate" >> "${cron_dir}/dwmb_data_loader"
+    # Make sure there's a new line after the last command - cron seems to like it...
+    echo "" >> "${cron_dir}/dwmb_data_loader"
     exit 0
     ;;
 stop)
