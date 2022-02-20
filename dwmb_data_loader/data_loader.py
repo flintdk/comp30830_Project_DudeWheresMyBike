@@ -90,18 +90,48 @@ def saveToDatabase(jsonData, credentials):
 
     return
 
-def stationExists(connection, station): # todo: change here....
+def stationExists(connection, station):
+    """This function checks if station is already listed in the station table
+
+    Returns True if stations already exists
+    """
     stationExists = True
-    query = db.text("select * from station "
+    query = db.text("SELECT * from station "
         + "where number = " + str(station['number']) + " "\
         + "and contractName = 'dublin';")
-    id_count = connection.execute(query).rowcount
+    id_count = connection.execute(query).rowcount # count returned tuples of exisiting stations
     if (id_count == 0):
         stationExists = False
-
     return stationExists
 
+def getStationId(connection, station):
+    """This function returns the station-ID, where ID is the primary key in the station table
+
+    Note: Station-ID is the primary key of the station table and is created by utilising the autoincrement option. 
+    This Station-ID is used to uniquely identify a station within the database, 
+    since the station number which is returned by the JCDecaux is only unique in combination with the contractName.
+    """
+    stationId = 0
+    count = 0
+    result = connection.execute(
+        db.text("SELECT ID from station " \
+            + "where number = " + str(station['number']) + " "\
+            + "and contractName = 'dublin';")
+    )
+    for tuple in result: # iterate over results - although only one tuple is expected
+        stationId = tuple['ID']
+        count += 1
+    if count != 1: # if more than one tuple is returned, then there is something wrong.
+        stationId = 0
+        print("Invalid number of tuples!")
+    return stationId
+
 def updateStation(connection, station):
+    """This function updates the static information of a bike station in the 'station' table
+    
+    Note: Should static information such as banking, bonus, etc. change over time, 
+    this function will update the information for each individual station 
+    """
     result = connection.execute(
         db.text("UPDATE station " \
             + "SET stationName = \"" + station['name'] + "\", " \
@@ -113,12 +143,14 @@ def updateStation(connection, station):
             + "WHERE number = " + str(station['number']) + " " \
             + "and contractName = \"dublin\";")
     )
-    stationId = result.lastrowid
+    stationId = getStationId(connection, station)
     print("after station update, stationId is " + str(stationId))
-
     return stationId
 
 def insertStation(connection, station):
+    """This function inserts a new station to the table in the 'station' table
+
+    """
     result = connection.execute(
         db.text("INSERT station " \
             + "SET number = " + str(station['number']) + ", " \
@@ -130,12 +162,14 @@ def insertStation(connection, station):
             + "banking = " + str(station['banking']) + ", " \
             + "bonus = " + str(station['bonus']) + ";")
     )
-    stationId = result.lastrowid
+    stationId = getStationId(connection, station)
     print("after station insert, stationId is " + str(stationId))
-
     return stationId
 
 def insertStationState(connection, stationId, stationSate):
+    """This function inserts the latest dynamic information about a bike station to the table 'sationState' 
+    
+    """
     connection.execute(
         db.text("INSERT stationState " \
             + "SET stationId = " + str(stationId) + ", " \
@@ -149,6 +183,9 @@ def insertStationState(connection, stationId, stationSate):
     return
 
 def extractStation(jsonRow):
+    """This function extracts static station information from a json object and stores it in a Python dictionary 
+    
+    """
     station = {} # Declare a dict to hold the station data
     station['number'] = jsonRow['number']
     station['contract_name'] = jsonRow['contract_name']
@@ -162,6 +199,9 @@ def extractStation(jsonRow):
     return station
 
 def extractStationState(jsonRow):
+    """This function extracts dynamic station information from a json object and stores it in a Python dictionary 
+    
+    """
     stationState = {} # Declare a dict to hold the station data
     stationState['number'] = jsonRow['number']
     stationState['bike_stands'] = jsonRow['bike_stands']
