@@ -1,3 +1,26 @@
+# To create a source distribution for the dwmb_data_loader using this file:
+#   1) MAKE SURE YOU ARE IN THE ROOT FOLDER OF THE PROJECT!!
+#   2) python setup.py sdist --formats=gztar,zip
+#
+# To install the dwmb_data_loader on your EC2 instance using the resources
+# created by this file:
+#   1) MAKE SURE YOU ARE IN THE ROOT FOLDER OF THE PROJECT!!
+#   2) python -m pip install -e "git+https://github.com/flintdk/comp30830_project_2022/#egg=dwmb_data_loader&subdirectory=dwmb_data_loader"
+#python -m pip install -e "git+https://github.com/flintdk/comp30830_project_2022/@feature/data_load_scheduler#egg=comp30830_project_2022"
+# NOTES
+# To install an entire GitHub project on the EC2 instance you might use:
+#   python -m pip install git+https://github.com/flintdk/comp30830_project_2022/    
+#
+# BRANCHES: It is also possible to specify a “git ref” such as branch name, a commit hash or a tag name:
+#   python -m pip install git+https://github.com/flintdk/comp30830_project_2022/@dev
+#
+# PACKAGES:
+# pip looks at 2 fragments for VCS URLs:
+#   egg: For specifying the “project name” for use in pip’s dependency resolution logic. eg: egg=project_name
+#   subdirectory: For specifying the path to the Python package, when it is not in the root of the VCS directory. eg: pkg_dir
+# e.g.
+#   python -m pip install -e "git+https://github.com/flintdk/comp30830_project_2022/#egg=dwmb_data_loader&subdirectory=dwmb_data_loader"
+
 from setuptools import setup
 from setuptools import find_packages
 
@@ -7,7 +30,7 @@ from setuptools import find_packages
 
 setup(
       # Define the library name, this is what is used along with `pip install`.
-      name='dudeWMB',
+      name='comp30830_project_2022',
 
       # Define the author of the repository.
       author='Tomas Kelly, Will O\'Donohoe, Jörg Striebel',
@@ -24,7 +47,7 @@ setup(
 
       # Here is a small description of the library. This appears
       # when someone searches for the library on https://pypi.org/search.
-      description='Plan a Dublin Bikes trip on a future date.',
+      description='Schedule a job to collect data on Dublin Bikes usage from JCDecaux.',
 
       # I have a long description but that will just be my README
       # file, note the variable up above where I read the file.
@@ -37,14 +60,16 @@ setup(
 
       # These are the dependencies the library needs in order to run.
       install_requires=[
-       
+            'mysql-connector-python>=8.0.0',
+            'requests==2.27.1',
+            'sqlalchemy==1.4.27'
        ],
 
       # Here I can specify the python version necessary to run this library.
-      python_requires='>=3.7',
+      python_requires='>=3.9',
 
       license='MIT',
-      packages=['scraper'],
+      packages=['dwmb_data_loader'],
       zip_safe=False,
 
       # Additional classifiers that give some characteristics about the package.
@@ -74,5 +99,13 @@ setup(
             # Here are the topics that my library covers.
             'Topic :: Education',
 
+            ],
+      
+      #scripts=['dwmb_data_loader.sh'],
+
+      entry_points={
+            'console_scripts': [
+                  'dwmb_data_loader = dwmb_data_loader.data_loader:main',
             ]
+      }
 )
