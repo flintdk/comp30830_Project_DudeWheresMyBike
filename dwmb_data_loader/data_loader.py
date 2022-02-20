@@ -19,6 +19,7 @@ import requests
 import json
 import traceback
 import sqlalchemy as db
+from datetime import datetime
 
 def loadCredentials():
     """Load the credentials required for accessing the JCDecaux API
@@ -35,23 +36,19 @@ def loadCredentials():
     file.close  # Can close the file now we have the data loaded...
     return credentials
 
-def saveToDatabase(jsonData, credentials):
-    """
-    """
+#===============================================================================
+#===============================================================================
+#===============================================================================
 
+def saveStationDataToDb(connection, jsonData, timestamp):
+    """
+    """
     # Station Data:
     # number ('Id'), contract_name, name, address, position {lat, lng}, banking, bonus
     # (banking indicates whether this station has a payment terminal,
     #  bonus indicates whether this is a bonus station)
     # Availability Data (For station)
     # number ('Id'), bike_stands, available_bike_stands, available_bikes, status, last_update
-    connectionString = "mysql+mysqlconnector://" \
-        + credentials['amazonrds']['username'] + ":" + credentials['amazonrds']['password'] \
-        + "@" \
-        + credentials['amazonrds']['endpoint'] + ":3306" \
-        + "/dudeWMB?charset=utf8mb4"
-    #print("Connection String: " + connectionString + "\n")
-    engine = db.create_engine(connectionString)
 
     # Look over the jsonData, which contains a both static and dynamic information
     # in a big soup...
@@ -63,30 +60,28 @@ def saveToDatabase(jsonData, credentials):
         station = extractStation(row)
         stationSate = extractStationState(row)
 
-        # engine.begin() runs a transaction
-        with engine.begin() as connection:
+        # Would prefer to use ORM rather than straight SQL - but the
+        # priority for now is to have something working. Will return to this
+        # if time (and the burndown chart) permits...
+        # Session = db.sessionmaker(bind=engine)
+        # session = Session()
 
-            # Would prefer to use ORM rather than straight SQL - but the
-            # priority for now is to have something working. Will return to this
-            # if time (and the burndown chart) permits...
-            # Session = db.sessionmaker(bind=engine)
-            # session = Session()
+        # Have we already stored this station?
+        if (stationExists(connection, station)):
+            # If the stationExists we update it
+            # (It's not efficient to update every time... but... yeah...)
+            updateStation(connection, station)
+        else:
+            insertStation(connection, station)
 
-            stationId = 0 # We don't know the station Id yet...
-
-            # Have we already stored this station?
-            if (stationExists(connection, station)):
-                # If the stationExists we update it
-                # (It's not efficient to update every time... but... yeah...)
-                stationId = updateStation(connection, station)
-            else:
-                stationId = insertStation(connection, station)
-            
-            # Once we're confident the station exists and is up to date we insert
-            # the Status Updata data for this station!
-            insertStationState(connection, stationId, stationSate)
-
-    connection.close()
+        # Whether we inserted or updated - doesn't matter - the station
+        # definitely exists now.  Look up the id so we can insert the detail
+        # record...
+        stationId = getStationId(connection, station)
+        
+        # Once we're confident the station exists and is up to date we insert
+        # the Status Updata data for this station!
+        insertStationState(connection, stationId, timestamp, stationSate)
 
     return
 
@@ -132,7 +127,7 @@ def updateStation(connection, station):
     Note: Should static information such as banking, bonus, etc. change over time, 
     this function will update the information for each individual station 
     """
-    result = connection.execute(
+    connection.execute(
         db.text("UPDATE station " \
             + "SET stationName = \"" + station['name'] + "\", " \
             + "address = \"" + station['address'] + "\", " \
@@ -143,15 +138,13 @@ def updateStation(connection, station):
             + "WHERE number = " + str(station['number']) + " " \
             + "and contractName = \"dublin\";")
     )
-    stationId = getStationId(connection, station)
-    print("after station update, stationId is " + str(stationId))
-    return stationId
+    return
 
 def insertStation(connection, station):
     """This function inserts a new station to the table in the 'station' table
 
     """
-    result = connection.execute(
+    connection.execute(
         db.text("INSERT station " \
             + "SET number = " + str(station['number']) + ", " \
             + "contractName = \"dublin\", " \
@@ -162,17 +155,16 @@ def insertStation(connection, station):
             + "banking = " + str(station['banking']) + ", " \
             + "bonus = " + str(station['bonus']) + ";")
     )
-    stationId = getStationId(connection, station)
-    print("after station insert, stationId is " + str(stationId))
-    return stationId
+    return
 
-def insertStationState(connection, stationId, stationSate):
+def insertStationState(connection, stationId, timestamp, stationSate):
     """This function inserts the latest dynamic information about a bike station to the table 'sationState' 
     
     """
     connection.execute(
         db.text("INSERT stationState " \
             + "SET stationId = " + str(stationId) + ", " \
+            + "weatherTime = \"" + str(timestamp) + "\", " \
             + "status = \"" + stationSate['status'] + "\", " \
             + "bike_stands = " + str(stationSate['bike_stands']) + ", " \
             + "available_bike_stands = " + str(stationSate['available_bike_stands']) + ", " \
@@ -181,6 +173,52 @@ def insertStationState(connection, stationId, stationSate):
     )
 
     return
+
+#===============================================================================
+#===============================================================================
+#===============================================================================
+
+def saveWeatherDataToDb(connection, jsonData, timestamp):
+    """
+    """
+    # Station Data:
+    # number ('Id'), contract_name, name, address, position {lat, lng}, banking, bonus
+    # (banking indicates whether this station has a payment terminal,
+    #  bonus indicates whether this is a bonus station)
+    # Availability Data (For station)
+    # number ('Id'), bike_stands, available_bike_stands, available_bikes, status, last_update
+
+    # The Weather json object is relatively complex.  Extract the data we require
+    # from it and pop it in a simpl dictionary.
+    weather = extractWeather(jsonData)
+
+    connection.execute(
+        db.text("INSERT weatherHistory " \
+            + "SET weatherTime = \"" + str(timestamp) + "\", " \
+            + "latitude = " + str(weather['latitude']) + ", " \
+            + "longitude = " + str(weather['longitude']) + ", " \
+            + "main = \"" + weather['main'] + "\", " \
+            + "description = \"" + weather['description'] + "\", " \
+            + "temp = " + str(weather['temp']) + ", " \
+            + "feels_like = " + str(weather['feels_like']) + ", " \
+            + "temp_min = " + str(weather['temp_min']) + ", " \
+            + "temp_max = " + str(weather['temp_max']) + ", " \
+            + "pressure = " + str(weather['pressure']) + ", " \
+            + "humidity = " + str(weather['humidity']) + ", " \
+            + "sea_level = " + str(weather['sea_level']) + ", " \
+            + "grnd_level = " + str(weather['grnd_level']) + ", " \
+            + "wind_speed = " + str(weather['wind_speed']) + ", " \
+            + "wind_deg = " + str(weather['wind_deg']) + ", " \
+            + "wind_gust = " + str(weather['wind_gust']) + ", " \
+            + "clouds_all = " + str(weather['clouds_all']) + ", " \
+            + "country = \"" + weather['country'] + "\";")
+        )
+
+    return
+
+#===============================================================================
+#===============================================================================
+#===============================================================================
 
 def extractStation(jsonRow):
     """This function extracts static station information from a json object and stores it in a Python dictionary 
@@ -212,12 +250,41 @@ def extractStationState(jsonRow):
 
     return stationState
 
+def extractWeather(jsonData):
+    """This function extracts weather information from a json object and stores it in a Python dictionary 
+    
+    """
+    weather = {} # Declare a dict to hold the station data
+    weather['latitude'] = jsonData['coord']['lat']
+    weather['longitude'] = jsonData['coord']['lon']
+    weather['main'] = jsonData['weather'][0]['main']
+    weather['description'] = jsonData['weather'][0]['description']
+    weather['temp'] = jsonData['main']['temp']
+    weather['feels_like'] = jsonData['main']['feels_like']
+    weather['temp_min'] = jsonData['main']['temp_min']
+    weather['temp_max'] = jsonData['main']['temp_max']
+    weather['pressure'] = jsonData['main']['pressure']
+    weather['humidity'] = jsonData['main']['humidity']
+    weather['sea_level'] = jsonData['main']['sea_level']
+    weather['grnd_level'] = jsonData['main']['grnd_level']
+    weather['wind_speed'] = jsonData['wind']['speed']
+    weather['wind_deg'] = jsonData['wind']['deg']
+    weather['wind_gust'] = jsonData['wind']['gust']
+    weather['clouds_all'] = jsonData['clouds']['all']
+    weather['country'] = jsonData['sys']['country']
+
+    return weather
+
+#===============================================================================
+#===============================================================================
+#===============================================================================
+
 def main():
     """Load Data from the JCDecaux API
 
 
     """
-
+    # Load our private credentials from a JSON file
     credentials = loadCredentials()
 
     # The DudeWMB Data Loader uses the 'Cronitor' web service (https://cronitor.io/)
@@ -234,22 +301,61 @@ def main():
         # "api-key": "39fa6066a9e6c316e1bb1f4acaa31b1af3b73c05"
 
     try:
-        # Retrieve the Station/Activity Data:
-        # Set the request parameters in JSON format
-        parameters = {'contract': 'dublin', 'apiKey': credentials['jcdecaux']['api-key']}
-        # Hard-code the Station Data URI
-        uri = 'https://api.jcdecaux.com/vls/v1/stations'
-        response = requests.get(uri, params=parameters)
-    
-        if (response.status_code == 200):
-            # response.content  # Bytes
-            # response.text  # String
-            saveToDatabase(response.json(), credentials)
-        else:
-            # Our call to the API failed for some reason...  print some information
-            # Who knows... someone may even look at the logs!!
-            print("ERROR: Call to JCDecaux API failed with status code: ", response.status_code)
-            print("       The response reason was \'" + str(response.reason) + "\'")
+        # We want to timestamp our records so we can tie station state to
+        # weather data etc..  So we generate a timestamp now at the beginning of
+        # this 'Data Load' pass and use it a couple of times below:
+        timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+
+        # We only want to initialise the engine and create a db connection once
+        # as its expensive (i.e. time consuming). So we only want to do that once
+        connectionString = "mysql+mysqlconnector://" \
+            + credentials['amazonrds']['username'] + ":" + credentials['amazonrds']['password'] \
+            + "@" \
+            + credentials['amazonrds']['endpoint'] + ":3306" \
+            + "/dudeWMB?charset=utf8mb4"
+        #print("Connection String: " + connectionString + "\n")
+        engine = db.create_engine(connectionString)
+
+        # engine.begin() runs a transaction
+        with engine.begin() as connection:
+
+            # Retrieve the Station/Activity Data:
+            # Hard-code the Station Data URI
+            uri = 'https://api.jcdecaux.com/vls/v1/stations'
+            # Set the request parameters in JSON format
+            parameters = {'contract': 'dublin', 'apiKey': credentials['jcdecaux']['api-key']}
+            stationResponse = requests.get(uri, params=parameters)
+        
+            if (stationResponse.status_code == 200):
+                # response.content  # Bytes
+                # response.text  # String
+                saveStationDataToDb(connection, stationResponse.json(), timestamp)
+            else:
+                # Our call to the API failed for some reason...  print some information
+                # Who knows... someone may even look at the logs!!
+                print("ERROR: Call to JCDecaux API failed with status code: ", stationResponse.status_code)
+                print("       The response reason was \'" + str(stationResponse.reason) + "\'")
+
+            # Retrieve the Weather Data:
+            # Hard-code the Station Data URI
+            uri = 'https://api.openweathermap.org/data/2.5/weather'
+            # Set the request parameters in JSON format
+            parameters = {'lat': credentials['open-weather']['lat'], 'lon': credentials['open-weather']['lon'], 'appid': credentials['open-weather']['api-key']}
+            weatherResponse = requests.get(uri, params=parameters)
+        
+            if (weatherResponse.status_code == 200):
+                # response.content  # Bytes
+                # response.text  # String
+                saveWeatherDataToDb(connection, weatherResponse.json(), timestamp)
+            else:
+                # Our call to the API failed for some reason...  print some information
+                # Who knows... someone may even look at the logs!!
+                print("ERROR: Call to JCDecaux API failed with status code: ", weatherResponse.status_code)
+                print("       The response reason was \'" + str(weatherResponse.reason) + "\'")
+        
+        # Make sure to close the connection - a memory leak on this would kill
+        # us...
+        connection.close()
 
         # Send a Cronitor request to signal our process has completed.
         requests.get(cronitorURI + "?state=complete")
