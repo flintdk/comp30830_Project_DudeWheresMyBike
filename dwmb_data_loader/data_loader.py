@@ -192,27 +192,48 @@ def saveWeatherDataToDb(connection, jsonData, timestampAsStr):
     # from it and pop it in a simpl dictionary.
     weather = extractWeather(jsonData)
 
-    connection.execute(
-        db.text("INSERT weatherHistory " \
-            + "SET weatherTime = \"" + timestampAsStr + "\", " \
-            + "latitude = " + str(weather['latitude']) + ", " \
-            + "longitude = " + str(weather['longitude']) + ", " \
-            + "main = \"" + weather['main'] + "\", " \
-            + "description = \"" + weather['description'] + "\", " \
-            + "temp = " + str(weather['temp']) + ", " \
-            + "feels_like = " + str(weather['feels_like']) + ", " \
-            + "temp_min = " + str(weather['temp_min']) + ", " \
-            + "temp_max = " + str(weather['temp_max']) + ", " \
-            + "pressure = " + str(weather['pressure']) + ", " \
-            + "humidity = " + str(weather['humidity']) + ", " \
-            + "sea_level = " + str(weather['sea_level']) + ", " \
-            + "grnd_level = " + str(weather['grnd_level']) + ", " \
-            + "wind_speed = " + str(weather['wind_speed']) + ", " \
-            + "wind_deg = " + str(weather['wind_deg']) + ", " \
-            + "wind_gust = " + str(weather['wind_gust']) + ", " \
-            + "clouds_all = " + str(weather['clouds_all']) + ", " \
-            + "country = \"" + weather['country'] + "\";")
-        )
+    insertString = "INSERT weatherHistory " \
+        + "SET weatherTime = \"" + timestampAsStr + "\", " \
+        + "latitude = " + str(weather['latitude']) + ", " \
+        + "longitude = " + str(weather['longitude']) + ", " \
+        + "main = \"" + weather['main'] + "\", " \
+        + "description = \"" + weather['description'] + "\", "
+    # It appears that some keys (like 'sea_level', 'grnd_level', 'wind_gust' are
+    # not ALWAYS supplied supplied with the irish data set.  So we carfully
+    # check each key before inserting...
+    if "temp" in weather:
+        insertString += "temp = " + str(weather['temp']) + ", "
+    if "feels_like" in weather:
+        insertString +=  "feels_like = " + str(weather['feels_like']) + ", "
+    if "temp_min" in weather:
+        insertString +=  "temp_min = " + str(weather['temp_min']) + ", "
+    if "temp_max" in weather:
+        insertString +=  "temp_max = " + str(weather['temp_max']) + ", "
+    if "pressure" in weather:
+        insertString +=  "pressure = " + str(weather['pressure']) + ", "
+    if "humidity" in weather:
+        insertString +=  "humidity = " + str(weather['humidity']) + ", "
+    if "sea_level" in weather:
+        insertString +=  "sea_level = " + str(weather['sea_level']) + ", "
+    if "grnd_level" in weather:
+        insertString +=  "grnd_level = " + str(weather['grnd_level']) + ", "
+    if "wind_speed" in weather:
+        insertString +=  "wind_speed = " + str(weather['wind_speed']) + ", "
+    if "wind_deg" in weather:
+        insertString +=  "wind_deg = " + str(weather['wind_deg']) + ", "
+    if "wind_gust" in weather:
+        insertString +=  "wind_gust = " + str(weather['wind_gust']) + ", "
+    if "clouds_all" in weather:
+        insertString +=  "clouds_all = " + str(weather['clouds_all']) + ", "
+    if "country" in weather:
+        insertString +=  "country = \"" + weather['country'] + "\","
+    if "name" in weather:
+        insertString +=  "name = \"" + weather['name'] + "\","
+    # NOTE: Every possible attribute above ends with a comma.  So we have to
+    # strip the comma to finish our SQL nicely.
+    insertString = insertString[:-1] + ";"
+
+    connection.execute(db.text(insertString))
 
     return
 
@@ -259,19 +280,34 @@ def extractWeather(jsonData):
     weather['longitude'] = jsonData['coord']['lon']
     weather['main'] = jsonData['weather'][0]['main']
     weather['description'] = jsonData['weather'][0]['description']
-    weather['temp'] = jsonData['main']['temp']
-    weather['feels_like'] = jsonData['main']['feels_like']
-    weather['temp_min'] = jsonData['main']['temp_min']
-    weather['temp_max'] = jsonData['main']['temp_max']
-    weather['pressure'] = jsonData['main']['pressure']
-    weather['humidity'] = jsonData['main']['humidity']
-    weather['sea_level'] = jsonData['main']['sea_level']
-    weather['grnd_level'] = jsonData['main']['grnd_level']
-    weather['wind_speed'] = jsonData['wind']['speed']
-    weather['wind_deg'] = jsonData['wind']['deg']
-    weather['wind_gust'] = jsonData['wind']['gust']
-    weather['clouds_all'] = jsonData['clouds']['all']
-    weather['country'] = jsonData['sys']['country']
+    if "temp" in jsonData['main']:
+        weather['temp'] = jsonData['main']['temp']
+    if "feels_like" in jsonData['main']:
+        weather['feels_like'] = jsonData['main']['feels_like']
+    if "temp_min" in jsonData['main']:
+        weather['temp_min'] = jsonData['main']['temp_min']
+    if "temp_max" in jsonData['main']:
+        weather['temp_max'] = jsonData['main']['temp_max']
+    if "pressure" in jsonData['main']:
+        weather['pressure'] = jsonData['main']['pressure']
+    if "humidity" in jsonData['main']:
+        weather['humidity'] = jsonData['main']['humidity']
+    if "sea_level" in jsonData['main']:
+        weather['sea_level'] = jsonData['main']['sea_level']
+    if "grnd_level" in jsonData['main']:
+        weather['grnd_level'] = jsonData['main']['grnd_level']
+    if "speed" in jsonData['wind']:
+        weather['wind_speed'] = jsonData['wind']['speed']
+    if "deg" in jsonData['wind']:
+        weather['wind_deg'] = jsonData['wind']['deg']
+    if "gust" in jsonData['wind']:
+        weather['wind_gust'] = jsonData['wind']['gust']
+    if "all" in jsonData['clouds']:
+        weather['clouds_all'] = jsonData['clouds']['all']
+    if "country" in jsonData['sys']:
+        weather['country'] = jsonData['sys']['country']
+    if "name" in jsonData:
+        weather['name'] = jsonData['name']
 
     return weather
 
