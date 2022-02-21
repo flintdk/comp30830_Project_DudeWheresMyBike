@@ -100,6 +100,8 @@ schedule)
     #   -> That dwmb_data_loader is *installed* and configured as a command
     #   -> That the project conda virtual environment 'comp30830_dudeWMB' is configured
     #   -> That dudewmb.json (with our credentials) are available in the account login directory
+    #   -> *** SUPER IMPORTANT *** That the ".bashrc_conda" script is available
+    #      in the ubuntu home directory (the conda environments won't work without it)
     echo "SHELL=/bin/bash" >> "${cron_dir}/dwmb_data_loader"
     echo "BASH_ENV=~/.bashrc_conda" >> "${cron_dir}/dwmb_data_loader"
     echo "*/2 5-23 * * * ubuntu conda activate comp30830py39_dudeWMB && cd /home/ubuntu && ${module_to_schedule} >> ${home_dir}/dwmb_data_loader.log 2>&1 && conda deactivate" >> "${cron_dir}/dwmb_data_loader"
