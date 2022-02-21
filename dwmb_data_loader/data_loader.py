@@ -40,7 +40,7 @@ def loadCredentials():
 #===============================================================================
 #===============================================================================
 
-def saveStationDataToDb(connection, jsonData, timestamp):
+def saveStationDataToDb(connection, jsonData, timestampAsStr):
     """
     """
     # Station Data:
@@ -81,7 +81,7 @@ def saveStationDataToDb(connection, jsonData, timestamp):
         
         # Once we're confident the station exists and is up to date we insert
         # the Status Updata data for this station!
-        insertStationState(connection, stationId, timestamp, stationSate)
+        insertStationState(connection, stationId, timestampAsStr, stationSate)
 
     return
 
@@ -157,14 +157,14 @@ def insertStation(connection, station):
     )
     return
 
-def insertStationState(connection, stationId, timestamp, stationSate):
+def insertStationState(connection, stationId, timestampAsStr, stationSate):
     """This function inserts the latest dynamic information about a bike station to the table 'sationState' 
     
     """
     connection.execute(
         db.text("INSERT stationState " \
             + "SET stationId = " + str(stationId) + ", " \
-            + "weatherTime = \"" + str(timestamp) + "\", " \
+            + "weatherTime = \"" + timestampAsStr + "\", " \
             + "status = \"" + stationSate['status'] + "\", " \
             + "bike_stands = " + str(stationSate['bike_stands']) + ", " \
             + "available_bike_stands = " + str(stationSate['available_bike_stands']) + ", " \
@@ -178,7 +178,7 @@ def insertStationState(connection, stationId, timestamp, stationSate):
 #===============================================================================
 #===============================================================================
 
-def saveWeatherDataToDb(connection, jsonData, timestamp):
+def saveWeatherDataToDb(connection, jsonData, timestampAsStr):
     """
     """
     # Station Data:
@@ -194,7 +194,7 @@ def saveWeatherDataToDb(connection, jsonData, timestamp):
 
     connection.execute(
         db.text("INSERT weatherHistory " \
-            + "SET weatherTime = \"" + str(timestamp) + "\", " \
+            + "SET weatherTime = \"" + timestampAsStr + "\", " \
             + "latitude = " + str(weather['latitude']) + ", " \
             + "longitude = " + str(weather['longitude']) + ", " \
             + "main = \"" + weather['main'] + "\", " \
@@ -284,9 +284,19 @@ def main():
 
 
     """
+    # We want to timestamp our records so we can tie station state to
+    # weather data etc..  So we generate a timestamp now at the beginning of
+    # this 'Data Load' pass and use it a couple of times below:
+    timestamp = datetime.now()
+    timestampAsStr = timestamp.strftime('%Y-%m-%d %H:%M:%S')
+
+    print("DWMB_Data_Loader: Start of iteration (" + timestampAsStr + ")")
+
+    print("\tLoading credentials.")
     # Load our private credentials from a JSON file
     credentials = loadCredentials()
 
+    print("\tRegistering start with cronitor.")
     # The DudeWMB Data Loader uses the 'Cronitor' web service (https://cronitor.io/)
     # to monitor the running data loader process.  This way if there is a failure
     # in the job etc. our team is notified by email.  In addition, if the job
@@ -296,16 +306,8 @@ def main():
     cronitorURI = credentials['cronitor']['TelemetryURL']
     requests.get(cronitorURI + "?state=run")
 
-    # "username": "tomas.kelly1@ucdconnect.ie",
-        # "password": "lD6>hD4_aP2+yV6?",
-        # "api-key": "39fa6066a9e6c316e1bb1f4acaa31b1af3b73c05"
-
     try:
-        # We want to timestamp our records so we can tie station state to
-        # weather data etc..  So we generate a timestamp now at the beginning of
-        # this 'Data Load' pass and use it a couple of times below:
-        timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-
+        print("\tCreating SQLAlchemy db engine.")
         # We only want to initialise the engine and create a db connection once
         # as its expensive (i.e. time consuming). So we only want to do that once
         connectionString = "mysql+mysqlconnector://" \
@@ -319,6 +321,7 @@ def main():
         # engine.begin() runs a transaction
         with engine.begin() as connection:
 
+            print("\tRetrieving station data from JCDecaux.")
             # Retrieve the Station/Activity Data:
             # Hard-code the Station Data URI
             uri = 'https://api.jcdecaux.com/vls/v1/stations'
@@ -327,15 +330,15 @@ def main():
             stationResponse = requests.get(uri, params=parameters)
         
             if (stationResponse.status_code == 200):
-                # response.content  # Bytes
-                # response.text  # String
-                saveStationDataToDb(connection, stationResponse.json(), timestamp)
+                print("\tSaving station data to database.")
+                saveStationDataToDb(connection, stationResponse.json(), timestampAsStr)
             else:
                 # Our call to the API failed for some reason...  print some information
                 # Who knows... someone may even look at the logs!!
                 print("ERROR: Call to JCDecaux API failed with status code: ", stationResponse.status_code)
                 print("       The response reason was \'" + str(stationResponse.reason) + "\'")
 
+            print("\tRetrieving weather data from openweather.")
             # Retrieve the Weather Data:
             # Hard-code the Station Data URI
             uri = 'https://api.openweathermap.org/data/2.5/weather'
@@ -344,29 +347,37 @@ def main():
             weatherResponse = requests.get(uri, params=parameters)
         
             if (weatherResponse.status_code == 200):
-                # response.content  # Bytes
-                # response.text  # String
-                saveWeatherDataToDb(connection, weatherResponse.json(), timestamp)
+                print("\tSaving weather data to database.")
+                saveWeatherDataToDb(connection, weatherResponse.json(), timestampAsStr)
             else:
                 # Our call to the API failed for some reason...  print some information
                 # Who knows... someone may even look at the logs!!
-                print("ERROR: Call to JCDecaux API failed with status code: ", weatherResponse.status_code)
+                print("ERROR: Call to OpenWeather API failed with status code: ", weatherResponse.status_code)
                 print("       The response reason was \'" + str(weatherResponse.reason) + "\'")
         
         # Make sure to close the connection - a memory leak on this would kill
         # us...
         connection.close()
 
+        print("\tRegistering completion with cronitor.")
         # Send a Cronitor request to signal our process has completed.
         requests.get(cronitorURI + "?state=complete")
 
     except:
         # if there is any problem, print the traceback
         print(traceback.format_exc())
+        print("\tRegistering error with cronitor.")
         # Send a Cronitor request to signal our process has failed.
         requests.get(cronitorURI + "?state=fail")
+
+    # (following returns a timedelta object)
+    elapsedTime = datetime.now() - timestamp
     
-    print('\r\nFinished!')
+    # returns (minutes, seconds)
+    #minutes = divmod(elapsedTime.seconds, 60) 
+    minutes = divmod(elapsedTime.total_seconds(), 60) 
+    print('\tIteration Complete! (Elapsed time:', minutes[0], 'minutes',
+                                    minutes[1], 'seconds)\n')
     sys.exit()
 
 if __name__ == '__main__':
