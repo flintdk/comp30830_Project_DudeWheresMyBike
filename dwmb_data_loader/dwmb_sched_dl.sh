@@ -1,5 +1,5 @@
 #!/bin/bash
-# DWMB_Data_Loader.sh; Wrapper script to start, stop and display the DWMB_Data_Loader job
+# DWMB_Sched_dl.sh; Wrapper script to start, stop and display the DWMB_Sched_dl.sh job
 #
 # The cron utility runs based on commands specified in a cron table (crontab).
 # The crontab does not exist for a user by default.
@@ -17,12 +17,12 @@ home_dir="/home/ubuntu"
 # I popped the following into variables as it was handier for testing
 cron_dir="/etc/cron.d"
 #cron_dir="/etc/cron.d"
-module_to_schedule="dwmb_data_loader"
+module_to_schedule="dwmb_dl"
 
 # Helper function - save me keying command summary twice, ensures consistancy in
 # user docs (such as they are)
 function echoClientCommandDocs() {
-    #cmdMsg="DWMB_Data_Loader.sh Commands Processed:\n"
+    #cmdMsg="DWMB_Sched_dl.sh Commands Processed:\n"
     cmdMsg="  \e[3mhelp\e[0m - See this help text\n"
     cmdMsg+="  \e[3mshow\e[0m - Show the current state of the Cron table\n"
     cmdMsg+="  \e[3mschedule\e[0m - Schedule the DWMB_Data_Loader to run, using default timings\n"
@@ -51,7 +51,7 @@ function usage() {
     exit "$1"  # exit with error status
 }
 if [ -z "$1" ]; then
-    usage 1 "DWMB_Data_Loader.sh: ERROR You must supply an instruction.";
+    usage 1 "DWMB_Sched_dl.sh: ERROR You must supply an instruction.";
 fi
 
 #===============================================================================
@@ -64,17 +64,17 @@ clear
 case "$1" in  # CASE_ClientOrServer?
 help)
     # help: print a list of supported commands
-    echo -e "DWMB_Data_Loader.sh: The DWMB_Data_Loader supports the following Commands:"
+    echo -e "DWMB_Sched_dl.sh: The DWMB_Data_Loader supports the following Commands:"
     echoClientCommandDocs
     ;;
 show)
     # show: print out the current crontab table
     #crontab -l
     if [ -e "${cron_dir}/dwmb_data_loader" ]; then
-        echo "DWMB_Data_Loader.sh: The current state of the Crontab is as follows:"
+        echo "DWMB_Sched_dl.sh: The current state of the Crontab is as follows:"
         cat "${cron_dir}/dwmb_data_loader"
     else
-        echo "DWMB_Data_Loader.sh: ERROR schedule not found! Aborting..."
+        echo "DWMB_Sched_dl.sh: ERROR schedule not found! Aborting..."
         exit 1
     fi
     ;;
@@ -83,7 +83,7 @@ schedule)
     
     # We're using a custom timer file in the cron.d directory rather than the
     # crontab as it's much easier to automate...
-    echo "DWMB_Data_Loader.sh: Creating cron file..."
+    echo "DWMB_Sched_dl.sh: Creating cron file..."
     touch "${cron_dir}/dwmb_data_loader"
     #
     # To define the time we have to provide concrete values for:
@@ -112,16 +112,16 @@ schedule)
     ;;
 stop)
     # shutdown: exit with a return code of 0
-    echo "DWMB_Data_Loader.sh: About to erase the current Crontab..."
+    echo "DWMB_Sched_dl.sh: About to erase the current Crontab..."
     read -r -p "                     Are you sure? [Y/N] " response
     if [[ "$response" =~ ^([yY][eE][sS]|[yY])$ ]]
     then
         #crontab -r
         if [ -e "${cron_dir}/dwmb_data_loader" ]; then
             rm "${cron_dir}/dwmb_data_loader"
-            echo "DWMB_Data_Loader.sh: Crontab erased."
+            echo "DWMB_Sched_dl.sh: Crontab erased."
         else
-            echo "DWMB_Data_Loader.sh: ERROR schedule not found! Aborting..."
+            echo "DWMB_Sched_dl.sh: ERROR schedule not found! Aborting..."
             exit 1
         fi
     else
@@ -131,7 +131,7 @@ stop)
     ;;
 *)
     # All other commands  - we just abort...
-    errMsg="DWMB_Data_Loader.sh: ERROR Bad command. I don't understand \"$1\"\n";
+    errMsg="DWMB_Sched_dl.sh: ERROR Bad command. I don't understand \"$1\"\n";
     errMsg+="                     Bad Luck :-(.  You can always try again??";
     echo -e "$errMsg"
     ;;

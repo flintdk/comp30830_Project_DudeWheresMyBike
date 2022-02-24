@@ -104,11 +104,11 @@ setup(
 
             ],
       
-      #scripts=['dwmb_data_loader.sh'],
+      scripts=['dwmb_data_loader/dwmb_sched_dl.sh'],
 
       entry_points={
             'console_scripts': [
-                  'dwmb_data_loader = dwmb_data_loader.data_loader:main',
+                  'dwmb_dl = dwmb_data_loader.data_loader:main',
             ]
       }
 )
