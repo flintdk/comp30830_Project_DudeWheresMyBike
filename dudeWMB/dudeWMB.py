@@ -1,3 +1,4 @@
+import functools
 from flask import Flask, g, render_template, jsonify
 import json
 from jinja2 import Template
@@ -14,24 +15,52 @@ def connect_to_database():
 # This route simply serves 'static/index.html'
 @app.route('/')
 def root():
-    return render_template('index.html', MAPS_APIKEY=app.config["MAPS_APIKEY"]
+    return render_template('index.html', MAPS_APIKEY=app.config["MAPS_APIKEY"])
 
 @app.route('/station/<int:station_id>')
 def station(station_id):
     # show the station with the given id, the id is an integer
     return 'Retrieving info for Station: {}'.format(station_id)
 
-# @app.route("/stations")
-# def get_stations():
-#     conn = get_db()
-#     # https://docs.python.org/2/library/sqlite3.html#sqlite3.Row
-#     conn.row_factory = sqlite3.Row
-#     cur = conn.cursor()
-#     stations = []
-#     rows = cur.execute("SELECT * from stations;")
-#     for row in rows:
-#         stations.append(dict(row))
-#     return jsonify(stations=stations)
+# Note that in the following we use "functools.lru_cache(maxsize=128, typed=False)"
+# functools is a decorator to wrap a function with a memoizing callable that saves
+# up to the maxsize most recent calls. Since a dictionary is used to cache results,
+# the positional and keyword arguments to the function must be hashable.It can save
+# time when an expensive or I/O bound function is periodically called with the same
+# arguments.
+# If maxsize is set to None, the LRU feature is disabled and the cache can grow
+# without bound. The LRU feature performs best when maxsize is a power-of-two.
+# (See https://docs.python.org/3/library/functools.html)
+@app.route("/stations")
+@functools.lru_cache(maxsize=128)
+def get_stations():
+    conn = get_db()
+    # https://docs.python.org/2/library/sqlite3.html#sqlite3.Row
+    conn.row_factory = sqlite3.Row
+    cur = conn.cursor()
+    stations = []
+    rows = cur.execute("SELECT * from stations;")
+    for row in rows:
+        stations.append(dict(row))
+    return jsonify(stations=stations)
+
+    engine = get_db()
+    sql = "select * from station;"
+    rows = engine.execute(sql).fetchall()
+    print('#found {} stations', len(rows))
+    return jsonify(stations=[dict(row.items()) for row in rows])
+
+# @app.route("/occupancy/<int:station_id>")
+# def get_occupancy(station_id):
+# engine = get_db()
+# df = pd.read_sql_query("select * from availability where number = %(number)s", engine, params={"number":
+# station_id})
+# df['last_update_date'] = pd.to_datetime(df.last_update, unit='ms')
+# df.set_index('last_update_date', inplace=True)
+# res = df['available_bike_stands'].resample('1d').mean()
+# #res['dt'] = df.index
+# print(res)
+# return jsonify(data=json.dumps(list(zip(map(lambda x: x.isoformat(), res.index), res.values))))
 
 # @app.route('/user/<id>')
 # def get_user(id):
