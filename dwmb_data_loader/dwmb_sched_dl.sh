@@ -104,8 +104,8 @@ schedule)
     #      in the ubuntu home directory (the conda environments won't work without it)
     echo "SHELL=/bin/bash" >> "${cron_dir}/dwmb_data_loader"
     echo "BASH_ENV=~/.bashrc_conda" >> "${cron_dir}/dwmb_data_loader"
-    echo "*/2 5-23 * * * ubuntu conda activate comp30830py39_dudeWMB && cd /home/ubuntu && ${module_to_schedule} >> ${home_dir}/dwmb_data_loader.log 2>&1 && conda deactivate" >> "${cron_dir}/dwmb_data_loader"
-    echo "0   0    * * * ubuntu conda activate comp30830py39_dudeWMB && cd /home/ubuntu && ${module_to_schedule} >> ${home_dir}/dwmb_data_loader.log 2>&1 && conda deactivate" >> "${cron_dir}/dwmb_data_loader"
+    echo "*/2 5-23 * * * ubuntu conda activate comp30830py39_dudeWMB && cd /home/ubuntu/src/comp30830-project-2022 && ${module_to_schedule} >> ${home_dir}/dwmb_data_loader.log 2>&1 && conda deactivate" >> "${cron_dir}/dwmb_data_loader"
+    echo "0   0    * * * ubuntu conda activate comp30830py39_dudeWMB && cd /home/ubuntu/src/comp30830-project-2022 && ${module_to_schedule} >> ${home_dir}/dwmb_data_loader.log 2>&1 && conda deactivate" >> "${cron_dir}/dwmb_data_loader"
     # Make sure there's a new line after the last command - cron seems to like it...
     echo "" >> "${cron_dir}/dwmb_data_loader"
     exit 0

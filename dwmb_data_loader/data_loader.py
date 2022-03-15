@@ -347,10 +347,10 @@ def main():
         # We only want to initialise the engine and create a db connection once
         # as its expensive (i.e. time consuming). So we only want to do that once
         connectionString = "mysql+mysqlconnector://" \
-            + credentials['amazonrds']['username'] + ":" + credentials['amazonrds']['password'] \
+            + credentials['DB_USER'] + ":" + credentials['DB_PASS'] \
             + "@" \
-            + credentials['amazonrds']['endpoint'] + ":3306" \
-            + "/dudeWMB?charset=utf8mb4"
+            + credentials['DB_SRVR'] + ":" + credentials['DB_PORT']\
+            + "/" + credentials['DB_NAME'] + "?charset=utf8mb4"
         #print("Connection String: " + connectionString + "\n")
         engine = db.create_engine(connectionString)
 

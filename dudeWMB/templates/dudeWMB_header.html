@@ -1,19 +1,33 @@
 <!doctype html>
 <html lang="en">
 <head>
+    <meta name="viewport" content="initial-scale=1.0">
     <meta charset="utf-8">
-    <meta name="DESCRIPTION" content="Second Web App Dev Practical">
-    <meta name="KEYWORDS" content="Tomas, Kelly, COMP30680, UCD, HDip">
-    <title>Covid 19 Vaccination Dashboard</title>
-    
-    <link rel="stylesheet" href="css/properties.css" type="text/css">
-    <link rel="stylesheet" href="css/layout.css" type="text/css">
-    <link rel="stylesheet" href="css/format.css" type="text/css">
+    <meta name="DESCRIPTION" content="Dublin Bikes Trip Planning Application, COMP30830 Group Project">
+    <meta name="KEYWORDS" content="Tomas, Kelly, Jörg, Striebel, Will, O'Donohoe, COMP30830, UCD, HDip">
+    <title>Dude, Where's My Bike?</title>
 
-    <script src="js/covid19dashboard.js"></script>
+    <!-- <script type=text/javascript> $SCRIPT_ROOT = {{ request.script_root|tojson|safe }}; </script> -->
+
+    <!-- External JS Libraries -->
+    <!-- <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script> -->
+    <!-- <script src="{{ url_for('static', filename='jquery-ui-1.12.1/jquery-ui.min.js') }}"></script> -->
+    <!-- <link rel="stylesheet" href="{{ url_for('static', filename='jquery-ui-1.12.1/jquery-ui.theme.min.css') }}"> -->
+    <!-- <link rel="stylesheet" href="{{ url_for('static', filename='jquery-ui-1.12.1/jquery-ui.min.css') }}"> -->
+    <!-- <script src="{{ url_for('static',filename='bootstrap/js/bootstrap.min.js') }}"></script> -->
+    <!-- <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script> -->
+
+    <!-- Internal JS Resources -->
+    <script src="{{ url_for('static', filename='js/dudeWMB.js') }}"></script>
+
+    <!-- External CSS files -->
+    <!-- <link rel="stylesheet" href="{{ url_for('static', filename='bootstrap/css/bootstrap.css') }}"></link> -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/dudeWMB_layout.css') }}" type="text/css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/dudeWMB_format.css') }}" type="text/css">
+
 </head>
 
-<body onload="onLoadInitialRetrieval();">
+<body onload="onLoad();">
     <!-- Our header (the top image and our navBar) sit in the center aligned body -->
     <header class="pageHeader">
         <!--
@@ -41,41 +55,8 @@
         -->
         <!-- For now... just going with an eye-catching picture for my header
         -->
-        <div class="headerTwoColourBackground"><img src="img/coronavirus-banner.jpg" alt="Banner image, picture of a virus cell floating on an electric blue background" class="header"></div>
+        <div class="headerTwoColourBackground">
+            <img src="{{ url_for('static', filename='img/dudeWMB_Logo.png') }}"
+                alt="Banner image, picture of a speech bubble which contains &quot;Dude, Where's My Bike?&quot;" class="header">
+        </div>
     </header>
-
-
-
-<!DOCTYPE html>
-<html>
-
-<head>
-    <title>Simple Map</title>
-    <meta name="viewport" content="initial-scale=1.0">
-    <meta charset="utf-8">
-    <!-- External JS Libraries -->
-    <!-- <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script> -->
-    <script src="{{ url_for('static',filename='jquery-3.2.0.min.js') }}"></script>
-    <script src="{{ url_for('static',filename='lodash.js') }}"></script>
-    <script src="{{ url_for('static',filename='bootstrap/js/bootstrap.min.js') }}"></script>
-    <link rel="stylesheet" href="{{ url_for('static', filename='bootstrap/css/bootstrap.css') }}"></link>
-    <script src="{{ url_for('static', filename='jquery-ui-1.12.1/jquery-ui.min.js') }}"></script>
-    <link rel="stylesheet" href="{{ url_for('static', filename='jquery-ui-1.12.1/jquery-ui.theme.min.css') }}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='jquery-ui-1.12.1/jquery-ui.min.css') }}">
-
-    url_for('static', filename='style.css')
-    <script type=text/javascript> $SCRIPT_ROOT = {{ request.script_root|tojson|safe }}; </script>
-    <script src="{{ url_for('static',filename='app.js') }}"></script>
-    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
-    <!-- Internal JS Resources -->
-    <script src="dudeWMB.js"></script>
-    <!-- External CSS files -->
-    <link rel="stylesheet" href="dudeWMB.css">
-
-    @app.route('/questions/<int:question_id>'):    #int has been used as a filter that only integer will be passed in the url otherwise it will give a 404 error
-        def find_question(question_id):  
-            return ('you asked for question{0}'.format(question_id))
-
-
-
-</head>
