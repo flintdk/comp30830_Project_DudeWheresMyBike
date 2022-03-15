@@ -1,5 +1,3 @@
-<!-- {% include 'dudeWMB_header.html' %} -->
-
 {% extends "base.html" %}
 {% block content %}
 
@@ -16,21 +14,26 @@
                     </div>
                     <!-- Dropdown list for search options is contained in the flex-box container on the right -->
                     <div class="flexbox-item">
+                        <button id="available_bikes" class="button">Available Bikes</button>
+                        <button id="available_ebikes" class="button">Available eBikes</button>
+                        <button id="available_spaces" class="button">Available Spaces</button>
+                        <!--
                         <label for="occupancy_selection">Choose occupancy</label>
                         <select id="occupancy_selection" name="Occupancy">
                             <option value="occupancy_bike">Bikes</option>
                             <option value="occupancy_ebike">eBikes</option>
                             <option value="occupancy_emptySpaces">Empty spaces</option>
                         </select>
+                        -->
                     </div>
                 </div>
             </div>            
         </section>
 
         <!-- Include JavaScript files -->
+        <!--
         <script src="static/js/maps.js"></script>
+        -->
         <script src="{{ url_for('static', filename='js/maps.js') }}"></script>
 
 {% endblock %}
-
-<!-- {% include 'dudeWMB_footer.html' %} -->

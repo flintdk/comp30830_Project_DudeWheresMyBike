@@ -10,12 +10,12 @@ body {
 
 
 footer, header {
-    background-color: darkgreen;
-    color: white;
+    background-color: lightblue;
+    color:black;
 }
 
 header {
-	height: 80px;
+	height: 300px;
     padding-top: 10px;
     padding-bottom: 15px;
     padding-left: 5px;
@@ -36,13 +36,13 @@ p {
 
 h1, h2, h3 {
     font-weight: bold;    
+    color: black;   
 }
 
 h1 {
     text-transform: uppercase;
     font-family: "Lucida Console", "Courier New", monospace;
     font-size: 68px;
-    color: #faf3f4;   
 }
 
 h2 {
@@ -167,14 +167,14 @@ Source: https://www.w3schools.com/css/tryit.asp?filename=trycss_buttons_round
 */
 
 .button {
-    background-color: darkgreen;
+    background-color: lightblue;
     border: none;
     padding: 20px;
     width: 200px;
     text-align: center;
     text-decoration: none;
     display: inline-block;
-    color: whitesmoke;
+    color: black;
     font-size: 16px;
     font-weight: bold;
     margin: 4px 2px;
@@ -191,8 +191,8 @@ Source: https://www.w3schools.com/css/tryit.asp?filename=trycss_dropdown_button
 */
 
 .dropdwon-button {
-    background-color: darkgreen;
-    color: white;
+    background-color: lightblue;
+    color: black;
     padding: 16px;
     font-size: 16px;
     font-weight: bold;
@@ -237,8 +237,13 @@ Source: https://www.w3schools.com/css/tryit.asp?filename=trycss_dropdown_button
 
 
   /* Styling for embedded Google maps */ 
-  #map{
+  #map {
       height: 100;
       margin: 0;
       padding: 0;
+  }
+
+  #img-logo {
+      width: 20%;
+      height: auto;
   }

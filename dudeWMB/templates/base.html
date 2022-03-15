@@ -20,30 +20,30 @@
 
     <!-- Internal JS Resources -->
     <script src="{{ url_for('static', filename='js/dudeWMB.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/maps.js') }}"></script>
 
     <!-- External CSS files -->
     <!-- <link rel="stylesheet" href="{{ url_for('static', filename='bootstrap/css/bootstrap.css') }}"></link> -->
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/dudeWMB_layout.css') }}" type="text/css">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/dudeWMB_format.css') }}" type="text/css">
-
-    <!-- Include style sheets here...-->
-    <link rel = stylesheet type="text/css" href = "static/css/dudewmb.css">
-
+    <!-- <link rel="stylesheet" href="{{ url_for('static', filename='css/dudeWMB_layout.css') }}" type="text/css"> -->
+    <!-- <link rel="stylesheet" href="{{ url_for('static', filename='css/dudeWMB_format.css') }}" type="text/css"> -->
+ 
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/dudewmb.css') }}" type="text/css">
+  
 </head>
     
 <body>
     <header class="fixed">
         <!-- Navigation bar will be the same for all pages so that's why it's implemented in base.html -->
         <div class="wrapper">     
-            <a id="homebutton" href="index.html" target="_self">Home</a>
             <nav>
                 <ul>
                     <!--TODO: add more links here to the nav bar if needed -->
-                    <li><a href="about.html">About</a></li>
+                    <li><a href="{{ url_for('templates', filename='index.html') }}">Home</a></li>
+                    <li><a href="{{ url_for('templates', filename='about.html') }}">About</a></li>
                 </ul>
             </nav>
             <div>This website is just for fun - it's a college project - it will be taken down shortly.</div>
-            <img src="{{ url_for('static', filename='img/dudeWMB_Logo.png') }}"
+            <img id="img-logo" src="{{ url_for('static', filename='img/dudeWMB_Logo.png') }}"
                 alt="Banner image, picture of a speech bubble which contains &quot;Dude, Where's My Bike?&quot;" class="header">
         </div>
     </header>
@@ -56,8 +56,6 @@
         </div>
     </main>
 
-    <!-- We use a common footer on the bottom of each page. If only there was some
-    way in CSS or HTML to include this... so it didn't have to be repeated -->
     <footer>
         <!-- Any footer context goes in here... -->
         <div class="wrapper">
@@ -65,10 +63,5 @@
         </div>
     </footer>
 
-    <!-- Include JavaScript files here if needed
-
-    <script src="static/xy.js"></script>
-    
-    -->
 </body>
 </html>
