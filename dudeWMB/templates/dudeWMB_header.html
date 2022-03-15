@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta name="viewport" content="initial-scale=1.0">
+    <meta charset="utf-8">
+    <meta name="DESCRIPTION" content="Dublin Bikes Trip Planning Application, COMP30830 Group Project">
+    <meta name="KEYWORDS" content="Tomas, Kelly, Jörg, Striebel, Will, O'Donohoe, COMP30830, UCD, HDip">
+    <title>Dude, Where's My Bike?</title>
+
+    <!-- <script type=text/javascript> $SCRIPT_ROOT = {{ request.script_root|tojson|safe }}; </script> -->
+
+    <!-- External JS Libraries -->
+    <!-- <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script> -->
+    <!-- <script src="{{ url_for('static', filename='jquery-ui-1.12.1/jquery-ui.min.js') }}"></script> -->
+    <!-- <link rel="stylesheet" href="{{ url_for('static', filename='jquery-ui-1.12.1/jquery-ui.theme.min.css') }}"> -->
+    <!-- <link rel="stylesheet" href="{{ url_for('static', filename='jquery-ui-1.12.1/jquery-ui.min.css') }}"> -->
+    <!-- <script src="{{ url_for('static',filename='bootstrap/js/bootstrap.min.js') }}"></script> -->
+    <!-- <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script> -->
+
+    <!-- Internal JS Resources -->
+    <script src="{{ url_for('static', filename='js/dudeWMB.js') }}"></script>
+
+    <!-- External CSS files -->
+    <!-- <link rel="stylesheet" href="{{ url_for('static', filename='bootstrap/css/bootstrap.css') }}"></link> -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/dudeWMB_layout.css') }}" type="text/css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/dudeWMB_format.css') }}" type="text/css">
+
+</head>
+
+<body onload="onLoad();">
+    <!-- Our header (the top image and our navBar) sit in the center aligned body -->
+    <header class="pageHeader">
+        <!--
+        I'm undecided on the use of a navBar.  Included here in case I go down that route...
+        <nav class="navBar">
+            <ul>
+                <!- - We put in a dropDown menu on the following button... just... because... - ->
+                <li class="leftNavBtn containsDropdown">
+                    Menu With Dropdown: 
+                    <ul class="dropdown">
+                        <li class="dropdownEntry">
+                            <a href="">Dropdown 1</a>
+                        </li>
+                        <li class="dropdownEntry">
+                            <a href="">Dropdown 2</a>
+                        </li>
+                    </ul>
+                </li>
+                <li class="leftNavBtn"><a href="index.html">leftButton</a></li>
+                <!- - Note that this button will float to the extreme right as it is declared first... - ->
+                <li class="rightNavBtn"><a href="">rightButton</a></li>
+                <!- - ... any subsequent 'rightNavBtn buttons would be to it's left, and so on... - ->
+            </ul>
+        </nav>
+        -->
+        <!-- For now... just going with an eye-catching picture for my header
+        -->
+        <div class="headerTwoColourBackground">
+            <img src="{{ url_for('static', filename='img/dudeWMB_Logo.png') }}"
+                alt="Banner image, picture of a speech bubble which contains &quot;Dude, Where's My Bike?&quot;" class="header">
+        </div>
+    </header>

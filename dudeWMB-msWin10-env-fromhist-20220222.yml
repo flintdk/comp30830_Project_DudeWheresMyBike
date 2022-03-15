@@ -1,6 +1,0 @@
-name: comp30830py39_dudeWMB
-channels:
-  - defaults
-dependencies:
-  - python=3.9
-prefix: C:\Users\kelly\anaconda3\envs\comp30830py39_dudeWMB

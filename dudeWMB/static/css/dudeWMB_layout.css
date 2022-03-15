@@ -1,0 +1,132 @@
+/* Dude, Where's My Bike? */
+
+/* layout.css */
+
+/* This website uses a simple style model:
+     -> Styles relating to page layout (center column, menu, nav. bar position)
+        are all contained in "layout.css"
+     -> Styles relating to content format (fonts, colours, etc.) are all
+        contained in "format.css"
+   Given the limited size of the site, this classification seems adequate.
+*/
+
+body{
+    /* We center align the body to get our content in the center of the page. */
+    text-align:center;
+
+    /* We make sure we have no margin at the top of the page to the header appears right at the top */
+    margin:0px 0px 0px 0px;
+    /* We make sure we have some top padding so that any content appears below our fixed position nav bar */
+    padding-top:var(--headerHeight);
+    padding-right:0px;
+    padding-left:0px;
+
+    font-family: sans-serif;
+    font-size: medium;
+}
+
+/* Always set the map height explicitly to define the size of the div element that contains the map. */
+#map {
+    height: 100%;
+}
+
+/* Optional: Makes the sample page fill the window. */
+html, body {
+    height: 100%;
+    margin: 0;
+    padding: 0;
+}
+
+/************************************************************************************************/
+/************************************************************************************************/
+/************************************************************************************************/
+
+/* Our navBar is a series of image links.  We dont need (or want) the list bullets appearing
+   By default, a UL has left padding for indentation, so set that to zero too */
+   nav.navBar > ul {
+    list-style-type: none;
+    margin:0px 0px 0px 0px;
+    padding:0px 0px 0px 0px;
+}
+
+/* We want our 'top level' <li> elements to behave as inline blocks... */
+nav.navBar > ul > li {display:inline-block;}
+/* ... and then we float the left-class buttons on the left, and vice-versa */
+nav.navBar > ul > li.leftNavBtn {float:left;margin-right:8px;}
+nav.navBar > ul > li.rightNavBtn {float:right;margin-left:8px;}
+nav.navBar > ul > li.leftNavBtn:hover, nav.navBar > ul > li.rightNavBtn:hover {
+    border-top: 1px solid var(--greyForMain);
+    border-right: 1px solid var(--greyForMain);
+    border-left: 1px solid var(--greyForMain);
+}
+
+/* We want a dropdown menu, just to show how it's done.
+   This menu has 'position:relative.  We have no intention of positioning this
+   element relative to it's natural position.  Rather, we want it to be classed
+   as 'positioned' so that the absolutely positioned <li> elements it contains will
+   be positioned relative to it (and not relative to the document body).
+
+   Concepts taken directly from Lecture 4, CSS Part 2.
+   But rather than using the DIV example, I implemented mine as another <ul>
+'*/
+li.containsDropdown{position:relative;display:inline-block;}
+
+ul.dropdown{
+    /* Hide the dropdown <ul> element by default... */
+    display: none;
+    position:absolute;  /* Absolutely positioned **relative to the nearest positioned ancestor */
+    list-style-type: none;
+    background-color: black;
+    padding: 8px 8px; /* We need a little padding to make the menu exposed look full */
+}
+
+li.dropdownEntry {
+    display: block;
+    padding: 10px 10px;
+}
+
+/* When we hover over the li that contains the dropdown - show the dropdown */
+li.containsDropdown:hover .dropdown {
+    display:block;
+}
+
+/* We show normal nav buttons and hide the 'hover versions' by default... */
+.dropdownButtonNormal{display:inline;}  /* 'inline' is just the default for an img */
+.dropdownButtonHover{display:none;}
+
+.dropdownEntry a:hover {
+    /* I tried a few different approaches to highlighting my dark buttons on hover
+    Increasing the opacity just made it look washed out, changing the background-color
+    had no effect...  in the end I decided to 'switch images' on hover.  The images
+    are small so that shouldn't effect load times too much. */
+
+    /* A tiny bit of the background is peeking out behind our image (set to black)
+    If I set it to grey on 'hover' I get a nice underline effect */
+    /* background-color: #666666; */
+    animation: btnHoverAnimation 4s infinite;
+}
+
+/* We also switch the visibility status of the navButtons when hovering over the
+dropdownEntry to 'highlight' the navButton we're hovering over */
+.dropdownEntry a:hover img.dropdownButtonNormal{display:none;}
+.dropdownEntry a:hover img.dropdownButtonHover{display:inline;}
+
+/* Create a background animation for the link-hover underline effect... just to try it...
+   Did an rgb animation, need an arty person to come up with something nicer!*/
+@keyframes btnHoverAnimation {
+  0%   {background-color: red;}
+  25%  {background-color: green;}
+  75%  {background-color: blue;}
+  100% {background-color: red;}
+}
+
+/************************************************************************************************/
+/************************************************************************************************/
+/************************************************************************************************/
+
+div.clearBoth {clear:both;}
+
+/* Following (class selector) style is for development purposes only.  I can
+quickly add a dashed border around any html elements if I get lost while
+building a page... */
+.debug{border-style:dotted;}
