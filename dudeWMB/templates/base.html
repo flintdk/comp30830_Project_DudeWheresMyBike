@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<!-- This base.html serves as base and it includes:
+    - Header
+    - Style sheets
+    - Navigation bar
+    - Wrapper class for body
+    - Footer
+
+    Specific context is implemented in templates that are inherited from this template. 
+-->
+
+<html lang="en"> <!-- set language of this website -->
+<head>
+    <meta charset="UTF-8"> <!-- define character encoding -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"> <!-- Setting the viewpoint, e.g. useful for smaller devices such as mobiles, etc. -->
+    <meta name="author" content="TK, WOD, JS">
+    
+    <title>DudeWheresMyBike</title>
+
+    <!-- Include style sheets here...-->
+    <link rel = stylesheet type="text/css" href = "static/css/dudewmb.css">
+
+</head>
+    
+<body>
+    <header class="fixed">
+        <!-- Navigation bar will be the same for all pages so that's why it's implemented in base.html -->
+        <div class="wrapper">     
+            <a id="homebutton" href="index.html" target="_self">Home</a>
+            <nav>
+                <ul>
+                    <!--TODO: add more links here to the nav bar if needed -->
+                    <li><a href="about.html">About</a></li>
+                </ul>
+            </nav>
+            <div>This website is just for fun - it's a college project - it will be taken down shortly.</div>
+        </div>
+    </header>
+
+
+    <main>
+        <div class="wrapper">     
+            <!--Content of child templates will be diplayed here...-->
+            {% block content %}{% endblock %}
+        </div>
+    </main>
+
+    <footer>
+        <!-- Any footer context goes in here... -->
+        <div class="wrapper"></div>
+    </footer>
+
+    <!-- Include JavaScript files here if needed
+
+    <script src="static/xy.js"></script>
+    
+    -->
+</body>
+</html>

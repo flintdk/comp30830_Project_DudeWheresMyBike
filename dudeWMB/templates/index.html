@@ -1,6 +1,7 @@
+<!--
 {% include 'dudeWMB_header.html' %}
 
-<!-- Main Content Goes Here! -->
+Main Content Goes Here! - ->
 <main>
     <p>Map Goes Here Somehow...</p>
     <div id="map"></div>
@@ -17,3 +18,37 @@
 </main>
 
 {% include 'dudeWMB_footer.html' %}
+-->
+
+{% extends "base.html" %}
+{% block content %}
+
+    <!-- Section: Displaying Google maps on the left and search options as dropdown (available bikes, available e-bikes, available spaces) on the right hand side -->
+        <section>
+            <div class="wrapper">
+
+                <!-- Showing Google maps and search options by utilising a flex-box to properly align the items -->
+                <div class="flexbox-container">
+                    <!-- Embedded Google maps is embedded in the flexbox container on the left -->
+                    <div class="flexbox-item">
+                        <!-- Display Google maps -->
+                        <div id="map"></div>
+                    </div>
+                    <!-- Dropdown list for search options is contained in the flex-box container on the right -->
+                    <div class="flexbox-item">
+                        <label for="occupancy_selection">Choose occupancy</label>
+                        <select id="occupancy_selection" name="Occupancy">
+                            <option value="occupancy_bike">Bikes</option>
+                            <option value="occupancy_ebike">eBikes</option>
+                            <option value="occupancy_emptySpaces">Empty spaces</option>
+                        </select>
+                    </div>
+                </div>
+            </div>            
+        </section>
+
+        <!-- Include JavaScript files -->
+        <script src="static/js/maps.js"></script>
+ 
+
+{% endblock %}
