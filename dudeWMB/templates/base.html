@@ -13,9 +13,18 @@
 <head>
     <meta charset="UTF-8"> <!-- define character encoding -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0"> <!-- Setting the viewpoint, e.g. useful for smaller devices such as mobiles, etc. -->
-    <meta name="author" content="TK, WOD, JS">
+    <meta name="DESCRIPTION" content="Dublin Bikes Trip Planning Application, COMP30830 Group Project">
+    <meta name="KEYWORDS" content="Tomas, Kelly, Jörg, Striebel, Will, O'Donohoe, COMP30830, UCD, HDip">
     
-    <title>DudeWheresMyBike</title>
+    <title>Dude, Where's My Bike?</title>
+
+    <!-- Internal JS Resources -->
+    <script src="{{ url_for('static', filename='js/dudeWMB.js') }}"></script>
+
+    <!-- External CSS files -->
+    <!-- <link rel="stylesheet" href="{{ url_for('static', filename='bootstrap/css/bootstrap.css') }}"></link> -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/dudeWMB_layout.css') }}" type="text/css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/dudeWMB_format.css') }}" type="text/css">
 
     <!-- Include style sheets here...-->
     <link rel = stylesheet type="text/css" href = "static/css/dudewmb.css">
@@ -34,6 +43,8 @@
                 </ul>
             </nav>
             <div>This website is just for fun - it's a college project - it will be taken down shortly.</div>
+            <img src="{{ url_for('static', filename='img/dudeWMB_Logo.png') }}"
+                alt="Banner image, picture of a speech bubble which contains &quot;Dude, Where's My Bike?&quot;" class="header">
         </div>
     </header>
 
@@ -45,9 +56,13 @@
         </div>
     </main>
 
+    <!-- We use a common footer on the bottom of each page. If only there was some
+    way in CSS or HTML to include this... so it didn't have to be repeated -->
     <footer>
         <!-- Any footer context goes in here... -->
-        <div class="wrapper"></div>
+        <div class="wrapper">
+            <p>&copy; Copyright 2022, DudeWMB Ltd., All Rights Reserved</p>
+        </div>
     </footer>
 
     <!-- Include JavaScript files here if needed
