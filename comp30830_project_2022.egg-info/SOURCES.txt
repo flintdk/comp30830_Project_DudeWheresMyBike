@@ -10,3 +10,4 @@ comp30830_project_2022.egg-info/top_level.txt
 dwmb_data_loader/__init__.py
 dwmb_data_loader/data_loader.py
 dwmb_data_loader/dwmb_sched_dl.sh
+dwmb_data_loader/weather.py

@@ -46,7 +46,7 @@ setup(
       #   - MAJOR VERSION 0
       #   - MINOR VERSION 1
       #   - MAINTENANCE VERSION 0
-      version='0.1.0',
+      version='0.2.0',
 
       # Here is a small description of the library. This appears
       # when someone searches for the library on https://pypi.org/search.
@@ -63,6 +63,8 @@ setup(
 
       # These are the dependencies the library needs in order to run.
       install_requires=[
+            'flask>=2.0.3',
+            'flask-sqlalchemy>=2.5.1',
             'mysql-connector-python>=8.0.0',
             'requests==2.27.1',
             'sqlalchemy==1.4.27'
