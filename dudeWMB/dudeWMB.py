@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 import functools
 from flask import Flask, g, render_template, jsonify
 from flask_sqlalchemy import SQLAlchemy
