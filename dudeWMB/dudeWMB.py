@@ -125,11 +125,12 @@ def shutdown_session(exception=None):
 
 @dudeWMB.route('/')
 def root():
+    #print(dudeWMB.config)
+
     # This route simply serves 'static/index.html'
     #return app.send_static_file('index.html')
     # This route renders a template from the template folder
-    print(dudeWMB.config)
     return render_template('index.html', MAPS_API_KEY=dudeWMB.config["MAPS_API_KEY"])
 
 if __name__ == "__main__":
-    dudeWMB.run(debug=False, host=dudeWMB.config["FLASK_HOST"], port=dudeWMB.config["FLASK_PORT"])
+    dudeWMB.run(debug=True, host=dudeWMB.config["FLASK_HOST"], port=dudeWMB.config["FLASK_PORT"])

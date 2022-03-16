@@ -27,11 +27,11 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/dudeWMB_format.css') }}" type="text/css">
 
     <!-- Include style sheets here...-->
-    <link rel = stylesheet type="text/css" href = "static/css/dudewmb.css">
+    <link rel = stylesheet type="text/css" href = "{{ url_for('static', filename='css/dudeWMB.css') }}">
 
 </head>
     
-<body>
+<body onload="onLoad();">
     <header class="fixed">
         <!-- Navigation bar will be the same for all pages so that's why it's implemented in base.html -->
         <div class="wrapper">     

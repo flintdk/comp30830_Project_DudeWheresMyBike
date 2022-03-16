@@ -1,4 +1,4 @@
-<!-- {% include 'dudeWMB_header.html' %} -->
+<!-- { % include 'dudeWMB_header.html' % } -->
 
 {% extends "base.html" %}
 {% block content %}
@@ -28,9 +28,10 @@
         </section>
 
         <!-- Include JavaScript files -->
-        <script src="static/js/maps.js"></script>
         <script src="{{ url_for('static', filename='js/maps.js') }}"></script>
+
+        <div id="tempTomShowJson" class="debug clearBoth"></div>
 
 {% endblock %}
 
-<!-- {% include 'dudeWMB_footer.html' %} -->
+<!-- { % include 'dudeWMB_footer.html' % } -->
