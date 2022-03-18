@@ -11,7 +11,7 @@ function initMap() {
     const marker = new google.maps.Marker({
       position: dublin,
       map: map,
-      icon: 'bikeIcon.svg'
+      //icon: 'bikeIcon.svg'
     });
 
     // Intial Info
