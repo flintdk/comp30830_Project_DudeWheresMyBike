@@ -2,12 +2,18 @@
 
 // This function is called onload.  It's the 'parent process' if you like that
 // kicks off all the work...
-function onLoad() {
-    displayStations()
+async function onLoad() {
+
 }
 
 // Function to initialize and add the map
-function initMap() {
+async function initMap() {
+    // We load the stations on page load.  Yes - that means that if a new
+    // station is added while the user is on a page that it won't be displayed.
+    // That event is so unlikely, we consider the requirement for a page refresh
+    // to get the new station to display to be acceptable.
+    let stations = await getStationsJson();
+
     // Location of Dublin
     const dublin = { lat: 53.350140, lng: -6.266155 };
     // Map, centered at Dublin
@@ -15,22 +21,43 @@ function initMap() {
         zoom: 12,
         center: dublin,
     });
+
+    // Markers
+    // 'stations' is a nice javascript object.  We could "for station in stations"
+    // over it, or pick it apart by hand, or whatever!!
     // Intial marker, positioned at Dublin
-    const marker = new google.maps.Marker({
-        position: dublin,
-        map: map,
-        //icon: 'bikeIcon.svg'
-    });
+    // const marker = new google.maps.Marker({
+    //     position: dublin,
+    //     map: map,
+    //     icon: 'bikeIcon.svg'
+    // });
+    for (let key in stations) {
+        let station = stations[key];
+        //console.log(station.stationName, station.number);
+        var marker = new google.maps.Marker({
+            position: {
+                lat: station.latitude,
+                lng: station.longitude
+            },
+            map: map,
+            icon: {
+                url: "/img/bikeIcon.svg",
+                scaledSize: new google.maps.Size(42, 42)
+            },
+            title: station.stationName,
+            station_number: station.number
+        });
+        let contentString = '<div id="content"><h1>' + station.stationName + '</h1></div>' +
+            '<div id="station_availability">Availability:</div>';
+        let infoWindow = new google.maps.InfoWindow({ content: contentString });
 
-    // Intial Info
-    var infoWindow = new google.maps.InfoWindow({
-        content:'<h1>Dublin</h1>'
-    });
+        // Listener
+        marker.addListener('click', function() { infoWindow.open(map, marker); })
+        // Following from Lecture notes - not sure what the difference is yet!
+        // But it adds a chart... so leaving for reference.
+        //google.maps.event.addListener(marker, 'click', function() { drawInfoWindowChart(this); } );
+    }
 
-    // Listener
-    marker.addListener('click', function(){
-        infoWindow.open(map, marker);
-    })
 }
 
 // What follows are a pair of functions to:
@@ -64,7 +91,7 @@ async function getStationsJson() {
             let stationsJson = await stations.json();
             return stationsJson;
         }
-        return null  // Result undefined
+        return null // Result undefined
     } catch (error) {
         console.log(error);
     }
@@ -84,17 +111,7 @@ async function displayStations() {
     let stations = await getStationsJson();
     // 'stations' is now a nice javascript object.  We could "for station in stations"
     // over it, or pick it apart by hand, or whatever!!
-
-    // let html = '';
-    // stations.forEach(user => {
-    //     let htmlSegment = `<div class="user">
-    //                         <img src="${stations.bla-bla}" >
-    //                         <h2>${stations.bla-bla} ${stations.bla-bla}</h2>
-    //                         <div class="bla-bla">${stations.bla-bla}</div>
-    //                     </div>`;
-
-
-    document.getElementById('tempTomShowJson').innerHTML=JSON.stringify(stations);
+    document.getElementById('tempTomShowJson').innerHTML = JSON.stringify(stations);
 }
 
 //##############################################################################
@@ -102,23 +119,6 @@ async function displayStations() {
 //##############################################################################
 
 // SAMPLE CODE FROM COMP30830 LECTURE NOTES / PDF's
-
-// // draw markers
-// _.forEach(stations, function(station) {
-//     // console.log(station.name, station.number);
-//     var marker = new google.maps.Marker({
-//         position : {
-//             lat : station.position_lat,
-//             lng : station.position_lng
-//         },
-//         map : map,
-//         title : station.name,
-//         station_number : station.number
-//     });
-//     contentString = '<div id="content"><h1>' + station.name + '</h1></div>'
-//         + '<div id="station_availability"></div>';
-//     google.maps.event.addListener(marker, 'click', function() { drawInfoWindowChart(this); } );
-// })
 
 // jQuery Heatmap example from Lecture Slides:
 // TODO: Rework this using JavaScript 'fetch()'??

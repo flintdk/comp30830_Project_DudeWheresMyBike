@@ -9,32 +9,35 @@
     Specific context is implemented in templates that are inherited from this template. 
 -->
 
-<html lang="en"> <!-- set language of this website -->
+<html lang="en">
+<!-- set language of this website -->
+
 <head>
-    <meta charset="UTF-8"> <!-- define character encoding -->
-    <meta name="viewport" content="width=device-width, initial-scale=1.0"> <!-- Setting the viewpoint, e.g. useful for smaller devices such as mobiles, etc. -->
+    <meta charset="UTF-8">
+    <!-- define character encoding -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Setting the viewpoint, e.g. useful for smaller devices such as mobiles, etc. -->
     <meta name="DESCRIPTION" content="Dublin Bikes Trip Planning Application, COMP30830 Group Project">
     <meta name="KEYWORDS" content="Tomas, Kelly, Jörg, Striebel, Will, O'Donohoe, COMP30830, UCD, HDip">
-    
+
     <title>Dude, Where's My Bike?</title>
 
     <!-- Internal JS Resources -->
     <script src="{{ url_for('static', filename='js/dudeWMB.js') }}"></script>
-    <script src="{{ url_for('static', filename='js/maps.js') }}"></script>
 
     <!-- External CSS files -->
     <!-- <link rel="stylesheet" href="{{ url_for('static', filename='bootstrap/css/bootstrap.css') }}"></link> -->
     <!-- <link rel="stylesheet" href="{{ url_for('static', filename='css/dudeWMB_layout.css') }}" type="text/css"> -->
     <!-- <link rel="stylesheet" href="{{ url_for('static', filename='css/dudeWMB_format.css') }}" type="text/css"> -->
- 
+
     <link rel="stylesheet" href="{{ url_for('static', filename='css/dudewmb.css') }}" type="text/css">
-  
+
 </head>
-    
+
 <body onload="onLoad();">
     <header class="fixed">
         <!-- Navigation bar will be the same for all pages so that's why it's implemented in base.html -->
-        <div class="wrapper">     
+        <div class="wrapper">
             <nav>
                 <ul>
                     <!--TODO: add more links here to the nav bar if needed -->
@@ -43,14 +46,13 @@
                 </ul>
             </nav>
             <div>This website is just for fun - it's a college project - it will be taken down shortly.</div>
-            <img id="img-logo" src="{{ url_for('static', filename='img/dudeWMB_Logo.png') }}"
-                alt="Banner image, picture of a speech bubble which contains &quot;Dude, Where's My Bike?&quot;" class="header">
+            <img id="img-logo" src="{{ url_for('static', filename='img/dudeWMB_Logo.png') }}" alt="Banner image, picture of a speech bubble which contains &quot;Dude, Where's My Bike?&quot;" class="header">
         </div>
     </header>
 
 
     <main>
-        <div class="wrapper">     
+        <div class="wrapper">
             <!--Content of child templates will be diplayed here...-->
             {% block content %}{% endblock %}
         </div>
@@ -64,4 +66,5 @@
     </footer>
 
 </body>
+
 </html>

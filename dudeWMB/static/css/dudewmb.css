@@ -8,14 +8,14 @@ body {
     color: #403c3c;
 }
 
-
-footer, header {
+footer,
+header {
     background-color: lightblue;
-    color:black;
+    color: black;
 }
 
 header {
-	height: 300px;
+    height: 300px;
     padding-top: 10px;
     padding-bottom: 15px;
     padding-left: 5px;
@@ -26,17 +26,19 @@ footer {
     margin-top: 100px;
     padding-top: 25px;
     padding-bottom: 25px;
-
 }
+
 p {
     line-height: 1.6;
     margin-top: 40px;
-	margin-bottom: 40px;
+    margin-bottom: 40px;
 }
 
-h1, h2, h3 {
-    font-weight: bold;    
-    color: black;   
+h1,
+h2,
+h3 {
+    font-weight: bold;
+    color: black;
 }
 
 h1 {
@@ -51,11 +53,11 @@ h2 {
 
 h3 {
     font-size: 22px;
-    font-weight: normal;    
+    font-weight: normal;
 }
 
 .text-center {
-    text-align: center;    
+    text-align: center;
 }
 
 #headline {
@@ -65,19 +67,23 @@ h3 {
     color: black;
 }
 
+
 /* horizontal line to seperate sections */
+
 hr {
     border: 2px solid darkgrey;
     margin-top: 100px;
-
 }
 
+
 /* || Content Styling */
+
 
 /*
 CITATION - start: .wrapper class
 Source: https://hookagency.com/blog/html-wrapper-tutorial/
 */
+
 .wrapper {
     margin-top: 0;
     margin-right: auto;
@@ -86,31 +92,32 @@ Source: https://hookagency.com/blog/html-wrapper-tutorial/
     padding-right: 15px;
     padding-left: 15px;
 }
+
+
 /* CITATION - end: .contentwrapper class */
 
 .fixed {
-    position: sticky; /* keep this element in position when scrolling */
+    position: sticky;
+    /* keep this element in position when scrolling */
     top: 0;
     width: 100%;
-    z-index: 999; /* stack order: keep this element always in front */
+    z-index: 999;
+    /* stack order: keep this element always in front */
 }
 
 .flexbox-container {
-    display: flex;     
+    display: flex;
     justify-content: space-around;
     align-items: flex-start;
-
 }
 
 .flexbox-item {
     flex-basis: 100%;
     flex: 1;
-
-/*
-    border: 1px solid black;
-    width: auto;
+    /*
+border: 1px solid black;
+width: auto;
 */
-
 }
 
 .flexbox-item-nested {
@@ -126,34 +133,42 @@ Source: https://hookagency.com/blog/html-wrapper-tutorial/
     width: 100px;
 }
 
+
 /* CITATION: CSS-properties for styling the table had been copied from the following source and were then customized.
 Source: https://www.w3schools.com/css/tryit.asp?filename=trycss_table_fancy
 */
+
 .figures-table {
-    float: left;   
+    float: left;
     border-collapse: collapse;
     width: 100%;
     font-size: 16px;
-
 }
 
-.figures-table td, .figures-table th {
+.figures-table td,
+.figures-table th {
     text-align: left;
     border: 1px solid #bababa;
     padding: 9px;
 }
 
-.figures-table tr:nth-child(even){background-color: #c9c9c954;}
+.figures-table tr:nth-child(even) {
+    background-color: #c9c9c954;
+}
+
 
 /* CITATION - last-child pseudo-element
 copied from Practical2 -files "e4.css"
 */
-.figures-table td:last-child, .figures-table th:last-child
-{
-    text-align:right;
+
+.figures-table td:last-child,
+.figures-table th:last-child {
+    text-align: right;
 }
 
-.figures-table tr:hover {background-color: #c9c9c9;}
+.figures-table tr:hover {
+    background-color: #c9c9c9;
+}
 
 .figures-table th {
     padding-top: 13px;
@@ -161,6 +176,7 @@ copied from Practical2 -files "e4.css"
     background-color: darkgreen;
     color: whitesmoke;
 }
+
 
 /* CITATION start - Rounded button
 Source: https://www.w3schools.com/css/tryit.asp?filename=trycss_buttons_round
@@ -181,8 +197,9 @@ Source: https://www.w3schools.com/css/tryit.asp?filename=trycss_buttons_round
     cursor: pointer;
     border-radius: 5px;
 }
-/* CITATION end - Rounded button */
 
+
+/* CITATION end - Rounded button */
 
 
 /* CITATION start - Dropdown Menu
@@ -200,50 +217,54 @@ Source: https://www.w3schools.com/css/tryit.asp?filename=trycss_dropdown_button
     cursor: pointer;
     border-radius: 5px;
     margin-bottom: 20px;
-  }
-  
-  .dropdown {
+}
+
+.dropdown {
     position: relative;
     display: inline-block;
-  }
-  
-  .dropdown-content {
+}
+
+.dropdown-content {
     display: none;
     position: absolute;
     background-color: #f9f9f9;
     min-width: 120px;
-    box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+    box-shadow: 0px 8px 16px 0px rgba(0, 0, 0, 0.2);
     z-index: 1;
-  }
-  
-  .dropdown-content a {
+}
+
+.dropdown-content a {
     color: black;
     font-size: 16px;
     padding: 6px 8px;
     text-decoration: none;
     display: block;
-  }
-  
-  .dropdown-content a:hover {background-color: #a3a3a3}
-  
-  .dropdown:hover .dropdown-content {
+}
+
+.dropdown-content a:hover {
+    background-color: #a3a3a3
+}
+
+.dropdown:hover .dropdown-content {
     display: block;
-  }
-  
-  .dropdown:hover .dropbtn {
+}
+
+.dropdown:hover .dropbtn {
     background-color: #3e8e41;
-  }
-  /* CITATION end - Dropdown Menu */
+}
 
 
-  /* Styling for embedded Google maps */ 
-  #map {
-      height: 100;
-      margin: 0;
-      padding: 0;
-  }
+/* CITATION end - Dropdown Menu */
 
-  #img-logo {
-      width: 20%;
-      height: auto;
-  }
+
+/* Styling for embedded Google maps */
+
+#map {
+    height: 400px;
+    width: 100%;
+}
+
+#img-logo {
+    width: 20%;
+    height: auto;
+}
