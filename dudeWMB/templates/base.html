@@ -18,9 +18,13 @@
     
     <title>Dude, Where's My Bike?</title>
 
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+
     <!-- Internal JS Resources -->
     <script src="{{ url_for('static', filename='js/dudeWMB.js') }}"></script>
+<!--    
     <script src="{{ url_for('static', filename='js/maps.js') }}"></script>
+-->
 
     <!-- External CSS files -->
     <!-- <link rel="stylesheet" href="{{ url_for('static', filename='bootstrap/css/bootstrap.css') }}"></link> -->
@@ -32,19 +36,26 @@
 </head>
     
 <body onload="onLoad();">
+
     <header class="fixed">
         <!-- Navigation bar will be the same for all pages so that's why it's implemented in base.html -->
         <div class="wrapper">     
-            <nav>
-                <ul>
-                    <!--TODO: add more links here to the nav bar if needed -->
-                    <li><a href="/index.html">Home</a></li>
-                    <li><a href="/about.html">About</a></li>
-                </ul>
-            </nav>
-            <div>This website is just for fun - it's a college project - it will be taken down shortly.</div>
-            <img id="img-logo" src="{{ url_for('static', filename='img/dudeWMB_Logo.png') }}"
-                alt="Banner image, picture of a speech bubble which contains &quot;Dude, Where's My Bike?&quot;" class="header">
+            <div class="flexbox-container">
+                <div class="flexbox-item">
+                    <ul>
+                        <!--TODO: add more links here to the nav bar if needed -->
+                        <li><a href="index.html">Home</a></li>
+                        <li><a href="about.html">About</a></li>
+                    </ul>
+                </div>
+                <div class="flexbox-item">
+                    <div class="flexbox-item">
+                        <img id="img-logo" src="{{ url_for('static', filename='img/dudeWMB_Logo.png') }}"
+                        alt="Banner image, picture of a speech bubble which contains &quot;Dude, Where's My Bike?&quot;" class="header">    
+                    </div>
+                </div>
+            </div>
+            <div><strong>This website is just for fun - it's a college project - and it will be taken down shortly.</strong></div>
         </div>
     </header>
 

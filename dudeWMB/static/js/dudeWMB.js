@@ -1,9 +1,12 @@
 "use strict";
 
+var varGlobStations;
+var varGlobStationSelected;
+
 // This function is called onload.  It's the 'parent process' if you like that
 // kicks off all the work...
 function onLoad() {
-    displayStations()
+    displayStations();
 }
 
 // What follows are a pair of functions to:
@@ -54,7 +57,8 @@ async function getStationsJson() {
 }
 
 async function displayStations() {
-    let stations = await getStationsJson();
+    varGlobStations = await getStationsJson();
+
     // 'stations' is now a nice javascript object.  We could "for station in stations"
     // over it, or pick it apart by hand, or whatever!!
 
@@ -67,7 +71,35 @@ async function displayStations() {
     //                     </div>`;
 
 
-    document.getElementById('tempTomShowJson').innerHTML=JSON.stringify(stations);
+    document.getElementById('tempTomShowJson').innerHTML=JSON.stringify(varGlobStations);
+}
+
+// Function to dynamically create the dropdown content for station selection
+function createStationDropdownContent() {
+    // for example: <a href="#" onclick="onUpdateStationInfo(stationId)">SMITHFIELD NORTH</a>
+    // where stationId is the index in the station-object
+
+    var stations = varGlobStations.stations;
+    var output = "";
+    for (let i = 0; i < stations.length; i++) {
+        output += '<a href="#" ';
+        output += 'onclick="onStationSelected(';
+        output += "'" + i + "',";  
+        output += ')">';
+        output += stations[i].stationName; 
+        output += "</a>";
+    }
+    document.getElementById('dropdownContentStation').innerHTML = output;
+
+}
+
+function onStationSelected(stationId) {
+    var stations = varGlobStations.stations;
+    varGlobStationSelected = stations[stationId];
+
+    console.log(stations[stationId].stationName)
+    document.getElementById('selectedStation').innerHTML = stations[stationId].stationName;
+
 }
 
 //##############################################################################

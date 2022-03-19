@@ -4,7 +4,7 @@ body {
     position: relative;
     background-color: ghostwhite;
     font-family: Arial, Helvetica, sans-serif;
-    font-size: 24px;
+    font-size: 16px;
     color: #403c3c;
 }
 
@@ -15,7 +15,7 @@ footer, header {
 }
 
 header {
-	height: 300px;
+	height: 100px;
     padding-top: 10px;
     padding-bottom: 15px;
     padding-left: 5px;
@@ -74,6 +74,38 @@ hr {
 
 /* || Content Styling */
 
+/* Navigation Bar Styling */
+ul {
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    background-color: #333;
+    top: 0;
+    min-width: 500px;
+  }
+  
+  li {
+    float: left;
+  }
+  
+  li a {
+    display: block;
+    color: white;
+    text-align: center;
+    padding: 14px 16px;
+    text-decoration: none;
+  }
+  
+  li a:hover:not(.active) {
+    background-color: #111;
+  }
+  
+  .navActive {
+    background-color: #04AA6D;
+  }
+
+
 /*
 CITATION - start: .wrapper class
 Source: https://hookagency.com/blog/html-wrapper-tutorial/
@@ -97,25 +129,33 @@ Source: https://hookagency.com/blog/html-wrapper-tutorial/
 
 .flexbox-container {
     display: flex;     
+/*
     justify-content: space-around;
     align-items: flex-start;
-
+*/
 }
 
 .flexbox-item {
     flex-basis: 100%;
     flex: 1;
+}
 
-/*
-    border: 1px solid black;
-    width: auto;
-*/
+.flexbox-container-column {
+    display: flex;     
+    justify-content: center;
+    flex-direction: column;
+    align-items: left;
 
 }
 
 .flexbox-item-nested {
     flex: 1;
     display: flex;
+}
+
+#flexbox-item-map {
+    min-width: 950px;
+    min-height: 450px;
 }
 
 .selection {
@@ -125,6 +165,7 @@ Source: https://hookagency.com/blog/html-wrapper-tutorial/
 #item-dropdown {
     width: 100px;
 }
+
 
 /* CITATION: CSS-properties for styling the table had been copied from the following source and were then customized.
 Source: https://www.w3schools.com/css/tryit.asp?filename=trycss_table_fancy
@@ -199,7 +240,7 @@ Source: https://www.w3schools.com/css/tryit.asp?filename=trycss_dropdown_button
     border: none;
     cursor: pointer;
     border-radius: 5px;
-    margin-bottom: 20px;
+    margin: 4px 2px;
   }
   
   .dropdown {
@@ -238,7 +279,7 @@ Source: https://www.w3schools.com/css/tryit.asp?filename=trycss_dropdown_button
 
   /* Styling for embedded Google maps */ 
   #map {
-      height: 100;
+      height: 100%;
       margin: 0;
       padding: 0;
   }
@@ -247,3 +288,59 @@ Source: https://www.w3schools.com/css/tryit.asp?filename=trycss_dropdown_button
       width: 20%;
       height: auto;
   }
+
+  #img-weather {
+    width: 50%;
+    height: auto;
+    padding: 10px;
+}
+
+#img-histogram {
+    width: 100%;
+    height: auto;
+    padding: 10px;
+}
+
+/* CITATION start - slider
+Styling from the example represented on w3schools
+Source: https://www.w3schools.com/howto/tryit.asp?filename=tryhow_css_rangeslider
+*/
+
+
+.slidecontainer {
+    width: 100%;
+  }
+  
+
+.slider {
+    -webkit-appearance: none;
+    width: 100%;
+    height: 25px;
+    background: #d3d3d3;
+    outline: none;
+    opacity: 0.7;
+    -webkit-transition: .2s;
+    transition: opacity .2s;
+}
+
+.slider:hover {
+    opacity: 1;
+}
+
+.slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 25px;
+    height: 25px;
+    background: #04AA6D;
+    cursor: pointer;
+}
+
+.slider::-moz-range-thumb {
+    width: 25px;
+    height: 25px;
+    background: #04AA6D;
+    cursor: pointer;
+}
+
+/* CITATION end - Slider */
