@@ -7,33 +7,84 @@
         <section>
             <div class="wrapper">
 
-                <!-- Showing Google maps and search options by utilising a flex-box to properly align the items -->
+                <!-- Content: Google maps and occupancy display options in the form of buttons  -->
                 <div class="flexbox-container">
                     <!-- Embedded Google maps is embedded in the flexbox container on the left -->
-                    <div class="flexbox-item">
+                    <div id="flexbox-item-map" class="flexbox-item">
                         <!-- Display Google maps -->
                         <div id="map"></div>
                         <script src="https://maps.googleapis.com/maps/api/js?key={{ MAPS_API_KEY }}&callback=initMap" async defer></script>
                     </div>
                     <!-- Dropdown list for search options is contained in the flex-box container on the right -->
                     <div class="flexbox-item">
-                        <button id="available_bikes" class="button">Available Bikes</button>
-                        <button id="available_ebikes" class="button">Available eBikes</button>
-                        <button id="available_spaces" class="button">Available Spaces</button>
-                        <!--
-                        <label for="occupancy_selection">Choose occupancy</label>
-                        <select id="occupancy_selection" name="Occupancy">
-                            <option value="occupancy_bike">Bikes</option>
-                            <option value="occupancy_ebike">eBikes</option>
-                            <option value="occupancy_emptySpaces">Empty spaces</option>
-                        </select>
-                        -->
+                        <div id="flexbox-container-column">
+                            <div class="flexbox-item"><button id="available_bikes" class="button">Available Bikes</button></div>
+                            <div class="flexbox-item"><button id="available_ebikes" class="button">Available eBikes</button></div>
+                            <div class="flexbox-item"><button id="available_spaces" class="button">Available Spaces</button></div>   
+                        </div>
                     </div>
+                </div>
+                <h2>Station Details: <span id="selectedStation"></span></h2>
+                <!-- Content: Dropdown menu to select station, weather forecast, occupancy trend histogram -->
+                <div class="flexbox-container">
+                    <!-- On the left: Dropdown menu to select station and station info table -->
+                    <div class="flexbox-item">
+                        <div id="flexbox-container-column">
+                            <div class="flexbox-item">
+                                <!-- Dynamically created dropdown menu to select station -->
+                                <div class="dropdown">
+                                    <button id="dropdownButtonStation" class="dropdwon-button" onclick="createStationDropdownContent()">Select Station</button>
+                                    <div id="dropdownContentStation" class="dropdown-content"></div>
+                                </div>                        
+                            </div>
+                            <div class="flexbox-item">
+                                <!-- Dynamically created station info table -->
+                                <div id="StationInfo" class="figures-table"></div>
+                            </div>     
+                        </div>
+                    </div>
+                    <!-- On the middle: Weather forecast and slider to see trend -->
+                    <div class="flexbox-item">
+                        <div id="flexbox-container-column">
+                            <div class="flexbox-item">
+                                <!-- TODO: here goes the weather forecast thing, for now it's just a image -->
+                                <img id="img-weather" src="{{ url_for('static', filename='img/weather_forecast_icon.png') }}" alt="weather_icon">
+                            </div>
+                            <div class="flexbox-item">
+                                <!-- Slider to see the trend -->
+                                <div class="slidecontainer">
+                                    <p>Timre range slider:</p>
+                                    <input type="range" min="0" max="23" value="12">
+                                </div>      
+                            </div>     
+                        </div>
+                    </div>
+                    <!-- On the right: Occupancy trend as a histogram and day selection, e.g. today, tomorrow, etc. -->
+                    <div class="flexbox-item">
+                        <div id="flexbox-container-column">
+                            <div class="flexbox-item">
+                                <!-- TODO: here goes the weather forecast thing, for now it's just a image -->
+                                <img id="img-histogram" src="{{ url_for('static', filename='img/occupancy_histogram.png') }}" alt="histogram_image">
+                            </div>
+                            <div class="flexbox-item">
+                                <!-- Slider to see the trend -->
+
+                            </div>     
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flexbox-container">
+                    <div class="flexbox-item">
+                        <div id="tempTomShowJson" class="debug clearBoth"></div>
+                    </div>            
                 </div>
             </div>            
         </section>
 
-        <div id="tempTomShowJson" class="debug clearBoth"></div>
+        <!-- Include JavaScript files
+        <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAq0jgqddpYcpIUx3-LkVzVvfO-zngx4vg&callback=initMap" async defer></script>
+        -->
 
 {% endblock %}
 
