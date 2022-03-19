@@ -17,7 +17,7 @@
                     </div>
                     <!-- Dropdown list for search options is contained in the flex-box container on the right -->
                     <div class="flexbox-item">
-                        <div id="flexbox-container-column">
+                        <div class="flexbox-container-column">
                             <div class="flexbox-item"><button id="available_bikes" class="button">Available Bikes</button></div>
                             <div class="flexbox-item"><button id="available_ebikes" class="button">Available eBikes</button></div>
                             <div class="flexbox-item"><button id="available_spaces" class="button">Available Spaces</button></div>   
@@ -29,7 +29,7 @@
                 <div class="flexbox-container">
                     <!-- On the left: Dropdown menu to select station and station info table -->
                     <div class="flexbox-item">
-                        <div id="flexbox-container-column">
+                        <div class="flexbox-container-column">
                             <div class="flexbox-item">
                                 <!-- Dynamically created dropdown menu to select station -->
                                 <div class="dropdown">
@@ -45,7 +45,7 @@
                     </div>
                     <!-- On the middle: Weather forecast and slider to see trend -->
                     <div class="flexbox-item">
-                        <div id="flexbox-container-column">
+                        <div class="flexbox-container-column">
                             <div class="flexbox-item">
                                 <!-- TODO: here goes the weather forecast thing, for now it's just a image -->
                                 <img id="img-weather" src="{{ url_for('static', filename='img/weather_forecast_icon.png') }}" alt="weather_icon">
@@ -61,7 +61,7 @@
                     </div>
                     <!-- On the right: Occupancy trend as a histogram and day selection, e.g. today, tomorrow, etc. -->
                     <div class="flexbox-item">
-                        <div id="flexbox-container-column">
+                        <div class="flexbox-container-column">
                             <div class="flexbox-item">
                                 <!-- TODO: here goes the weather forecast thing, for now it's just a image -->
                                 <img id="img-histogram" src="{{ url_for('static', filename='img/occupancy_histogram.png') }}" alt="histogram_image">

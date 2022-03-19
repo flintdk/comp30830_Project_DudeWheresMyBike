@@ -133,14 +133,14 @@ function createStationDropdownContent() {
     // for example: <a href="#" onclick="onUpdateStationInfo(stationId)">SMITHFIELD NORTH</a>
     // where stationId is the index in the station-object
 
-    var stations = varGlobStations.stations;
+//    console.log(varGlobStations)
     var output = "";
-    for (let i = 0; i < stations.length; i++) {
+    for (let i = 0; i < varGlobStations.length; i++) {
         output += '<a href="#" ';
         output += 'onclick="onStationSelected(';
         output += "'" + i + "',";  
         output += ')">';
-        output += stations[i].stationName; 
+        output += varGlobStations[i].stationName; 
         output += "</a>";
     }
     document.getElementById('dropdownContentStation').innerHTML = output;
@@ -148,11 +148,10 @@ function createStationDropdownContent() {
 }
 
 function onStationSelected(stationId) {
-    var stations = varGlobStations.stations;
-    varGlobStationSelected = stations[stationId];
+    varGlobStationSelected = varGlobStations[stationId];
 
-    console.log(stations[stationId].stationName)
-    document.getElementById('selectedStation').innerHTML = stations[stationId].stationName;
+    console.log(varGlobStations[stationId].stationName)
+    document.getElementById('selectedStation').innerHTML = varGlobStations[stationId].stationName;
 
 }
 
