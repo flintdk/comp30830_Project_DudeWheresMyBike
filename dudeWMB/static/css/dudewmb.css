@@ -1,0 +1,249 @@
+/* || General Styles */
+
+body {
+    position: relative;
+    background-color: ghostwhite;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 24px;
+    color: #403c3c;
+}
+
+
+footer, header {
+    background-color: lightblue;
+    color:black;
+}
+
+header {
+	height: 300px;
+    padding-top: 10px;
+    padding-bottom: 15px;
+    padding-left: 5px;
+    padding-right: 5px;
+}
+
+footer {
+    margin-top: 100px;
+    padding-top: 25px;
+    padding-bottom: 25px;
+
+}
+p {
+    line-height: 1.6;
+    margin-top: 40px;
+	margin-bottom: 40px;
+}
+
+h1, h2, h3 {
+    font-weight: bold;    
+    color: black;   
+}
+
+h1 {
+    text-transform: uppercase;
+    font-family: "Lucida Console", "Courier New", monospace;
+    font-size: 68px;
+}
+
+h2 {
+    font-size: 36px;
+}
+
+h3 {
+    font-size: 22px;
+    font-weight: normal;    
+}
+
+.text-center {
+    text-align: center;    
+}
+
+#headline {
+    text-align: center;
+    margin-top: 10px;
+    margin-bottom: 10px;
+    color: black;
+}
+
+/* horizontal line to seperate sections */
+hr {
+    border: 2px solid darkgrey;
+    margin-top: 100px;
+
+}
+
+/* || Content Styling */
+
+/*
+CITATION - start: .wrapper class
+Source: https://hookagency.com/blog/html-wrapper-tutorial/
+*/
+.wrapper {
+    margin-top: 0;
+    margin-right: auto;
+    margin-left: auto;
+    max-width: 1170px;
+    padding-right: 15px;
+    padding-left: 15px;
+}
+/* CITATION - end: .contentwrapper class */
+
+.fixed {
+    position: sticky; /* keep this element in position when scrolling */
+    top: 0;
+    width: 100%;
+    z-index: 999; /* stack order: keep this element always in front */
+}
+
+.flexbox-container {
+    display: flex;     
+    justify-content: space-around;
+    align-items: flex-start;
+
+}
+
+.flexbox-item {
+    flex-basis: 100%;
+    flex: 1;
+
+/*
+    border: 1px solid black;
+    width: auto;
+*/
+
+}
+
+.flexbox-item-nested {
+    flex: 1;
+    display: flex;
+}
+
+.selection {
+    float: left;
+}
+
+#item-dropdown {
+    width: 100px;
+}
+
+/* CITATION: CSS-properties for styling the table had been copied from the following source and were then customized.
+Source: https://www.w3schools.com/css/tryit.asp?filename=trycss_table_fancy
+*/
+.figures-table {
+    float: left;   
+    border-collapse: collapse;
+    width: 100%;
+    font-size: 16px;
+
+}
+
+.figures-table td, .figures-table th {
+    text-align: left;
+    border: 1px solid #bababa;
+    padding: 9px;
+}
+
+.figures-table tr:nth-child(even){background-color: #c9c9c954;}
+
+/* CITATION - last-child pseudo-element
+copied from Practical2 -files "e4.css"
+*/
+.figures-table td:last-child, .figures-table th:last-child
+{
+    text-align:right;
+}
+
+.figures-table tr:hover {background-color: #c9c9c9;}
+
+.figures-table th {
+    padding-top: 13px;
+    padding-bottom: 13px;
+    background-color: darkgreen;
+    color: whitesmoke;
+}
+
+/* CITATION start - Rounded button
+Source: https://www.w3schools.com/css/tryit.asp?filename=trycss_buttons_round
+*/
+
+.button {
+    background-color: lightblue;
+    border: none;
+    padding: 20px;
+    width: 200px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    color: black;
+    font-size: 16px;
+    font-weight: bold;
+    margin: 4px 2px;
+    cursor: pointer;
+    border-radius: 5px;
+}
+/* CITATION end - Rounded button */
+
+
+
+/* CITATION start - Dropdown Menu
+Styling of the dropdown menu is aligned to the example represented on w3schools
+Source: https://www.w3schools.com/css/tryit.asp?filename=trycss_dropdown_button
+*/
+
+.dropdwon-button {
+    background-color: lightblue;
+    color: black;
+    padding: 16px;
+    font-size: 16px;
+    font-weight: bold;
+    border: none;
+    cursor: pointer;
+    border-radius: 5px;
+    margin-bottom: 20px;
+  }
+  
+  .dropdown {
+    position: relative;
+    display: inline-block;
+  }
+  
+  .dropdown-content {
+    display: none;
+    position: absolute;
+    background-color: #f9f9f9;
+    min-width: 120px;
+    box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+    z-index: 1;
+  }
+  
+  .dropdown-content a {
+    color: black;
+    font-size: 16px;
+    padding: 6px 8px;
+    text-decoration: none;
+    display: block;
+  }
+  
+  .dropdown-content a:hover {background-color: #a3a3a3}
+  
+  .dropdown:hover .dropdown-content {
+    display: block;
+  }
+  
+  .dropdown:hover .dropbtn {
+    background-color: #3e8e41;
+  }
+  /* CITATION end - Dropdown Menu */
+
+
+  /* Styling for embedded Google maps */ 
+  #map {
+      height: 100;
+      margin: 0;
+      padding: 0;
+  }
+
+  #img-logo {
+      width: 20%;
+      height: auto;
+  }

@@ -1,12 +1,43 @@
-{% include 'dudeWMB_header.html' %}
+<!-- { % include 'dudeWMB_header.html' % } -->
 
-<!-- Main Content Goes Here! -->
-<main>
-    <p>Map Goes Here Somehow...</p>
-    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/style.css')}}" />
-    <script src="{{ url_for('static', filename='js/index.js')}}"></script>
-    <div id="map"></div>
-    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAq0jgqddpYcpIUx3-LkVzVvfO-zngx4vg&callback=initMap" async defer></script>
-</main>
+{% extends "base.html" %}
+{% block content %}
 
-{% include 'dudeWMB_footer.html' %}
+    <!-- Section: Displaying Google maps on the left and search options as dropdown (available bikes, available e-bikes, available spaces) on the right hand side -->
+        <section>
+            <div class="wrapper">
+
+                <!-- Showing Google maps and search options by utilising a flex-box to properly align the items -->
+                <div class="flexbox-container">
+                    <!-- Embedded Google maps is embedded in the flexbox container on the left -->
+                    <div class="flexbox-item">
+                        <!-- Display Google maps -->
+                        <div id="map"></div>
+                        <script src="https://maps.googleapis.com/maps/api/js?key={{ MAPS_API_KEY }}&callback=initMap" async defer></script>
+                    </div>
+                    <!-- Dropdown list for search options is contained in the flex-box container on the right -->
+                    <div class="flexbox-item">
+                        <button id="available_bikes" class="button">Available Bikes</button>
+                        <button id="available_ebikes" class="button">Available eBikes</button>
+                        <button id="available_spaces" class="button">Available Spaces</button>
+                        <!--
+                        <label for="occupancy_selection">Choose occupancy</label>
+                        <select id="occupancy_selection" name="Occupancy">
+                            <option value="occupancy_bike">Bikes</option>
+                            <option value="occupancy_ebike">eBikes</option>
+                            <option value="occupancy_emptySpaces">Empty spaces</option>
+                        </select>
+                        -->
+                    </div>
+                </div>
+            </div>            
+        </section>
+
+        <!-- Include JavaScript files -->
+        <script src="{{ url_for('static', filename='js/maps.js') }}"></script>
+
+        <div id="tempTomShowJson" class="debug clearBoth"></div>
+
+{% endblock %}
+
+<!-- { % include 'dudeWMB_footer.html' % } -->
