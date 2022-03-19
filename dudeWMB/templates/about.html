@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="wrapper">
+    <h1>Welcome to "Dude where's my bike"!</h1>
+    <p>This website has been created by:</p>
+    <!-- Let's render this website using Flask. For example:
+    @app.route("/about")
+    def about():
+        return render_template("about.html", authors=["Tom", "Will", "Jorg"])
+    -->
+
+    {% for author in authors %}
+    <p>{{author}}</p>
+    {% endfor %}
+</div>
+
+{% endblock %}
