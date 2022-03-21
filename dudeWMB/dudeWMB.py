@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 import functools
 from flask import Flask, g, render_template, jsonify
 from flask_sqlalchemy import SQLAlchemy
@@ -72,16 +73,20 @@ db.init_app(dudeWMB)
 def get_stations():
     # Example with filter
     #Station.query.filter_by(stationName='SomeRandomStationName').first()
-    stations = Station.query.all()
+    stations = Station.query.all()  ## Returns results as a list...
     # for station in stations:
     #     print(station.id, station.number)
 
-    # Convert individual station to dicitonary (for laff's)
+    # Convert individual station to dicitonary
     #station_dict = dict((col, getattr(station, col)) for col in station.__table__.columns.keys())
+    stationsList = []
+    for station in stations:
+        stationDict = {}
+        for col in station.__table__.columns.keys():
+            stationDict[col] = getattr(station, col)
+        stationsList.append(stationDict)
 
-    # for row in rows:
-    #     stations.append(dict(row))
-    return jsonify(stations=[dict((col, getattr(station, col)) for col in station.__table__.columns.keys()) for station in stations])
+    return jsonify(stationsList)
 
 
 @dudeWMB.route('/station/<int:station_id>')
@@ -117,19 +122,28 @@ def station(station_id):
 # def index():
 #     return '<h1>Bad Request</h1>', 400
 
+@dudeWMB.route('/')
+@dudeWMB.route('/index.html')
+def root():
+    #print(dudeWMB.config)
+
+    # This route simply serves 'static/index.html'
+    #return app.send_static_file('index.html')
+    # This route renders a template from the template folder
+    return render_template('index.html', MAPS_API_KEY=dudeWMB.config["MAPS_API_KEY"])
+
+@dudeWMB.route('/about.html')
+def about():
+    # This route simply serves 'static/about.html'
+    #return app.send_static_file('about.html')
+    # This route renders a template from the template folder
+    return render_template('about.html')
+
 # Flask will automatically remove database sessions at the end of the request or
 # when the application shuts down:
 @dudeWMB.teardown_appcontext
 def shutdown_session(exception=None):
     db.session.remove()
 
-@dudeWMB.route('/')
-def root():
-    # This route simply serves 'static/index.html'
-    #return app.send_static_file('index.html')
-    # This route renders a template from the template folder
-    print(dudeWMB.config)
-    return render_template('index.html', MAPS_API_KEY=dudeWMB.config["MAPS_API_KEY"])
-
 if __name__ == "__main__":
-    dudeWMB.run(debug=False, host=dudeWMB.config["FLASK_HOST"], port=dudeWMB.config["FLASK_PORT"])
+    dudeWMB.run(debug=True, host=dudeWMB.config["FLASK_HOST"], port=dudeWMB.config["FLASK_PORT"])
