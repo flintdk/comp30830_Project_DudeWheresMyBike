@@ -5,6 +5,10 @@ from flask_sqlalchemy import SQLAlchemy
 import json
 from jinja2 import Template
 from models import db, Station, StationState, weatherHistory
+import pickle
+import pandas as pd
+import numpy as np
+from sklearn.linear_model import LinearRegression
 
 # Create our flask app.
 # Static files are server from the 'static' directory
