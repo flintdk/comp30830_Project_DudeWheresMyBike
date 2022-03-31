@@ -144,19 +144,24 @@ def about():
     # This route renders a template from the template folder
     return render_template('about.html')
 
+# Predictive Model:
+# Predict output
+@route("/predict")
+def predict():
+    # Temp X_test variable until resample data working
+    X_test = {'temp': [1,2,3,4,5,6,7,8,9,10],
+            'feels_like': [2,3,4,5,6,7,8,9,11],
+            'humidity': [2,3,4,5,6,7,8,9,11],
+            'weed_speed': [2,3,4,5,6,7,8,9,11]}
+    result = model.predict(X_test)
+
+    return jsonify(result)
+
 # Predictive Model - deserialization
 with open('dwmb_linReg_model.pkl', 'rb') as handle:
     model = pickle.load(handle)
 
-# Temp X_test variable until resample data working
-X_test = {'temp': [1,2,3,4,5,6,7,8,9,10],
-            'feels_like': [2,3,4,5,6,7,8,9,11]}
-# Predict output
-@route("/predict")
-def predict(X_test):
-    result = model.predict(X_test)
 
-    return jsonify(result)
 
 ##########################################################################################
 ##########################################################################################
