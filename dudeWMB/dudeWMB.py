@@ -25,7 +25,7 @@ def loadCredentials():
     # This file is not saved to GitHub and is placed on each EC2 instance
     # by a team member.
     # Load the JSON file
-    file = open('dudewmb.json')
+    file = open('../dudewmb.json')
     credentials = json.load(file)
     file.close  # Can close the file now we have the data loaded...
     return credentials
@@ -182,23 +182,23 @@ def predict():
         print(jsonWeatherData)
 
 
-        weather = {} # Declare a dict to hold the station data
-        weather['latitude'] = jsonWeatherData['coord']['lat']
-        weather['longitude'] = jsonWeatherData['coord']['lon']
-        weather['main'] = jsonWeatherData['weather'][0]['main']
-        weather['description'] = jsonWeatherData['weather'][0]['description']
-        if "temp" in jsonWeatherData['main']:
-            weather['temp'] = jsonWeatherData['main']['temp']
-        if "feels_like" in jsonWeatherData['main']:
-            weather['feels_like'] = jsonWeatherData['main']['feels_like']
-        if "temp_min" in jsonWeatherData['main']:
-            weather['temp_min'] = jsonWeatherData['main']['temp_min']
-        if "temp_max" in jsonWeatherData['main']:
-            weather['temp_max'] = jsonWeatherData['main']['temp_max']
-        if "pressure" in jsonWeatherData['main']:
-            weather['pressure'] = jsonWeatherData['main']['pressure']
-        if "humidity" in jsonWeatherData['main']:
-            weather['humidity'] = jsonWeatherData['main']['humidity']
+        # weather = {} # Declare a dict to hold the station data
+        # weather['latitude'] = jsonWeatherData['coord']['lat']
+        # weather['longitude'] = jsonWeatherData['coord']['lon']
+        # weather['main'] = jsonWeatherData['weather'][0]['main']
+        # weather['description'] = jsonWeatherData['weather'][0]['description']
+        # if "temp" in jsonWeatherData['main']:
+        #     weather['temp'] = jsonWeatherData['main']['temp']
+        # if "feels_like" in jsonWeatherData['main']:
+        #     weather['feels_like'] = jsonWeatherData['main']['feels_like']
+        # if "temp_min" in jsonWeatherData['main']:
+        #     weather['temp_min'] = jsonWeatherData['main']['temp_min']
+        # if "temp_max" in jsonWeatherData['main']:
+        #     weather['temp_max'] = jsonWeatherData['main']['temp_max']
+        # if "pressure" in jsonWeatherData['main']:
+        #     weather['pressure'] = jsonWeatherData['main']['pressure']
+        # if "humidity" in jsonWeatherData['main']:
+        #     weather['humidity'] = jsonWeatherData['main']['humidity']
 
 
     else:
@@ -209,17 +209,16 @@ def predict():
 
 
     # Temp X_test variable until resample data working
-    X_test = {'temp': [1,2,3,4,5,6,7,8,9,10],
-            'feels_like': [2,3,4,5,6,7,8,9,11],
-            'humidity': [2,3,4,5,6,7,8,9,11],
-            'weed_speed': [2,3,4,5,6,7,8,9,11]}
-    result = model.predict(X_test)
+    X_test = [temp([1,2,3,4,5,6,7,8,9,10]),feels_like([2,3,4,5,6,7,8,9,11]),humidity([2,3,4,5,6,7,8,9,11]),wind([2,3,4,5,6,7,8,9,11])]
+
+    # Predictive Model - deserialization
+    with open('dwmb_linReg_model.pkl', 'rb') as handle:
+        model = pickle.load(handle)
+        result = model.predict(X_test)
 
     return jsonify(result)
 
-# Predictive Model - deserialization
-with open('dwmb_linReg_model.pkl', 'rb') as handle:
-    model = pickle.load(handle)
+
 
 
 
