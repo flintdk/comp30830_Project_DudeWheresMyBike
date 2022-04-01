@@ -165,7 +165,7 @@ def about():
 
 # Predictive Model:
 # Predict output
-@route("/predict")
+@dudeWMB.route("/predict")
 def predict():
     print("\tRetrieving weather data from openweather.")
     # Retrieve the Weather Data:
