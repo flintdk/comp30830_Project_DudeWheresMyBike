@@ -170,15 +170,16 @@ def predict():
     print("\tRetrieving weather data from openweather.")
     # Retrieve the Weather Data:
     # Hard-code the Station Data URI
-    uri = 'https://api.openweathermap.org/data/2.5/weather'
+    uri = 'https://api.openweathermap.org/data/2.5/onecall'
     # Set the request parameters in JSON format
-    parameters = {'lat': credentials['open-weather']['lat'], 'lon': credentials['open-weather']['lon'], 'appid': credentials['open-weather']['api-key']}
+    parameters = {'lat': credentials['open-weather']['lat'], 'lon': credentials['open-weather']['lon'],  'exclude':'current,minutely,daily,alerts', 'appid': credentials['open-weather']['api-key']}
     weatherResponse = requests.get(uri, params=parameters)
 
     if (weatherResponse.status_code == 200):
-        print("\tSaving weather data to database.")
+        print("Retrieving forecast weather data.")
 
         jsonWeatherData =weatherResponse.json()
+        print(jsonWeatherData)
 
 
         weather = {} # Declare a dict to hold the station data
