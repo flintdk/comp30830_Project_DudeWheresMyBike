@@ -9,9 +9,8 @@ from datetime import datetime, timedelta
 import numpy as np
 
 
-
 def getResampleTimeWindowForPreviousHour(dateTimeObj):
-    
+
     if isinstance(dateTimeObj, datetime):        
         print("Trigger time was " + dateTimeObj.strftime("%Y-%m-%d, %H:%M:%S"))
     else:
