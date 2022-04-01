@@ -11,6 +11,25 @@ import pandas as pd
 import numpy as np
 from sklearn.linear_model import LinearRegression
 
+import requests
+
+credentials = ""
+
+def loadCredentials():
+    """Load the credentials required for accessing the JCDecaux API
+
+    Returns a JSON object with the required credentials.
+    Implemented in a method as Credential storage will be subject to change.
+    """
+    # Our credentials are just stored in a JSON file (for now)
+    # This file is not saved to GitHub and is placed on each EC2 instance
+    # by a team member.
+    # Load the JSON file
+    file = open('dudewmb.json')
+    credentials = json.load(file)
+    file.close  # Can close the file now we have the data loaded...
+    return credentials
+
 # Create our flask app.
 # Static files are server from the 'static' directory
 dudeWMB = Flask(__name__, static_url_path='')
@@ -148,6 +167,46 @@ def about():
 # Predict output
 @route("/predict")
 def predict():
+    print("\tRetrieving weather data from openweather.")
+    # Retrieve the Weather Data:
+    # Hard-code the Station Data URI
+    uri = 'https://api.openweathermap.org/data/2.5/weather'
+    # Set the request parameters in JSON format
+    parameters = {'lat': credentials['open-weather']['lat'], 'lon': credentials['open-weather']['lon'], 'appid': credentials['open-weather']['api-key']}
+    weatherResponse = requests.get(uri, params=parameters)
+
+    if (weatherResponse.status_code == 200):
+        print("\tSaving weather data to database.")
+
+        jsonWeatherData =weatherResponse.json()
+
+
+        weather = {} # Declare a dict to hold the station data
+        weather['latitude'] = jsonWeatherData['coord']['lat']
+        weather['longitude'] = jsonWeatherData['coord']['lon']
+        weather['main'] = jsonWeatherData['weather'][0]['main']
+        weather['description'] = jsonWeatherData['weather'][0]['description']
+        if "temp" in jsonWeatherData['main']:
+            weather['temp'] = jsonWeatherData['main']['temp']
+        if "feels_like" in jsonWeatherData['main']:
+            weather['feels_like'] = jsonWeatherData['main']['feels_like']
+        if "temp_min" in jsonWeatherData['main']:
+            weather['temp_min'] = jsonWeatherData['main']['temp_min']
+        if "temp_max" in jsonWeatherData['main']:
+            weather['temp_max'] = jsonWeatherData['main']['temp_max']
+        if "pressure" in jsonWeatherData['main']:
+            weather['pressure'] = jsonWeatherData['main']['pressure']
+        if "humidity" in jsonWeatherData['main']:
+            weather['humidity'] = jsonWeatherData['main']['humidity']
+
+
+    else:
+        # Our call to the API failed for some reason...  print some information
+        # Who knows... someone may even look at the logs!!
+        print("ERROR: Call to OpenWeather API failed with status code: ", weatherResponse.status_code)
+        print("       The response reason was \'" + str(weatherResponse.reason) + "\'")
+
+
     # Temp X_test variable until resample data working
     X_test = {'temp': [1,2,3,4,5,6,7,8,9,10],
             'feels_like': [2,3,4,5,6,7,8,9,11],
@@ -173,4 +232,8 @@ def shutdown_session(exception=None):
     db.session.remove()
 
 if __name__ == "__main__":
+    print("Loading credentials.")
+    # Load our private credentials from a JSON file
+    credentials = loadCredentials()
+
     dudeWMB.run(debug=True, host=dudeWMB.config["FLASK_HOST"], port=dudeWMB.config["FLASK_PORT"])
