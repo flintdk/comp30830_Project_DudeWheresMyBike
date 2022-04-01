@@ -182,6 +182,9 @@ def predict():
         print(jsonWeatherData)
 
 
+        # Loop thru to grab test time from array for variables in X_test:
+        # Midday - Weather at that point
+        
         # weather = {} # Declare a dict to hold the station data
         # weather['latitude'] = jsonWeatherData['coord']['lat']
         # weather['longitude'] = jsonWeatherData['coord']['lon']
@@ -209,14 +212,14 @@ def predict():
 
 
     # Temp X_test variable until resample data working
-    X_test = [temp([1,2,3,4,5,6,7,8,9,10]),feels_like([2,3,4,5,6,7,8,9,11]),humidity([2,3,4,5,6,7,8,9,11]),wind([2,3,4,5,6,7,8,9,11])]
+    X_test = pd.DataFrame([[1,2,3,4]])
 
     # Predictive Model - deserialization
     with open('dwmb_linReg_model.pkl', 'rb') as handle:
         model = pickle.load(handle)
         result = model.predict(X_test)
 
-    return jsonify(result)
+    return jsonify(result[0])
 
 
 
