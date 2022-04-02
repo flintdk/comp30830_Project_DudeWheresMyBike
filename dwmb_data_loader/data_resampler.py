@@ -8,6 +8,7 @@ from datetime import datetime, timedelta
 import numpy as np
 import sqlalchemy as db
 from data_loader import loadCredentials
+import traceback
 
 #------------------------------------------------------------------------------------------
 # Function to yield the resample time window of the previous hour based on provided datetime object 
@@ -46,7 +47,7 @@ def getResampleTimeWindowForPreviousHour(dateTimeObj):
 #------------------------------------------------------------------------------------------
 # Function to to downsample collected station-state data from 2min to 1h intervals 
 #------------------------------------------------------------------------------------------    
-def resampleStationStateHourly(connectionString):
+def resampleStationStateHourly(engine):
     """Function to downsample data 'station-state' from 30 samples to 1 sample per hour"""
    
     # Create data-frame variables in outer function so that it can be accessed in inner functions
@@ -55,10 +56,6 @@ def resampleStationStateHourly(connectionString):
     
     # That's the time we started collecting occopancy data
     firstRecordDateTime = datetime(2022, 2, 22, 12, 53, 25)
-
-    # The create_engine() function produces an Engine object based on a URL
-    engine = db.create_engine(connectionString)
-   
 
     #------------------------------------------------------------------------------------------    
     # Inner function to delete all rows in resampled table
@@ -219,7 +216,7 @@ def resampleStationStateHourly(connectionString):
 #------------------------------------------------------------------------------------------
 # Function to to downsample collected weather history to 1h intervals 
 #------------------------------------------------------------------------------------------    
-def resampleWeatherHistoryHourly(connectionString):
+def resampleWeatherHistoryHourly(engine):
     """Function to downsample data 'weather history' to 1 hour samples"""
    
     # Create data-frame variables in outer function so that it can be accessed in inner functions
@@ -228,10 +225,7 @@ def resampleWeatherHistoryHourly(connectionString):
     
     # That's the time we started collected occopancy data
     firstRecordDateTime = datetime(2022, 2, 21, 12, 35, 27)
-
-    # The create_engine() function produces an Engine object based on a URL
-    engine = db.create_engine(connectionString)
-   
+  
     #------------------------------------------------------------------------------------------
     # Inner function to delete all rows in resampled table
     def deleteRowsInResampledTable(dbConnection):
@@ -391,9 +385,32 @@ def resampleWeatherHistoryHourly(connectionString):
 # Data resampler driver
 #------------------------------------------------------------------------------------------    
 def main():
-    pass
+ 
+    # Load our private credentials from a JSON file
+    print("\tLoading credentials.")
+    credentials = loadCredentials()
 
-    # TODO load credentials, call functions
+    try:
+        print("\tCreating SQLAlchemy db engine.")
+        # We only want to initialise the engine and create a db connection once
+        # as its expensive (i.e. time consuming). So we only want to do that once
+        connectionString = "mysql+mysqlconnector://" \
+            + credentials['DB_USER'] + ":" + credentials['DB_PASS'] \
+            + "@" \
+            + credentials['DB_SRVR'] + ":" + credentials['DB_PORT']\
+            + "/" + credentials['DB_NAME'] + "?charset=utf8mb4"
+        #print("Connection String: " + connectionString + "\n")
+        engine = db.create_engine(connectionString)
+
+        # engine.begin() runs a transaction
+        with engine.begin() as connection:
+            resampleStationStateHourly(engine)
+            resampleWeatherHistoryHourly(engine)
+
+    except:
+        # if there is any problem, print the traceback
+        print(traceback.format_exc())
+        print("\tError occured while trying to resample data.")
 
 
 if __name__ == '__main__':
