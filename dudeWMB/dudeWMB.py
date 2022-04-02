@@ -179,13 +179,18 @@ def predict():
         print("Retrieving forecast weather data.")
 
         jsonWeatherData =weatherResponse.json()
-        print(jsonWeatherData)
+        # print(jsonWeatherData)
 
 
         # Loop thru to grab test time from array for variables in X_test:
         # Midday - Weather at that point
-        
-        # weather = {} # Declare a dict to hold the station data
+
+        forecastWeather = {} # Declare a dict to hold the forecast weather data
+        print(forecastWeather)
+
+        #for i in forecastWeather[len(forecastWeather)-1]:
+         #   print(forecastWeather[i])
+
         # weather['latitude'] = jsonWeatherData['coord']['lat']
         # weather['longitude'] = jsonWeatherData['coord']['lon']
         # weather['main'] = jsonWeatherData['weather'][0]['main']
