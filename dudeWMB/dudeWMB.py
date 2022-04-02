@@ -223,8 +223,11 @@ def predict():
     with open('dwmb_linReg_model.pkl', 'rb') as handle:
         model = pickle.load(handle)
         result = model.predict(X_test)
+    
+    jsonResults = jsonify(result[0])
+    print("Retrieving Prediction Results")
 
-    return jsonify(result[0])
+    return jsonResults
 
 
 
