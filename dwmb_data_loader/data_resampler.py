@@ -223,6 +223,198 @@ def resampleStationStateHourly(connectionString):
 
 
 
+def resampleWeatherHistoryHourly(connectionString):
+    """Function to downsample data 'weather history' to 1 hour samples"""
+   
+    # Create data-frame variables in outer function so that it can be accessed in inner functions
+    df = pd.DataFrame()
+    df_resampled = pd.DataFrame()
+    
+    # That's the time we started collected occopancy data
+    firstRecordDateTime = datetime(2022, 2, 21, 12, 35, 27)
+
+    # The create_engine() function produces an Engine object based on a URL
+    engine = db.create_engine(connectionString)
+   
+    #------------------------------------------------------------------------------------------
+    # Inner function to delete all rows in resampled table
+    #------------------------------------------------------------------------------------------    
+    def deleteRowsInResampledTable(dbConnection):
+        dbConnection.execute(
+            db.text("Delete FROM dudeWMB.dudeWMB.weatherHistoryResampled where weatherHour <> 0;"))
+
+    #------------------------------------------------------------------------------------------
+    # Inner function to get date & time of latest sample
+    #------------------------------------------------------------------------------------------    
+    def getDateTimeLatestSample(dbConnection):
+
+        nonlocal firstRecordDateTime
+        
+        # Query latest tuple from RDS that is has already been resampled
+        result = dbConnection.execute(
+        db.text("SELECT * FROM dudeWMB.weatherHistoryResampled ORDER BY weatherHour DESC LIMIT 1;"))
+        for tuple in result: # iterate over results - although only one tuple is expected
+            dateTimeSample = tuple['weatherHour']
+            break
+        else:
+            # If table 'weatherHistoryResampled' is empty then use date were data collection began
+            dateTimeSample = firstRecordDateTime
+
+        return dateTimeSample
+
+    #------------------------------------------------------------------------------------------
+    # Inner function to query entire data set
+    #------------------------------------------------------------------------------------------    
+    def queryEntireData(dbConnection):
+
+        # define variables which aren't local in this inner function
+        nonlocal df
+        nonlocal engine
+        
+        # Intialise data frame
+        df = pd.DataFrame()   
+        # Read entire table 'weatherHistory' and store it in data frame
+        df = pd.read_sql_table('weatherHistory', dbConnection)
+    
+    #------------------------------------------------------------------------------------------
+    # Inner function to query data per hour
+    #------------------------------------------------------------------------------------------    
+    def queryHourlyData(dbConnection, timeObj):
+        """Inner function to query data from the 'weatherHistory' table
+        
+        DRY principle - Don't Repeat Yourself - that's why we user inner functions
+        """
+        
+        # define variables which aren't local in this inner function
+        nonlocal df
+        nonlocal engine
+        
+        df = pd.DataFrame()
+        
+        # Get resampling time window for previous hour as tuple [WindowStart, WindowEnd]
+        resampleWindow = getResampleTimeWindowForPreviousHour(timeObj)
+        
+        # Convert time windows from datetime object to string
+        resampleWindowStartStr = resampleWindow[0].strftime("%Y-%m-%d %H:%M:%S")
+        resampleWindowStartStr
+        resampleWindowEndStr = resampleWindow[1].strftime("%Y-%m-%d %H:%M:%S")
+        resampleWindowEndStr
+        print("Resample window start: " + str(resampleWindow[0]))
+        print("Resample window end: " + str(resampleWindow[1]))
+                  
+        # Create SQL query string to query data from the 'weatherHistory' table
+        sqlQuery = "select * from dudeWMB.weatherHistory where weatherTime > '"\
+            + resampleWindowStartStr + "' and weatherTime < '" + resampleWindowEndStr + "'"
+
+        # TODO - implement some error handling using try & execpt
+        
+        # Query all given data for the specified hour and store in a pandas dataframe 
+        df = pd.read_sql(sqlQuery, dbConnection)
+        
+    #------------------------------------------------------------------------------------------
+    # Inner function to resample data per hour 
+    #------------------------------------------------------------------------------------------    
+    def resampleHourlyData(dbConnection):
+        """Inner function to resample the obtained data from the 'weatherHistorystationState' table
+        
+        DRY principle - Don't Repeat Yourself - that's why we user inner functions
+        """
+                                      
+        # define variables which aren't local in this inner function
+        nonlocal df
+        nonlocal df_resampled
+
+        # Downsample occupancy data from 30 samples per hour to 1 sample per hour for each station individually
+
+        # Initialise data frame
+        df_resampled = pd.DataFrame()
+
+        # Make sure data frame isn't empty
+        # This could happen if there is a gap in the data. Then the query would return a empty data frame
+        if df.shape[0] != 0:
+
+            df['weatherTime'] = pd.to_datetime(df['weatherTime'])
+
+            df_resampled = df.resample('60min', on='weatherTime').apply(\
+                {"latitude":"mean", "longitude":"mean", "description":"first",\
+                 "temp":"mean", "humidity":"mean", "wind_speed":"mean"})
+            df_resampled = df_resampled.round(\
+                {'latitude': 2, 'longitude': 2, 'temp': 2, 'humidity': 2, 'wind_speed': 2})
+            df_resampled.rename(columns={"weatherTime": "weatherHour"}, inplace=True)
+            # Convert the new multiIndex back to a regular index by dropping the top
+            # level and converting it into a column
+            #   -> level=0 only removes level zero from the multiindex
+            # Dropping the first element of the mulitIndex (stationId) and turning it into a column
+#             df_resampled = df_resampled.reset_index(level=0, drop=False)
+            # Then generate a new column from the index to create new column labeled 'weatherHour'
+#             df_resampled['weatherHour']=df_resampled.index
+            # Now drop the wierd looking index and set it back to numeric
+            # --> Getting rid of the weatherTime within the index and turn into a regular index
+#             df_resampled = df_resampled.reset_index(level=0, drop=True)
+
+            
+#             df_resampled = df.groupby(['stationId']).resample('60min', on='weatherTime').apply({"available_bike_stands":"mean", "available_bikes":"mean", "status":"first"})
+#             df_resampled = df_resampled.round({'available_bike_stands': 0, 'available_bikes': 0})
+#             # Convert the new multiIndex back to a regular index by dropping the top
+#             # level and converting it into a column
+#             #   -> level=0 only removes level zero from the multiindex
+#             # Dropping the first element of the mulitIndex (stationId) and turning it into a column
+#             df_resampled = df_resampled.reset_index(level=0, drop=False)
+#             # Then generate a new column from the index to create new column labeled 'weatherHour'
+#             df_resampled['weatherHour']=df_resampled.index
+#             # Now drop the wierd looking index and set it back to numeric
+#             # --> Getting rid of the weatherTime within the index and turn into a regular index
+#             df_resampled = df_resampled.reset_index(level=0, drop=True)
+            
+
+    #------------------------------------------------------------------------------------------
+    # Inner function to write data per hour to RDS
+    #------------------------------------------------------------------------------------------    
+    def writeHourlyData(dbConnection):
+        """Inner function to write resampled data to the 'weatherHistoryResampled' table
+        
+        DRY principle - Don't Repeat Yourself - that's why we user inner functions
+        """
+
+        # define variables which aren't local in this inner function
+        nonlocal df_resampled
+        
+        if df_resampled.shape[0] != 0:
+            try:
+                with engine.begin() as connection:                   
+                    df_resampled.to_sql('weatherHistoryResampled', con=connection,\
+                        schema='dudeWMB', index=False, if_exists='append')
+                    print(">>> Writing to RDS was successful!")
+            except Exception as e:
+                print(">>> Something went wrong while writing to RDS!")
+                
+    #------------------------------------------------------------------------------------------
+    # Resampling control
+    #------------------------------------------------------------------------------------------    
+    with engine.begin() as dbConnection:
+
+        # Get current time
+        timeNow = datetime.now()
+        print("Time now: " + str(timeNow))
+        # Get last sample time
+        lastSampleDate = getDateTimeLatestSample(dbConnection)
+        print("Last sample date:" + str(lastSampleDate))    
+
+        while lastSampleDate < datetime.now() - timedelta(hours  = 1):
+
+            print("-------------------------------------------------------------")
+            lastSampleDate = lastSampleDate + timedelta(hours  = 1)
+            queryHourlyData(dbConnection, lastSampleDate)
+            display(df)
+            resampleHourlyData(dbConnection)
+            print("Length data frame resampled: " + str(df_resampled.shape[0]))
+            if df_resampled.shape[0] != 0:
+                display(df_resampled)
+            writeHourlyData(dbConnection)
+            print("-------------------------------------------------------------")
+
+
+
 
 
 def main():
