@@ -2,11 +2,15 @@
 # 2022-03-31 TK/JS/WO'D; "Dude Where's My Bike" Project
 #          Comp30830 Software Engineering Project
 
+import sys
 import pandas as pd
 from datetime import datetime, timedelta
 import numpy as np
 import sqlalchemy as db
 
+#------------------------------------------------------------------------------------------
+# Function to yield the resample time window of the previous hour based on provided datetime object 
+#------------------------------------------------------------------------------------------    
 def getResampleTimeWindowForPreviousHour(dateTimeObj):
 
     if isinstance(dateTimeObj, datetime):        
@@ -37,6 +41,10 @@ def getResampleTimeWindowForPreviousHour(dateTimeObj):
     return [resampleWindowStart, resampleWindowEnd] 
 
 
+
+#------------------------------------------------------------------------------------------
+# Function to to downsample collected station-state data from 2min to 1h intervals 
+#------------------------------------------------------------------------------------------    
 def resampleStationStateHourly(connectionString):
     """Function to downsample data 'station-state' from 30 samples to 1 sample per hour"""
    
@@ -44,8 +52,8 @@ def resampleStationStateHourly(connectionString):
     df = pd.DataFrame()
     df_resampled = pd.DataFrame()
     
-    # That's the time we started collected occopancy data
-    defaultDateTime = datetime(2022, 2, 22, 12, 53, 25)
+    # That's the time we started collecting occopancy data
+    firstRecordDateTime = datetime(2022, 2, 22, 12, 53, 25)
 
     # The create_engine() function produces an Engine object based on a URL
     engine = db.create_engine(connectionString)
@@ -62,22 +70,17 @@ def resampleStationStateHourly(connectionString):
     #------------------------------------------------------------------------------------------    
     def getDateTimeLatestSample(dbConnection):
 
-        nonlocal defaultDateTime
+        nonlocal firstRecordDateTime
         
         # Query latest tuple from RDS that is has already been resampled
         result = dbConnection.execute(
-        db.text("SELECT * FROM dudeWMB.stationStateResampled ORDER BY ID DESC LIMIT 1;"))
+        db.text("SELECT * FROM dudeWMB.stationStateResampled ORDER BY stationId, weatherHour DESC LIMIT 1;"))
         for tuple in result: # iterate over results - although only one tuple is expected
             dateTimeSample = tuple['weatherHour']
             break
         else:
             # If table 'stationStateResampled' is empty then use date were data collection began
-            dateTimeSample = defaultDateTime
-#             print("Resampled data table is empty, so let's get the first tuple from table 'stationState'.")
-#             result = dbConnection.execute(
-#             db.text("SELECT * FROM dudeWMB.stationState ORDER BY ID LIMIT 1;"))
-#             for tuple in result: # iterate over results - although only one tuple is expected
-#                 dateTimeSample = tuple['weatherTime']
+            dateTimeSample = firstRecordDateTime
 
         return dateTimeSample
 
@@ -145,8 +148,11 @@ def resampleStationStateHourly(connectionString):
 
         # Downsample occupancy data from 30 samples per hour to 1 sample per hour for each station individually
 
+        # Initialise data frame
         df_resampled = pd.DataFrame()
 
+        # Make sure data frame isn't empty
+        # This could happen if there is a gap in the data. Then the query would return a empty data frame
         if df.shape[0] != 0:
 
             df['weatherTime'] = pd.to_datetime(df['weatherTime'])
@@ -198,27 +204,22 @@ def resampleStationStateHourly(connectionString):
         lastSampleDate = getDateTimeLatestSample(dbConnection)
         print("Last sample date:" + str(lastSampleDate))    
 
-        # If no resampled data was found --> start resampling process from the very beginning
-        # defaultDateTime represents the first date & time when we started collecting occupancy data
-        if lastSampleDate == defaultDateTime:
+        # Downsampling collected data from a 2min interval to a 1hour interval.
+        # Iterating over every day and hour that is listed in the 'stationState' table - this includes all stations in one single fetch
+        # Two scenarios:
+        # 1) If 'stationStateResampled' table is completely empty, then start resampling from 'firstRecordDateTime' - the time when data recording began
+        # 2) Pick up where we've left off last time and resample data until now. 
+        while lastSampleDate < datetime.now() - timedelta(hours  = 1):
 
-            # deleteRowsInResampledTable(dbConnection)
-
-            # Iterate over every day and hour that is listed in the 'stationState' table
-            # and resample each hour individually
-            while lastSampleDate < datetime.now() - timedelta(hours  = 1):
-                
-                lastSampleDate = lastSampleDate + timedelta(hours  = 1)
-                queryHourlyData(dbConnection, lastSampleDate)
-                resampleHourlyData(dbConnection)
-                print("Length data frame resampled: " + str(df_resampled.shape[0]))
-                writeHourlyData(dbConnection)
-
-        # If resampled data was found --> continue resampling on a hourly base
-        else:
-            queryHourlyData(dbConnection, timeNow)
+            print("-------------------------------------------------------------")
+            lastSampleDate = lastSampleDate + timedelta(hours  = 1)
+            queryHourlyData(dbConnection, lastSampleDate)
             resampleHourlyData(dbConnection)
-            writeHourlyData(dbConnection)
+            print("Length data frame resampled: " + str(df_resampled.shape[0]))
+            if df_resampled.shape[0] != 0:
+                writeHourlyData(dbConnection)
+            print("-------------------------------------------------------------")
+
 
 
 
