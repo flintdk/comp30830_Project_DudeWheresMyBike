@@ -6,8 +6,32 @@ import sys
 import pandas as pd
 from datetime import datetime, timedelta
 import sqlalchemy as db
-from data_loader import loadCredentials
+import json
+# 22/04/04 TK; Remove the import of loadCredntials as it fails when deployed to
+#          EC2. It fails simply because the working directory of the scheduled
+#          processes is the parent folder.  So I have three choices:
+#          -> Duplicate the credentials file
+#          -> Duplicate the loadCredentials method
+#          -> Investigate a better solution.
+# Unfortunately I don't have time for option 3.  So in the interest of expediance
+# I'm duplicating the method.
+#from data_loader import loadCredentials
 import traceback
+
+def loadCredentials():
+    """Load the credentials required for accessing the JCDecaux API
+
+    Returns a JSON object with the required credentials.
+    Implemented in a method as Credential storage will be subject to change.
+    """
+    # Our credentials are just stored in a JSON file (for now)
+    # This file is not saved to GitHub and is placed on each EC2 instance
+    # by a team member.
+    # Load the JSON file
+    file = open('dudewmb.json')
+    credentials = json.load(file)
+    file.close  # Can close the file now we have the data loaded...
+    return credentials
 
 #------------------------------------------------------------------------------------------
 # Function to yield the resample time window of the previous hour based on provided datetime object 
