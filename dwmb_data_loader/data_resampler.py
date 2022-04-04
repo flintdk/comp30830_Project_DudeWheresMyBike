@@ -5,7 +5,6 @@
 import sys
 import pandas as pd
 from datetime import datetime, timedelta
-import numpy as np
 import sqlalchemy as db
 from data_loader import loadCredentials
 import traceback
@@ -20,25 +19,32 @@ def getResampleTimeWindowForPreviousHour(dateTimeObj):
     else:
         print("Error: Datatype 'datatime object' expected ")
         sys.exit()
-    
-    # If the trigger was just arround midnight, then we need to handle this individually!
-    if dateTimeObj.hour == 0:
 
-        # Substract one hour from the provided time
-        resampleWindow = dateTimeObj - timedelta(hours = 1)
-        # At midnight we need to consider the day when setting WindowStart
-        # e.g given time: 00:15:00 --> 23:00:00
-        resampleWindowStart = datetime(dateTimeObj.year, dateTimeObj.month, resampleWindow.day, resampleWindow.hour)
-        resampleWindowEnd = resampleWindowStart + timedelta(hours = 1)
+    # Substract one hour from the provided time
+    resampleWindow = dateTimeObj - timedelta(hours = 1)
+    # At midnight we need to consider the day when setting WindowStart
+    # e.g given time: 00:15:00 --> 23:00:00
+    resampleWindowStart = datetime(resampleWindow.year, resampleWindow.month, resampleWindow.day, resampleWindow.hour)
+    resampleWindowEnd = resampleWindowStart + timedelta(hours = 1)
+   
+    # # If the trigger was just arround midnight, then we need to handle this individually!
+    # if dateTimeObj.hour == 0:
 
-    # In any other hour but midnight we can merely subract one hour. That's it!
-    else:
-        # Substract one hour from the provided time
-        resampleWindow = dateTimeObj - timedelta(hours = 1)
-        # Use the given date but only use previous hour instead of entire time
-        # e.g given time: 11:15:00 --> 10:00:00
-        resampleWindowStart = datetime(dateTimeObj.year, dateTimeObj.month, dateTimeObj.day, resampleWindow.hour)
-        resampleWindowEnd = resampleWindowStart + timedelta(hours = 1)
+    #     # Substract one hour from the provided time
+    #     resampleWindow = dateTimeObj - timedelta(hours = 1)
+    #     # At midnight we need to consider the day when setting WindowStart
+    #     # e.g given time: 00:15:00 --> 23:00:00
+    #     resampleWindowStart = datetime(resampleWindow.year, resampleWindow.month, resampleWindow.day, resampleWindow.hour)
+    #     resampleWindowEnd = resampleWindowStart + timedelta(hours = 1)
+
+    # # In any other hour but midnight we can merely subract one hour. That's it!
+    # else:
+    #     # Substract one hour from the provided time
+    #     resampleWindow = dateTimeObj - timedelta(hours = 1)
+    #     # Use the given date but only use previous hour instead of entire time
+    #     # e.g given time: 11:15:00 --> 10:00:00
+    #     resampleWindowStart = datetime(dateTimeObj.year, dateTimeObj.month, dateTimeObj.day, resampleWindow.hour)
+    #     resampleWindowEnd = resampleWindowStart + timedelta(hours = 1)
     
     return [resampleWindowStart, resampleWindowEnd] 
 
@@ -47,7 +53,7 @@ def getResampleTimeWindowForPreviousHour(dateTimeObj):
 #------------------------------------------------------------------------------------------
 # Function to to downsample collected station-state data from 2min to 1h intervals 
 #------------------------------------------------------------------------------------------    
-def resampleStationStateHourly(engine):
+def resampleStationStateHourly(dbConnection):
     """Function to downsample data 'station-state' from 30 samples to 1 sample per hour"""
    
     # Create data-frame variables in outer function so that it can be accessed in inner functions
@@ -87,7 +93,6 @@ def resampleStationStateHourly(engine):
 
         # define variables which aren't local in this inner function
         nonlocal df
-        nonlocal engine
         
         # Intialise data frame
         df = pd.DataFrame()   
@@ -104,7 +109,6 @@ def resampleStationStateHourly(engine):
         
         # define variables which aren't local in this inner function
         nonlocal df
-        nonlocal engine
         
         df = pd.DataFrame()
         
@@ -179,44 +183,42 @@ def resampleStationStateHourly(engine):
         
         if df_resampled.shape[0] != 0:
             try:
-                with engine.begin() as connection:                   
-                    df_resampled.to_sql('stationStateResampled', con=connection,\
-                        schema='dudeWMB', index=False, if_exists='append')
-                    print(">>> Writing to RDS was successful!")
+                df_resampled.to_sql('stationStateResampled', con=dbConnection,\
+                    schema='dudeWMB', index=False, if_exists='append')
+                print(">>> Writing to RDS was successful!")
             except Exception as e:
                 print(">>> Something went wrong while writing to RDS!")
                 
     #------------------------------------------------------------------------------------------
     # Resampling control
-    with engine.begin() as dbConnection:
 
-        # Get current time
-        timeNow = datetime.now()
-        print("Time now: " + str(timeNow))
-        # Get last sample time
-        lastSampleDate = getDateTimeLatestSample(dbConnection)
-        print("Last sample date:" + str(lastSampleDate))    
+    # Get current time
+    timeNow = datetime.now()
+    print("Time now: " + str(timeNow))
+    # Get last sample time
+    lastSampleDate = getDateTimeLatestSample(dbConnection)
+    print("Last sample date:" + str(lastSampleDate))    
 
-        # Downsampling collected data from a 2min interval to a 1hour interval.
-        # Iterating over every day and hour that is listed in the 'stationState' table - this includes all stations in one single fetch
-        # Two scenarios:
-        # 1) If 'stationStateResampled' table is completely empty, then start resampling from 'firstRecordDateTime' - the time when data recording began
-        # 2) Pick up where we've left off last time and resample data until now. 
-        while lastSampleDate < datetime.now() - timedelta(hours  = 1):
+    # Downsampling collected data from a 2min interval to a 1hour interval.
+    # Iterating over every day and hour that is listed in the 'stationState' table - this includes all stations in one single fetch
+    # Two scenarios:
+    # 1) If 'stationStateResampled' table is completely empty, then start resampling from 'firstRecordDateTime' - the time when data recording began
+    # 2) Pick up where we've left off last time and resample data until now. 
+    while lastSampleDate < datetime.now() - timedelta(hours  = 1):
 
-            print("-------------------------------------------------------------")
-            lastSampleDate = lastSampleDate + timedelta(hours  = 1)
-            queryHourlyData(dbConnection, lastSampleDate)
-            resampleHourlyData(dbConnection)
-            print("Length data frame resampled: " + str(df_resampled.shape[0]))
-            if df_resampled.shape[0] != 0:
-                writeHourlyData(dbConnection)
-            print("-------------------------------------------------------------")
+        print("-------------------------------------------------------------")
+        lastSampleDate = lastSampleDate + timedelta(hours  = 1)
+        queryHourlyData(dbConnection, lastSampleDate)
+        resampleHourlyData(dbConnection)
+        print("Length data frame resampled: " + str(df_resampled.shape[0]))
+        if df_resampled.shape[0] != 0:
+            writeHourlyData(dbConnection)
+        print("-------------------------------------------------------------")
 
 #------------------------------------------------------------------------------------------
 # Function to to downsample collected weather history to 1h intervals 
 #------------------------------------------------------------------------------------------    
-def resampleWeatherHistoryHourly(engine):
+def resampleWeatherHistoryHourly(dbConnection):
     """Function to downsample data 'weather history' to 1 hour samples"""
    
     # Create data-frame variables in outer function so that it can be accessed in inner functions
@@ -256,7 +258,6 @@ def resampleWeatherHistoryHourly(engine):
 
         # define variables which aren't local in this inner function
         nonlocal df
-        nonlocal engine
         
         # Intialise data frame
         df = pd.DataFrame()   
@@ -273,7 +274,6 @@ def resampleWeatherHistoryHourly(engine):
         
         # define variables which aren't local in this inner function
         nonlocal df
-        nonlocal engine
         
         df = pd.DataFrame()
         
@@ -351,34 +351,32 @@ def resampleWeatherHistoryHourly(engine):
         
         if df_resampled.shape[0] != 0:
             try:
-                with engine.begin() as connection:                   
-                    df_resampled.to_sql('weatherHistoryResampled', con=connection,\
-                        schema='dudeWMB', index=False, if_exists='append')
-                    print(">>> Writing to RDS was successful!")
+                df_resampled.to_sql('weatherHistoryResampled', con=dbConnection,\
+                    schema='dudeWMB', index=False, if_exists='append')
+                print(">>> Writing to RDS was successful!")
             except Exception as e:
                 print(">>> Something went wrong while writing to RDS!")
                 
     #------------------------------------------------------------------------------------------
     # Resampling control
-    with engine.begin() as dbConnection:
 
-        # Get current time
-        timeNow = datetime.now()
-        print("Time now: " + str(timeNow))
-        # Get last sample time
-        lastSampleDate = getDateTimeLatestSample(dbConnection)
-        print("Last sample date:" + str(lastSampleDate))    
+    # Get current time
+    timeNow = datetime.now()
+    print("Time now: " + str(timeNow))
+    # Get last sample time
+    lastSampleDate = getDateTimeLatestSample(dbConnection)
+    print("Last sample date:" + str(lastSampleDate))    
 
-        while lastSampleDate < datetime.now() - timedelta(hours  = 1):
+    while lastSampleDate < datetime.now() - timedelta(hours  = 1):
 
-            print("-------------------------------------------------------------")
-            lastSampleDate = lastSampleDate + timedelta(hours  = 1)
-            queryHourlyData(dbConnection, lastSampleDate)
-            resampleHourlyData(dbConnection)
-            print("Length data frame resampled: " + str(df_resampled.shape[0]))
-            if df_resampled.shape[0] != 0:
-                writeHourlyData(dbConnection)
-            print("-------------------------------------------------------------")
+        print("-------------------------------------------------------------")
+        lastSampleDate = lastSampleDate + timedelta(hours  = 1)
+        queryHourlyData(dbConnection, lastSampleDate)
+        resampleHourlyData(dbConnection)
+        print("Length data frame resampled: " + str(df_resampled.shape[0]))
+        if df_resampled.shape[0] != 0:
+            writeHourlyData(dbConnection)
+        print("-------------------------------------------------------------")
 
 
 #------------------------------------------------------------------------------------------    
@@ -404,8 +402,8 @@ def main():
 
         # engine.begin() runs a transaction
         with engine.begin() as connection:
-            resampleStationStateHourly(engine)
-            resampleWeatherHistoryHourly(engine)
+            resampleStationStateHourly(connection)
+            resampleWeatherHistoryHourly(connection)
 
     except:
         # if there is any problem, print the traceback
