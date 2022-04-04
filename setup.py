@@ -1,8 +1,8 @@
-# To create a source distribution for the dwmb_data_loader using this file:
+# To create a source distribution for the DWMB Project using this file:
 #   1) MAKE SURE YOU ARE IN THE ROOT FOLDER OF THE PROJECT!!
 #   2) python setup.py sdist --formats=gztar,zip
 #
-# To install the dwmb_data_loader on your EC2 instance using the resources
+# To install the DWMB Project on your EC2 instance using the resources
 # created by this file:
 #   1) MAKE SURE YOU ARE IN THE ROOT FOLDER OF THE PROJECT!!
 #   2) python -m pip install -e "git+https://github.com/flintdk/comp30830_project_2022/@dev#egg=comp30830_project_2022"
@@ -17,12 +17,6 @@
 # BRANCHES: It is also possible to specify a “git ref” such as branch name, a commit hash or a tag name:
 #   python -m pip install git+https://github.com/flintdk/comp30830_project_2022/@dev
 #
-# PACKAGES:
-# pip looks at 2 fragments for VCS URLs:
-#   egg: For specifying the “project name” for use in pip’s dependency resolution logic. eg: egg=project_name
-#   subdirectory: For specifying the path to the Python package, when it is not in the root of the VCS directory. eg: pkg_dir
-# e.g.
-#   python -m pip install -e "git+https://github.com/flintdk/comp30830_project_2022/#egg=dwmb_data_loader&subdirectory=dwmb_data_loader"
 
 from setuptools import setup
 from setuptools import find_packages
@@ -46,7 +40,7 @@ setup(
       #   - MAJOR VERSION 0
       #   - MINOR VERSION 1
       #   - MAINTENANCE VERSION 0
-      version='0.3.0',
+      version='0.4.0',
 
       # Here is a small description of the library. This appears
       # when someone searches for the library on https://pypi.org/search.
@@ -67,14 +61,15 @@ setup(
             'flask-sqlalchemy>=2.5.1',
             'mysql-connector-python>=8.0.0',
             'requests==2.27.1',
-            'sqlalchemy==1.4.27'
+            'sqlalchemy==1.4.27',
+            'pandas==1.4.2'
        ],
 
       # Here I can specify the python version necessary to run this library.
       python_requires='>=3.9',
 
       license='MIT',
-      packages=['dwmb_data_loader'],
+      packages=['dwmb_scheduled_tasks'],
       zip_safe=False,
 
       # Additional classifiers that give some characteristics about the package.
@@ -97,20 +92,21 @@ setup(
             'Operating System :: OS Independent',
 
             # Here I'll specify the version of Python it uses.
-            'Programming Language :: Python',
-            'Programming Language :: Python :: 3',
-            'Programming Language :: Python :: 3.7',
+            #'Programming Language :: Python',
+            #'Programming Language :: Python :: 3',
+            'Programming Language :: Python :: 3.9',
 
             # Here are the topics that my library covers.
             'Topic :: Education',
 
             ],
       
-      scripts=['dwmb_data_loader/dwmb_sched_dl.sh'],
+      scripts=['dwmb_scheduled_tasks/dwmb_scheduler.sh'],
 
       entry_points={
             'console_scripts': [
-                  'dwmb_dl = dwmb_data_loader.data_loader:main',
+                  'dwmb_dl = dwmb_scheduled_tasks.data_loader:main',
+                  'dwmb_resample = dwmb_scheduled_tasks.dwmb_resampler:main'
             ]
       }
 )
