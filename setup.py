@@ -40,7 +40,7 @@ setup(
       #   - MAJOR VERSION 0
       #   - MINOR VERSION 1
       #   - MAINTENANCE VERSION 0
-      version='0.3.0',
+      version='0.4.0',
 
       # Here is a small description of the library. This appears
       # when someone searches for the library on https://pypi.org/search.
@@ -61,7 +61,8 @@ setup(
             'flask-sqlalchemy>=2.5.1',
             'mysql-connector-python>=8.0.0',
             'requests==2.27.1',
-            'sqlalchemy==1.4.27'
+            'sqlalchemy==1.4.27',
+            'pandas==1.4.2'
        ],
 
       # Here I can specify the python version necessary to run this library.
@@ -91,9 +92,9 @@ setup(
             'Operating System :: OS Independent',
 
             # Here I'll specify the version of Python it uses.
-            'Programming Language :: Python',
-            'Programming Language :: Python :: 3',
-            'Programming Language :: Python :: 3.7',
+            #'Programming Language :: Python',
+            #'Programming Language :: Python :: 3',
+            'Programming Language :: Python :: 3.9',
 
             # Here are the topics that my library covers.
             'Topic :: Education',
@@ -105,7 +106,7 @@ setup(
       entry_points={
             'console_scripts': [
                   'dwmb_dl = dwmb_scheduled_tasks.data_loader:main',
-                  'dwmb_resample = dwmb_scheduled_tasks.dwmb_resampler:main',
+                  'dwmb_resample = dwmb_scheduled_tasks.dwmb_resampler:main'
             ]
       }
 )
