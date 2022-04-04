@@ -13,7 +13,6 @@ if script is being run as a script (not imported) call main() function
 
 """
 
-from sqlite3 import complete_statement
 import sys
 import requests
 import json

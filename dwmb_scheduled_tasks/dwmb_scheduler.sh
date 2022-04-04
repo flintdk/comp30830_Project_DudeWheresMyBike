@@ -1,5 +1,5 @@
 #!/bin/bash
-# DWMB_Sched_dl.sh; Wrapper script to start, stop and display the DWMB_Sched_dl.sh job
+# DWMB_Scheduler.sh; Wrapper script to start, stop and display the DWMB_Scheduler.sh job
 #
 # The cron utility runs based on commands specified in a cron table (crontab).
 # The crontab does not exist for a user by default.
@@ -17,16 +17,17 @@ home_dir="/home/ubuntu"
 # I popped the following into variables as it was handier for testing
 cron_dir="/etc/cron.d"
 #cron_dir="/etc/cron.d"
-module_to_schedule="dwmb_dl"
+data_loader_module="dwmb_dl"
+data_resampler_module="dwmb_resampler"
 
 # Helper function - save me keying command summary twice, ensures consistancy in
 # user docs (such as they are)
 function echoClientCommandDocs() {
-    #cmdMsg="DWMB_Sched_dl.sh Commands Processed:\n"
+    #cmdMsg="DWMB_Scheduler.sh Commands Processed:\n"
     cmdMsg="  \e[3mhelp\e[0m - See this help text\n"
     cmdMsg+="  \e[3mshow\e[0m - Show the current state of the Cron table\n"
-    cmdMsg+="  \e[3mschedule\e[0m - Schedule the DWMB_Data_Loader to run, using default timings\n"
-    cmdMsg+="  \e[3mstop\e[0m - Remove the DWMB_Data_Loader from the Cron scheduler\n"
+    cmdMsg+="  \e[3mschedule\e[0m - Schedule the DWMB_Scheduled_Tasks to run, using default timings\n"
+    cmdMsg+="  \e[3mstop\e[0m - Remove the DWMB_Scheduled_Tasks from the Cron scheduler\n"
     echo -e "$cmdMsg"
 }
 
@@ -51,7 +52,7 @@ function usage() {
     exit "$1"  # exit with error status
 }
 if [ -z "$1" ]; then
-    usage 1 "DWMB_Sched_dl.sh: ERROR You must supply an instruction.";
+    usage 1 "DWMB_Scheduler.sh: ERROR You must supply an instruction.";
 fi
 
 #===============================================================================
@@ -64,17 +65,17 @@ clear
 case "$1" in  # CASE_ClientOrServer?
 help)
     # help: print a list of supported commands
-    echo -e "DWMB_Sched_dl.sh: The DWMB_Data_Loader supports the following Commands:"
+    echo -e "DWMB_Scheduler.sh: The DWMB_Scheduled_Tasks supports the following Commands:"
     echoClientCommandDocs
     ;;
 show)
     # show: print out the current crontab table
     #crontab -l
-    if [ -e "${cron_dir}/dwmb_data_loader" ]; then
-        echo "DWMB_Sched_dl.sh: The current state of the Crontab is as follows:"
-        cat "${cron_dir}/dwmb_data_loader"
+    if [ -e "${cron_dir}/dwmb_scheduled_tasks" ]; then
+        echo "DWMB_Scheduler.sh: The current state of the Crontab is as follows:"
+        cat "${cron_dir}/dwmb_scheduled_tasks"
     else
-        echo "DWMB_Sched_dl.sh: ERROR schedule not found! Aborting..."
+        echo "DWMB_Scheduler.sh: ERROR schedule not found! Aborting..."
         exit 1
     fi
     ;;
@@ -83,8 +84,8 @@ schedule)
     
     # We're using a custom timer file in the cron.d directory rather than the
     # crontab as it's much easier to automate...
-    echo "DWMB_Sched_dl.sh: Creating cron file..."
-    touch "${cron_dir}/dwmb_data_loader"
+    echo "DWMB_Scheduler.sh: Creating cron file..."
+    touch "${cron_dir}/dwmb_scheduled_tasks"
     #
     # To define the time we have to provide concrete values for:
     #   minute (m)
@@ -96,32 +97,35 @@ schedule)
     # ... or use '*' in these fields (for 'any').
     echo "                     Generating default schedule entries..."
     #
-    # NOTE: You'll notice we're just cron'ing the 'dwmb_data_loader'.  This assumes:
-    #   -> That dwmb_data_loader is *installed* and configured as a command
-    #   -> That the project conda virtual environment 'comp30830_dudeWMB' is configured
+    # NOTE: You'll notice we're just cron'ing the 'DWMB Scheduled Tasks'.  This assumes:
+    #   -> That the DWMB Scheduled tasks are *installed* and configured as commands (enpoints in Setup.py)
+    #   -> That the project conda virtual environment 'comp30830py39_dudeWMB' is configured
     #   -> That dudewmb.json (with our credentials) are available in the account login directory
     #   -> *** SUPER IMPORTANT *** That the ".bashrc_conda" script is available
     #      in the ubuntu home directory (the conda environments won't work without it)
-    echo "SHELL=/bin/bash" >> "${cron_dir}/dwmb_data_loader"
-    echo "BASH_ENV=~/.bashrc_conda" >> "${cron_dir}/dwmb_data_loader"
-    echo "*/2 5-23 * * * ubuntu conda activate comp30830py39_dudeWMB && cd /home/ubuntu/src/comp30830-project-2022 && ${module_to_schedule} >> ${home_dir}/dwmb_data_loader.log 2>&1 && conda deactivate" >> "${cron_dir}/dwmb_data_loader"
-    echo "0   0    * * * ubuntu conda activate comp30830py39_dudeWMB && cd /home/ubuntu/src/comp30830-project-2022 && ${module_to_schedule} >> ${home_dir}/dwmb_data_loader.log 2>&1 && conda deactivate" >> "${cron_dir}/dwmb_data_loader"
+    echo "SHELL=/bin/bash" >> "${cron_dir}/dwmb_scheduled_tasks"
+    echo "BASH_ENV=~/.bashrc_conda" >> "${cron_dir}/dwmb_scheduled_tasks"
+    echo "0   0    * * * ubuntu conda activate comp30830py39_dudeWMB && cd /home/ubuntu/src/comp30830-project-2022 && ${data_loader_module} >> ${home_dir}/dwmb_scheduled_tasks.log 2>&1 && conda deactivate" >> "${cron_dir}/dwmb_scheduled_tasks"
+    echo "*/2 5-23 * * * ubuntu conda activate comp30830py39_dudeWMB && cd /home/ubuntu/src/comp30830-project-2022 && ${data_loader_module} >> ${home_dir}/dwmb_scheduled_tasks.log 2>&1 && conda deactivate" >> "${cron_dir}/dwmb_scheduled_tasks"
+    echo "0   0-1  * * * ubuntu conda activate comp30830py39_dudeWMB && cd /home/ubuntu/src/comp30830-project-2022 && ${data_resampler_module} >> ${home_dir}/dwmb_scheduled_tasks.log 2>&1 && conda deactivate" >> "${cron_dir}/dwmb_scheduled_tasks"
+    echo "0   6-23 * * * ubuntu conda activate comp30830py39_dudeWMB && cd /home/ubuntu/src/comp30830-project-2022 && ${data_resampler_module} >> ${home_dir}/dwmb_scheduled_tasks.log 2>&1 && conda deactivate" >> "${cron_dir}/dwmb_scheduled_tasks"
+
     # Make sure there's a new line after the last command - cron seems to like it...
-    echo "" >> "${cron_dir}/dwmb_data_loader"
+    echo "" >> "${cron_dir}/dwmb_scheduled_tasks"
     exit 0
     ;;
 stop)
     # shutdown: exit with a return code of 0
-    echo "DWMB_Sched_dl.sh: About to erase the current Crontab..."
+    echo "DWMB_Scheduler.sh: About to erase the current Crontab..."
     read -r -p "                     Are you sure? [Y/N] " response
     if [[ "$response" =~ ^([yY][eE][sS]|[yY])$ ]]
     then
         #crontab -r
-        if [ -e "${cron_dir}/dwmb_data_loader" ]; then
-            rm "${cron_dir}/dwmb_data_loader"
-            echo "DWMB_Sched_dl.sh: Crontab erased."
+        if [ -e "${cron_dir}/dwmb_scheduled_tasks" ]; then
+            rm "${cron_dir}/dwmb_scheduled_tasks"
+            echo "DWMB_Scheduler.sh: Crontab erased."
         else
-            echo "DWMB_Sched_dl.sh: ERROR schedule not found! Aborting..."
+            echo "DWMB_Scheduler.sh: ERROR schedule not found! Aborting..."
             exit 1
         fi
     else
@@ -131,7 +135,7 @@ stop)
     ;;
 *)
     # All other commands  - we just abort...
-    errMsg="DWMB_Sched_dl.sh: ERROR Bad command. I don't understand \"$1\"\n";
+    errMsg="DWMB_Scheduler.sh: ERROR Bad command. I don't understand \"$1\"\n";
     errMsg+="                     Bad Luck :-(.  You can always try again??";
     echo -e "$errMsg"
     ;;
