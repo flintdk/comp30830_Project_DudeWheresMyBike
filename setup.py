@@ -106,7 +106,7 @@ setup(
       entry_points={
             'console_scripts': [
                   'dwmb_dl = dwmb_scheduled_tasks.data_loader:main',
-                  'dwmb_resample = dwmb_scheduled_tasks.dwmb_resampler:main'
+                  'dwmb_resample = dwmb_scheduled_tasks.data_resampler:main'
             ]
       }
 )
