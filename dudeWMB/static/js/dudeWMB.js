@@ -49,10 +49,26 @@ async function initMap() {
                 scaledSize: new google.maps.Size(42, 42)
             },
             title: station.stationName,
-            station_number: station.number
+            station_number: station.number,
+            
         });
+        // marker.addListener("click", () => {
+        //     map.setZoom(8);
+        //     map.setCenter(marker.getPosition());
+        //   });
+
         let contentString = '<div id="content"><h1>' + station.stationName + '</h1></div>' +
             '<div id="station_availability">Availability:</div>';
+        // let contentString = '<div id="content"><h1>' + station.stationName + '</h1></div>' +
+        //     '<div id="station_details"><table>' +
+        //     '<tr><td>Station name: :</td><td>' + station.stationName + '</td></tr>' +
+        //     '<tr><td>Station address: :</td><td>' + station.address + '</td></tr>' +
+        //     '<tr><td>Station latitude: :</td><td>' + station.latitude + '</td></tr>' +
+        //     '<tr><td>Station longitude: :</td><td>' + station.longitude + '</td></tr>' +
+        //     '<tr><td>Station banking: :</td><td>' + station.banking + '</td></tr>' +
+        //     '<tr><td>Station bonus: :</td><td>' + station.bonus + '</td></tr>' +
+        //     '</div>';
+        
         let infoWindow = new google.maps.InfoWindow({ content: contentString });
 
         // Listener
@@ -63,6 +79,15 @@ async function initMap() {
     }
 
 }
+
+// + "SET stationName = \"" + station['name'] + "\", " \
+// + "address = \"" + station['address'] + "\", " \
+// + "latitude = " + str(station['lat']) + ", " \
+// + "longitude = " + str(station['lng']) + ", " \
+// + "banking = " + str(station['banking']) + ", " \
+// + "bonus = " + str(station['bonus']) + " " \
+// + "WHERE number = " + str(station['number']) + " " \
+// + "and contractName = \"dublin\";")
 
 // What follows are a pair of functions to:
 //   -> first get
