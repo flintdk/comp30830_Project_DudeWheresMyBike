@@ -10,7 +10,7 @@ body {
 
 footer,
 header {
-    background-color: lightblue;
+    background-color: lightgreen;
     color: black;
 }
 
@@ -225,7 +225,7 @@ Source: https://www.w3schools.com/css/tryit.asp?filename=trycss_buttons_round
 */
 
 .button {
-    background-color: lightblue;
+    background-color: lightgreen;
     border: none;
     padding: 20px;
     width: 200px;
@@ -250,7 +250,7 @@ Source: https://www.w3schools.com/css/tryit.asp?filename=trycss_dropdown_button
 */
 
 .dropdwon-button {
-    background-color: lightblue;
+    background-color: lightgreen;
     color: black;
     padding: 16px;
     font-size: 16px;

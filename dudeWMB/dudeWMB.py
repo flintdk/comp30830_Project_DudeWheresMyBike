@@ -1,7 +1,10 @@
 # -*- coding: utf-8 -*-
 import functools
+from datetime import date
+from sqlite3 import Date
 from flask import Flask, g, render_template, jsonify
 from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy import text
 import json
 from jinja2 import Template
 from models import db, Station, StationState, weatherHistory
@@ -71,8 +74,35 @@ db.init_app(dudeWMB)
 @dudeWMB.route("/stations")
 @functools.lru_cache(maxsize=128)
 def get_stations():
-    # Example with filter
-    #Station.query.filter_by(stationName='SomeRandomStationName').first()
+    # If you want to access the 'session' using SQL Alchemy - you can do so as
+    # follows:
+    #   db.session. ...
+    # Lots of the SQLAlchemy documentation seem to use the session object whereas
+    # documentation on using models appears to be lighter.
+    #
+    # Station.query gives you a "BaseQuery"
+    # To get actual data from a "BaseQuery" you just use .all(), .first(), etc.
+    # db.session.query(Station) gives you a "BaseQuery" too (same??)
+    # Station.query.all() gives you a result set
+    # Station.query.join(StationState).all() seems to give me a result set
+    #                                        ... but it's huge and takes forever
+    #                                        and eventually just times out.
+    # Following are examples of filter_by (gives a BaseQuery)
+    # StationState.query.filter_by(stationId=1, weatherTime='2022-02-21 12:35:27')
+    # Station.query.filter_by(stationName='SomeRandomStationName').first()
+    # StationState.query.filter_by(stationId=1, weatherTime='2022-02-21 12:35:27').all()
+
+    ########################################################################
+    # Tested, working above this line, in progress below
+    ########################################################################
+
+    # We can filter results using filter_by
+    # db.users.filter_by(name='Joe')
+    # The same can be accomplished with filter, not using kwargs, but instead using
+    # the '==' equality operator, which has been overloaded on the db.users.name object:
+    # db.users.filter(db.users.name=='Joe')
+    # db.users.filter(or_(db.users.name=='Ryan', db.users.country=='England'))
+
     stations = Station.query.all()  ## Returns results as a list...
     # for station in stations:
     #     print(station.id, station.number)
@@ -81,10 +111,22 @@ def get_stations():
     #station_dict = dict((col, getattr(station, col)) for col in station.__table__.columns.keys())
     stationsList = []
     for station in stations:
-        stationDict = {}
-        for col in station.__table__.columns.keys():
-            stationDict[col] = getattr(station, col)
-        stationsList.append(stationDict)
+        stationLatestInfo = {}
+        #stationState = StationState.query.filter_by(stationId=getattr(station, 'id')).order_by('weatherTime desc').limit(1).first()
+        stationState = StationState.query.filter_by(stationId=station.id).order_by(text('weatherTime desc')).limit(1).all()[0]
+        # for col in station.__table__.columns.keys():
+        #     stationLatestInfo[col] = getattr(station, col)
+        stationLatestInfo['number'] = station.number
+        stationLatestInfo['stationName'] = station.stationName
+        stationLatestInfo['address'] = station.address
+        stationLatestInfo['latitude'] = station.latitude
+        stationLatestInfo['longitude'] = station.longitude
+        stationLatestInfo['banking'] = station.banking
+        stationLatestInfo['status'] = stationState.status
+        stationLatestInfo['bike_stands'] = stationState.bike_stands
+        stationLatestInfo['available_bike_stands'] = stationState.available_bike_stands
+        stationLatestInfo['available_bikes'] = stationState.available_bikes
+        stationsList.append(stationLatestInfo)
 
     return jsonify(stationsList)
 

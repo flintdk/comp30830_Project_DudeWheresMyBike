@@ -3,14 +3,124 @@
 var varGlobStations;
 var varGlobStationSelected;
 
+// Define modes as kind of enumerations in javascript
+const MODE_AVAILABLE_BIKES = "ModeAvailableBikes";
+const MODE_AVAILABLE_SPACES = "ModeAvailabeSpaces";
+var activeMode = MODE_AVAILABLE_BIKES;
+
+//-----------------------------------------------------------------------------
+// Function onLoad is invoked when the website (DOM) is loaded the first time
+//-----------------------------------------------------------------------------
 // This function is called onload.  It's the 'parent process' if you like that
 // kicks off all the work...
 async function onLoad() {
+    // get station data in json format
     varGlobStations = await getStationsJson();
+
+    // Add event listener to mode buttons 
+    document.getElementById("button_available_bikes").addEventListener("click", function() {
+        onSetMode(MODE_AVAILABLE_BIKES);
+      });
+    document.getElementById("button_available_spaces").addEventListener("click", function() {
+        onSetMode(MODE_AVAILABLE_SPACES);
+    });
+
+    // set default mode
+    onSetMode(MODE_AVAILABLE_BIKES);
+}
+
+//-----------------------------------------------------------------------------
+// Mode control - 'available bikes' OR 'available spaces' 
+//-----------------------------------------------------------------------------
+function onSetMode(mode) {
+    if (mode === MODE_AVAILABLE_BIKES) {
+        activeMode = MODE_AVAILABLE_BIKES;
+        document.getElementById("button_available_bikes").style.backgroundColor = "green"
+        document.getElementById("button_available_spaces").style.backgroundColor = "lightgreen"
+    } else if (mode === MODE_AVAILABLE_SPACES) {
+        activeMode = MODE_AVAILABLE_SPACES;
+        document.getElementById("button_available_bikes").style.backgroundColor = "lightgreen"
+        document.getElementById("button_available_spaces").style.backgroundColor = "green"
+    }
+    // Init map and coloured icons when user mode is changing
+    initMap();
+}
+
+//-----------------------------------------------------------------------------
+// Bike icon selection according to occupancy and user mode 
+//-----------------------------------------------------------------------------
+function getBikeIconUrl(mode, stationState) {
+
+    // Threshold values defined in percentage to select coloured bike icons accordingly
+    const THRESHOLD_GREEN = 70.0;
+    const THRESHOLD_ORANGE = 40.0;
+    const THRESHOLD_RED = 10.0;
+
+    // Relative paths to bike icons
+    const PATH_BIKE_ICON = "/img/bikeIcon.svg";
+    const PATH_BIKE_ICON_GREEN = "/img/bikeIconGreen.png";
+    const PATH_BIKE_ICON_ORANGE = "/img/bikeIconOrange.png";
+    const PATH_BIKE_ICON_RED = "/img/bikeIconRed.png";
+ 
+    let iconPathSelected = PATH_BIKE_ICON;
+
+    // If station is closed then show default icon
+    if (!(stationState.status == 'OPEN')) {
+        iconPathSelected = PATH_BIKE_ICON;
+    } 
+    // Select bike icons to user mode and occupancy accordingly
+    // If user mode is 'available bikes' then... 
+    else if (mode === MODE_AVAILABLE_BIKES) {
+        if (getPercentage(stationState.available_bikes, stationState.bike_stands) >= THRESHOLD_GREEN) {
+            iconPathSelected = PATH_BIKE_ICON_GREEN;
+        } 
+        else if (getPercentage(stationState.available_bikes, stationState.bike_stands) >= THRESHOLD_ORANGE) {
+            iconPathSelected = PATH_BIKE_ICON_ORANGE;
+        } 
+        else if (getPercentage(stationState.available_bikes, stationState.bike_stands) <= THRESHOLD_RED) {
+            iconPathSelected = PATH_BIKE_ICON_RED;
+        } 
+    } 
+    // If user mode is 'available bikes' then... 
+    else if (mode === MODE_AVAILABLE_SPACES) {
+        if (getPercentage(stationState.available_bike_stands, stationState.bike_stands) >= THRESHOLD_GREEN) {
+            iconPathSelected = PATH_BIKE_ICON_GREEN;
+        } 
+        else if (getPercentage(stationState.available_bike_stands, stationState.bike_stands) >= THRESHOLD_ORANGE) {
+            iconPathSelected = PATH_BIKE_ICON_ORANGE;
+        } 
+        else if (getPercentage(stationState.available_bike_stands, stationState.bike_stands) <= THRESHOLD_RED) {
+            iconPathSelected = PATH_BIKE_ICON_RED;
+        } 
+    }
+    // console.log("available bikes: " + stationState.available_bikes);
+    // console.log("available bike stands: " + stationState.available_bike_stands);
+    // console.log("stands bikes: " + stationState.bike_stands);
+    // console.log("stands status: " + stationState.status);
+    // console.log(iconPathSelected);
+    return iconPathSelected;
 
 }
 
+function getPercentage(value, max) {
+        
+        let percentage = 0.0;
+        if (max != 0) {
+            percentage = (value / max) * 100;
+        } else {
+            console.log("Error: Zero Division in getPercentage()");
+        }
+
+    return percentage;
+}
+// status = db.Column(db.String(45), nullable=True)
+// bike_stands = db.Column(db.Integer, nullable=True)
+// available_bike_stands = db.Column(db.Integer, nullable=True)
+// available_bikes = db.Column(db.Integer, nullable=True)
+
+//-----------------------------------------------------------------------------
 // Function to initialize and add the map
+//-----------------------------------------------------------------------------
 async function initMap() {
     // We load the stations on page load.  Yes - that means that if a new
     // station is added while the user is on a page that it won't be displayed.
@@ -35,8 +145,12 @@ async function initMap() {
     //     map: map,
     //     icon: 'bikeIcon.svg'
     // });
+
+    console.log("active mode: " + activeMode);
+
     for (let key in stations) {
         let station = stations[key];
+
         //console.log(station.stationName, station.number);
         var marker = new google.maps.Marker({
             position: {
@@ -45,14 +159,32 @@ async function initMap() {
             },
             map: map,
             icon: {
-                url: "/img/bikeIcon.svg",
+                url: getBikeIconUrl(activeMode, station),
                 scaledSize: new google.maps.Size(42, 42)
             },
             title: station.stationName,
-            station_number: station.number
+            station_number: station.number,
+            
         });
+        // Add listener so that when station is clicked the map zooms in to the selcted station
+        marker.addListener("click", () => {
+            map.setZoom(16);
+            map.setCenter(marker.getPosition());
+          });
+        
+        // Create table containing information about the station
         let contentString = '<div id="content"><h1>' + station.stationName + '</h1></div>' +
-            '<div id="station_availability">Availability:</div>';
+            '<div id="station_details"><table>' +
+            '<tr><td>Station name:</td><td>' + station.stationName + '</td></tr>' +
+            '<tr><td>Address:</td><td>' + station.address + '</td></tr>' +
+            '<tr><td>Latitude:</td><td>' + station.latitude + '</td></tr>' +
+            '<tr><td>Longitude:</td><td>' + station.longitude + '</td></tr>' +
+            '<tr><td>Banking:</td><td>' + station.banking + '</td></tr>' +
+            '<tr><td>Total bike stands:</td><td>' + station.bike_stands + '</td></tr>' +
+            '<tr><td>Available bike stands:</td><td>' + station.available_bike_stands + '</td></tr>' +
+            '<tr><td>Available bikes:</td><td>' + station.available_bikes + '</td></tr>' +
+            '</div>';
+        
         let infoWindow = new google.maps.InfoWindow({ content: contentString });
 
         // Listener
@@ -64,6 +196,9 @@ async function initMap() {
 
 }
 
+//-----------------------------------------------------------------------------
+// Get station data
+//-----------------------------------------------------------------------------
 // What follows are a pair of functions to:
 //   -> first get
 //   -> and then display
