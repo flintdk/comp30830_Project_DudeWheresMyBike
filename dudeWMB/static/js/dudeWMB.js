@@ -24,6 +24,9 @@ async function onLoad() {
     document.getElementById("button_available_spaces").addEventListener("click", function() {
         onSetMode(MODE_AVAILABLE_SPACES);
     });
+
+    // set default mode
+    onSetMode(MODE_AVAILABLE_BIKES);
 }
 
 //-----------------------------------------------------------------------------
@@ -42,6 +45,73 @@ function onSetMode(mode) {
     }
     console.log(activeMode);
 }
+
+//-----------------------------------------------------------------------------
+// Bike icon selection according to occupancy and user mode 
+//-----------------------------------------------------------------------------
+function getBikeIconUrl(mode, stationState) {
+
+    // Threshold values defined in percentage to select coloured bike icons accordingly
+    const THRESHOLD_GREEN = 70.0;
+    const THRESHOLD_ORANGE = 40.0;
+    const THRESHOLD_RED = 10.0;
+
+    // Relative paths to bike icons
+    const PATH_BIKE_ICON = "/img/bikeIcon.svg";
+    const PATH_BIKE_ICON_GREEN = "/img/bikeIconGreen.png";
+    const PATH_BIKE_ICON_ORANGE = "/img/bikeIconOrange.png";
+    const PATH_BIKE_ICON_RED = "/img/bikeIconRed.png";
+ 
+    let iconPathSelected = pathBikeIcon;
+
+    // If station is closed then show default icon
+    if (!(stationState.status === 'OPEN')) {
+        iconPathSelected = PATH_BIKE_ICON;
+    } 
+    // Select bike icons to user mode and occupancy accordingly
+    // If user mode is 'available bikes' then... 
+    else if (mode === MODE_AVAILABLE_BIKES) {
+        if (getPercentage(stationState.available_bikes, bike_stands) >= THRESHOLD_GREEN) {
+            iconPathSelected = PATH_BIKE_ICON_GREEN;
+        } 
+        else if (getPercentage(stationState.available_bikes, bike_stands) >= THRESHOLD_ORANGE) {
+            iconPathSelected = PATH_BIKE_ICON_ORANGE;
+        } 
+        else if (getPercentage(stationState.available_bikes, bike_stands) >= THRESHOLD_RED) {
+            iconPathSelected = PATH_BIKE_ICON_RED;
+        } 
+    } 
+    // If user mode is 'available bikes' then... 
+    else if (mode === MODE_AVAILABLE_SPACES) {
+        if (getPercentage(stationState.available_bike_stands, bike_stands) >= THRESHOLD_GREEN) {
+            iconPathSelected = PATH_BIKE_ICON_GREEN;
+        } 
+        else if (getPercentage(stationState.available_bike_stands, bike_stands) >= THRESHOLD_ORANGE) {
+            iconPathSelected = PATH_BIKE_ICON_ORANGE;
+        } 
+        else if (getPercentage(stationState.available_bike_stands, bike_stands) >= THRESHOLD_RED) {
+            iconPathSelected = PATH_BIKE_ICON_RED;
+        } 
+    }
+
+    return iconPathSelected;
+}
+
+function getPercentage(value, max) {
+        
+        let percentage = 0.0;
+        if (max != 0) {
+            percentage = (value / max) * 100;
+        } else {
+            console.log("Error: Zero Division in getPercentage()");
+        }
+
+    return percentage;
+}
+// status = db.Column(db.String(45), nullable=True)
+// bike_stands = db.Column(db.Integer, nullable=True)
+// available_bike_stands = db.Column(db.Integer, nullable=True)
+// available_bikes = db.Column(db.Integer, nullable=True)
 
 //-----------------------------------------------------------------------------
 // Function to initialize and add the map
@@ -73,9 +143,6 @@ async function initMap() {
     for (let key in stations) {
         let station = stations[key];
 
-
-
-        
         //console.log(station.stationName, station.number);
         var marker = new google.maps.Marker({
             position: {
@@ -85,6 +152,7 @@ async function initMap() {
             map: map,
             icon: {
                 url: "/img/bikeIcon.svg",
+                //url: getBikeIconUrl(activeMode, stationState);
                 scaledSize: new google.maps.Size(42, 42)
             },
             title: station.stationName,
