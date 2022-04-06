@@ -3,14 +3,49 @@
 var varGlobStations;
 var varGlobStationSelected;
 
+// Define modes as kind of enumerations in javascript
+const MODE_AVAILABLE_BIKES = Symbol("ModeAvailableBikes")
+const MODE_AVAILABLE_SPACES = Symbol("ModeAvailabeSpaces")
+var activeMode
+
+//-----------------------------------------------------------------------------
+// Function onLoad is invoked when the website (DOM) is loaded the first time
+//-----------------------------------------------------------------------------
 // This function is called onload.  It's the 'parent process' if you like that
 // kicks off all the work...
 async function onLoad() {
+    // get station data in json format
     varGlobStations = await getStationsJson();
 
+    // Add event listener to mode buttons 
+    document.getElementById("button_available_bikes").addEventListener("click", function() {
+        onSetMode(MODE_AVAILABLE_BIKES);
+      });
+    document.getElementById("button_available_spaces").addEventListener("click", function() {
+        onSetMode(MODE_AVAILABLE_SPACES);
+    });
 }
 
+//-----------------------------------------------------------------------------
+// Mode control - 'available bikes' OR 'available spaces' 
+//-----------------------------------------------------------------------------
+function onSetMode(mode) {
+    console.log("OnSetMode is invoked.")
+    if (mode === MODE_AVAILABLE_BIKES) {
+        activeMode = MODE_AVAILABLE_BIKES;
+        document.getElementById("button_available_bikes").style.backgroundColor = "green"
+        document.getElementById("button_available_spaces").style.backgroundColor = "lightgreen"
+    } else if (mode === MODE_AVAILABLE_SPACES) {
+        activeMode = MODE_AVAILABLE_SPACES;
+        document.getElementById("button_available_bikes").style.backgroundColor = "lightgreen"
+        document.getElementById("button_available_spaces").style.backgroundColor = "green"
+    }
+    console.log(activeMode);
+}
+
+//-----------------------------------------------------------------------------
 // Function to initialize and add the map
+//-----------------------------------------------------------------------------
 async function initMap() {
     // We load the stations on page load.  Yes - that means that if a new
     // station is added while the user is on a page that it won't be displayed.
@@ -37,6 +72,10 @@ async function initMap() {
     // });
     for (let key in stations) {
         let station = stations[key];
+
+
+
+        
         //console.log(station.stationName, station.number);
         var marker = new google.maps.Marker({
             position: {
@@ -80,15 +119,9 @@ async function initMap() {
 
 }
 
-// + "SET stationName = \"" + station['name'] + "\", " \
-// + "address = \"" + station['address'] + "\", " \
-// + "latitude = " + str(station['lat']) + ", " \
-// + "longitude = " + str(station['lng']) + ", " \
-// + "banking = " + str(station['banking']) + ", " \
-// + "bonus = " + str(station['bonus']) + " " \
-// + "WHERE number = " + str(station['number']) + " " \
-// + "and contractName = \"dublin\";")
-
+//-----------------------------------------------------------------------------
+// Get station data
+//-----------------------------------------------------------------------------
 // What follows are a pair of functions to:
 //   -> first get
 //   -> and then display
