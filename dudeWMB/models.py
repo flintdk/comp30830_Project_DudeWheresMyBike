@@ -1,4 +1,5 @@
 from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy.schema import Index
 from sqlalchemy.dialects.mysql import TINYINT
 
 # The flask_sqlalchemy module does not have to be initialized with the app right away
@@ -7,6 +8,7 @@ from sqlalchemy.dialects.mysql import TINYINT
 db = SQLAlchemy()
 
 class Station(db.Model):
+    __tablename__ = 'station'
     # Note how we never define an __init__ method on the Station class? That’s
     # because SQLAlchemy adds an implicit constructor to all model classes which
     # accepts keyword arguments for all its columns and relationships. If you
@@ -46,6 +48,7 @@ class Station(db.Model):
         return '<Station %r>' % self.stationName
 
 class StationState(db.Model):
+    __tablename__ = 'stationState'
     id = db.Column(db.Integer, primary_key=True)
     stationId = db.Column(db.Integer, db.ForeignKey('station.id'), nullable=False)
     weatherTime = db.Column(db.DateTime, nullable=True)
@@ -57,10 +60,14 @@ class StationState(db.Model):
 
     station = db.relationship('Station', back_populates='stationStates')
 
+    # place an index on col3, col4
+    __table_args__ = (Index('stationId_weatherTime', "stationId", "weatherTime"), )
+
     def __repr__(self):
         return '<Station %r>' % self.stationName
 
 class weatherHistory(db.Model):
+    __tablename__ = 'weatherHistory'
     weatherTime = db.Column(db.DateTime, primary_key=True)
     latitude = db.Column(db.Float)
     longitude = db.Column(db.Float)
