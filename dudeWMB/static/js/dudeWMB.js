@@ -4,9 +4,9 @@ var varGlobStations;
 var varGlobStationSelected;
 
 // Define modes as kind of enumerations in javascript
-const MODE_AVAILABLE_BIKES = Symbol("ModeAvailableBikes")
-const MODE_AVAILABLE_SPACES = Symbol("ModeAvailabeSpaces")
-var activeMode
+const MODE_AVAILABLE_BIKES = "ModeAvailableBikes";
+const MODE_AVAILABLE_SPACES = "ModeAvailabeSpaces";
+var activeMode = MODE_AVAILABLE_BIKES;
 
 //-----------------------------------------------------------------------------
 // Function onLoad is invoked when the website (DOM) is loaded the first time
@@ -33,7 +33,6 @@ async function onLoad() {
 // Mode control - 'available bikes' OR 'available spaces' 
 //-----------------------------------------------------------------------------
 function onSetMode(mode) {
-    console.log("OnSetMode is invoked.")
     if (mode === MODE_AVAILABLE_BIKES) {
         activeMode = MODE_AVAILABLE_BIKES;
         document.getElementById("button_available_bikes").style.backgroundColor = "green"
@@ -43,7 +42,8 @@ function onSetMode(mode) {
         document.getElementById("button_available_bikes").style.backgroundColor = "lightgreen"
         document.getElementById("button_available_spaces").style.backgroundColor = "green"
     }
-    console.log(activeMode);
+    // Init map and coloured icons when user mode is changing
+    initMap();
 }
 
 //-----------------------------------------------------------------------------
@@ -62,10 +62,10 @@ function getBikeIconUrl(mode, stationState) {
     const PATH_BIKE_ICON_ORANGE = "/img/bikeIconOrange.png";
     const PATH_BIKE_ICON_RED = "/img/bikeIconRed.png";
  
-    let iconPathSelected = pathBikeIcon;
+    let iconPathSelected = PATH_BIKE_ICON;
 
     // If station is closed then show default icon
-    if (!(stationState.status === 'OPEN')) {
+    if (!(stationState.status == 'OPEN')) {
         iconPathSelected = PATH_BIKE_ICON;
     } 
     // Select bike icons to user mode and occupancy accordingly
@@ -77,7 +77,7 @@ function getBikeIconUrl(mode, stationState) {
         else if (getPercentage(stationState.available_bikes, stationState.bike_stands) >= THRESHOLD_ORANGE) {
             iconPathSelected = PATH_BIKE_ICON_ORANGE;
         } 
-        else if (getPercentage(stationState.available_bikes, stationState.bike_stands) >= THRESHOLD_RED) {
+        else if (getPercentage(stationState.available_bikes, stationState.bike_stands) <= THRESHOLD_RED) {
             iconPathSelected = PATH_BIKE_ICON_RED;
         } 
     } 
@@ -89,12 +89,17 @@ function getBikeIconUrl(mode, stationState) {
         else if (getPercentage(stationState.available_bike_stands, stationState.bike_stands) >= THRESHOLD_ORANGE) {
             iconPathSelected = PATH_BIKE_ICON_ORANGE;
         } 
-        else if (getPercentage(stationState.available_bike_stands, stationState.bike_stands) >= THRESHOLD_RED) {
+        else if (getPercentage(stationState.available_bike_stands, stationState.bike_stands) <= THRESHOLD_RED) {
             iconPathSelected = PATH_BIKE_ICON_RED;
         } 
     }
-
+    // console.log("available bikes: " + stationState.available_bikes);
+    // console.log("available bike stands: " + stationState.available_bike_stands);
+    // console.log("stands bikes: " + stationState.bike_stands);
+    // console.log("stands status: " + stationState.status);
+    // console.log(iconPathSelected);
     return iconPathSelected;
+
 }
 
 function getPercentage(value, max) {
@@ -140,6 +145,9 @@ async function initMap() {
     //     map: map,
     //     icon: 'bikeIcon.svg'
     // });
+
+    console.log("active mode: " + activeMode);
+
     for (let key in stations) {
         let station = stations[key];
 
@@ -151,8 +159,7 @@ async function initMap() {
             },
             map: map,
             icon: {
-                //url: "/img/bikeIcon.svg",
-                url: getBikeIconUrl(activeMode, stationState),
+                url: getBikeIconUrl(activeMode, station),
                 scaledSize: new google.maps.Size(42, 42)
             },
             title: station.stationName,
@@ -169,11 +176,13 @@ async function initMap() {
         let contentString = '<div id="content"><h1>' + station.stationName + '</h1></div>' +
             '<div id="station_details"><table>' +
             '<tr><td>Station name:</td><td>' + station.stationName + '</td></tr>' +
-            '<tr><td>Station address:</td><td>' + station.address + '</td></tr>' +
-            '<tr><td>Station latitude:</td><td>' + station.latitude + '</td></tr>' +
-            '<tr><td>Station longitude:</td><td>' + station.longitude + '</td></tr>' +
-            '<tr><td>Station banking:</td><td>' + station.banking + '</td></tr>' +
-            '<tr><td>Station bonus:</td><td>' + station.bonus + '</td></tr>' +
+            '<tr><td>Address:</td><td>' + station.address + '</td></tr>' +
+            '<tr><td>Latitude:</td><td>' + station.latitude + '</td></tr>' +
+            '<tr><td>Longitude:</td><td>' + station.longitude + '</td></tr>' +
+            '<tr><td>Banking:</td><td>' + station.banking + '</td></tr>' +
+            '<tr><td>Total bike stands:</td><td>' + station.bike_stands + '</td></tr>' +
+            '<tr><td>Available bike stands:</td><td>' + station.available_bike_stands + '</td></tr>' +
+            '<tr><td>Available bikes:</td><td>' + station.available_bikes + '</td></tr>' +
             '</div>';
         
         let infoWindow = new google.maps.InfoWindow({ content: contentString });
