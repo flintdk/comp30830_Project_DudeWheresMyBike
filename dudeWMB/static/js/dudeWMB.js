@@ -71,25 +71,25 @@ function getBikeIconUrl(mode, stationState) {
     // Select bike icons to user mode and occupancy accordingly
     // If user mode is 'available bikes' then... 
     else if (mode === MODE_AVAILABLE_BIKES) {
-        if (getPercentage(stationState.available_bikes, bike_stands) >= THRESHOLD_GREEN) {
+        if (getPercentage(stationState.available_bikes, stationState.bike_stands) >= THRESHOLD_GREEN) {
             iconPathSelected = PATH_BIKE_ICON_GREEN;
         } 
-        else if (getPercentage(stationState.available_bikes, bike_stands) >= THRESHOLD_ORANGE) {
+        else if (getPercentage(stationState.available_bikes, stationState.bike_stands) >= THRESHOLD_ORANGE) {
             iconPathSelected = PATH_BIKE_ICON_ORANGE;
         } 
-        else if (getPercentage(stationState.available_bikes, bike_stands) >= THRESHOLD_RED) {
+        else if (getPercentage(stationState.available_bikes, stationState.bike_stands) >= THRESHOLD_RED) {
             iconPathSelected = PATH_BIKE_ICON_RED;
         } 
     } 
     // If user mode is 'available bikes' then... 
     else if (mode === MODE_AVAILABLE_SPACES) {
-        if (getPercentage(stationState.available_bike_stands, bike_stands) >= THRESHOLD_GREEN) {
+        if (getPercentage(stationState.available_bike_stands, stationState.bike_stands) >= THRESHOLD_GREEN) {
             iconPathSelected = PATH_BIKE_ICON_GREEN;
         } 
-        else if (getPercentage(stationState.available_bike_stands, bike_stands) >= THRESHOLD_ORANGE) {
+        else if (getPercentage(stationState.available_bike_stands, stationState.bike_stands) >= THRESHOLD_ORANGE) {
             iconPathSelected = PATH_BIKE_ICON_ORANGE;
         } 
-        else if (getPercentage(stationState.available_bike_stands, bike_stands) >= THRESHOLD_RED) {
+        else if (getPercentage(stationState.available_bike_stands, stationState.bike_stands) >= THRESHOLD_RED) {
             iconPathSelected = PATH_BIKE_ICON_RED;
         } 
     }
@@ -151,8 +151,8 @@ async function initMap() {
             },
             map: map,
             icon: {
-                url: "/img/bikeIcon.svg",
-                //url: getBikeIconUrl(activeMode, stationState);
+                //url: "/img/bikeIcon.svg",
+                url: getBikeIconUrl(activeMode, stationState),
                 scaledSize: new google.maps.Size(42, 42)
             },
             title: station.stationName,
