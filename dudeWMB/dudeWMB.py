@@ -111,22 +111,33 @@ def get_stations():
     #station_dict = dict((col, getattr(station, col)) for col in station.__table__.columns.keys())
     stationsList = []
     for station in stations:
-        stationLatestInfo = {}
         #stationState = StationState.query.filter_by(stationId=getattr(station, 'id')).order_by('weatherTime desc').limit(1).first()
         stationState = StationState.query.filter_by(stationId=station.id).order_by(text('weatherTime desc')).limit(1).all()[0]
-        # for col in station.__table__.columns.keys():
-        #     stationLatestInfo[col] = getattr(station, col)
-        stationLatestInfo['number'] = station.number
-        stationLatestInfo['stationName'] = station.stationName
-        stationLatestInfo['address'] = station.address
-        stationLatestInfo['latitude'] = station.latitude
-        stationLatestInfo['longitude'] = station.longitude
-        stationLatestInfo['banking'] = station.banking
-        stationLatestInfo['status'] = stationState.status
-        stationLatestInfo['bike_stands'] = stationState.bike_stands
-        stationLatestInfo['available_bike_stands'] = stationState.available_bike_stands
-        stationLatestInfo['available_bikes'] = stationState.available_bikes
-        stationsList.append(stationLatestInfo)
+        # TODO here needs to go in the query
+        stationWeather = weatherHistory       
+
+        # Create dictionary for station-info
+        stationInfo = {}
+        stationInfo['number'] = station.number
+        stationInfo['stationName'] = station.stationName
+        stationInfo['address'] = station.address
+        stationInfo['latitude'] = station.latitude
+        stationInfo['longitude'] = station.longitude
+        stationInfo['banking'] = station.banking
+        # Create nested dictionary for occupancy related data
+        stationInfo['occupancy'] = {}
+        stationInfo['occupancy']['status'] = stationState.status
+        stationInfo['occupancy']['bike_stands'] = stationState.bike_stands
+        stationInfo['occupancy']['available_bike_stands'] = stationState.available_bike_stands
+        stationInfo['occupancy']['available_bikes'] = stationState.available_bikes
+        # Create nested dictionary for weather related data
+        stationInfo['weather'] = {}
+        stationInfo['weather']['description'] = stationWeather.description
+        stationInfo['weather']['temp'] = stationWeather.temp
+        stationInfo['weather']['humidity'] = stationWeather.humidity
+        stationInfo['weather']['wind_speed'] = stationWeather.wind_speed
+
+        stationsList.append(stationInfo)
 
     return jsonify(stationsList)
 
