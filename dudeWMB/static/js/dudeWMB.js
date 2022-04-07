@@ -294,6 +294,64 @@ function onStationSelected(stationId) {
 //##############################################################################
 //##############################################################################
 
+// SLIDER - IN PROGRESS
+// Credit http://jsfiddle.net/meghap/9pz5grru/5/
+
+function toTimestamp(strDate){
+    // The Date.parse() method parses a string representation of a date, and
+    // returns the number of milliseconds since January 1, 1970, 00:00:00 UTC
+    var datum = Date.parse(strDate);
+    // We divide by 1000, just to use seconds.
+    return datum/1000;
+ }
+
+ var currentDateTime = new Date();
+ currentDateTime.setMinutes(0, 0, 0);  // Resets also seconds and milliseconds
+
+ var dt_to = "01/13/2016 16:37:43";
+ 
+ var sel_dt_from = "01/13/2016 00:34:44";
+ var sel_dt_to = "01/14/2016 16:37:43";
+ 
+ $('.slider-time').html(dt_from);
+ $('.slider-time2').html(dt_to);
+ var min_val = toTimestamp(sel_dt_from);
+ var max_val = toTimestamp(sel_dt_to);
+ 
+ function zeroPad(num, places) {
+   var zero = places - num.toString().length + 1;
+   return Array(+(zero > 0 && zero)).join("0") + num;
+ }
+ function formatDT(__dt) {
+     var year = __dt.getFullYear();
+     var month = zeroPad(__dt.getMonth()+1, 2);
+     var date = zeroPad(__dt.getDate(), 2);
+     var hours = zeroPad(__dt.getHours(), 2);
+     var minutes = zeroPad(__dt.getMinutes(), 2);
+     var seconds = zeroPad(__dt.getSeconds(), 2);
+     return year + '-' + month + '-' + date + ' ' + hours + ':' + minutes + ':' + seconds;
+ };
+ 
+ 
+ $("#slider-range").slider({
+     range: true,
+     min: min_val,
+     max: max_val,
+     step: 10,
+     values: [min_val, max_val],
+     slide: function (e, ui) {
+         var dt_cur_from = new Date(ui.values[0]*1000); //.format("yyyy-mm-dd hh:ii:ss");
+         $('.slider-time').html(formatDT(dt_cur_from));
+ 
+         var dt_cur_to = new Date(ui.values[1]*1000); //.format("yyyy-mm-dd hh:ii:ss");                
+         $('.slider-time2').html(formatDT(dt_cur_to));
+     }
+ });
+
+//##############################################################################
+//##############################################################################
+//##############################################################################
+
 // SAMPLE CODE FROM COMP30830 LECTURE NOTES / PDF's
 
 // jQuery Heatmap example from Lecture Slides:
