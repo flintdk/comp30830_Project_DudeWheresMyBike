@@ -12,7 +12,7 @@ from models import db, Station, StationState, weatherHistory
 import pickle
 import pandas as pd
 import numpy as np
-from sklearn.linear_model import LinearRegression
+from sklearn.ensemble import RandomForestRegressor
 
 import requests
 
@@ -32,6 +32,45 @@ def loadCredentials():
     credentials = json.load(file)
     file.close  # Can close the file now we have the data loaded...
     return credentials
+
+def convertWeatherStringToModelCode(weatherString):
+    """Convert the Weather string returned by the weather API to a code understood
+       and accepted by our prediction model.
+
+    Returns "scattered clouds" (a reasonable default for Ireland) if the received
+    weather string is not recognised.
+    """
+    code = "13"
+    if weatherString == 'broken clouds':
+        code = 0
+    elif weatherString == 'clear sky':
+        code = 1
+    elif weatherString == 'few clouds':
+        code = 2
+    elif weatherString == 'fog':
+        code = 3
+    elif weatherString == 'haze':
+        code = 4
+    elif weatherString == 'heavy intensity rain':
+        code = 5
+    elif weatherString == 'light intensity drizzle':
+        code = 6
+    elif weatherString == 'light intensity drizzle rain':
+        code = 7
+    elif weatherString == 'light intensity shower rain':
+        code = 8
+    elif weatherString == 'light rain':
+        code = 9
+    elif weatherString == 'mist':
+        code = 10
+    elif weatherString == 'moderate rain':
+        code = 11
+    elif weatherString == 'overcast clouds':
+        code = 12
+    elif weatherString == 'scattered clouds':
+        code = 13
+
+    return code
 
 # Create our flask app.
 # Static files are server from the 'static' directory
@@ -155,6 +194,12 @@ def get_stations():
         stationInfo['occupancy']['available_bike_stands'] = stationState.available_bike_stands
         stationInfo['occupancy']['available_bikes'] = stationState.available_bikes
         # Create nested dictionary for weather related data
+        # THIS MIGHT SEEM WASTEFUL (i.e. why attach weather to a station if all
+        # the stations are nearby?)  However we took the view that if this
+        # application was used nationally, it would be far more likely the weather
+        # would differ from station to station.  Yes - we would have to update how
+        # we sourced the weather data.  However our json model and the front end
+        # would already be capable of handling the data if send from the back end.
         stationInfo['weather'] = {}
         stationInfo['weather']['description'] = stationWeather.description
         stationInfo['weather']['temp'] = stationWeather.temp
@@ -240,11 +285,18 @@ def predict(four_hour_interval):
         # Add our four hour interval to the current datetime (.now) object...
         future_time = datetime.now() + timedelta(hours=four_hour_interval)
 
-        jsonWeatherData=weatherResponse.json()
+        jsonWeatherData = weatherResponse.json()
+        print(jsonWeatherData)
+        # We need to loop over the jsonWeatherData to get find the prediction for
+        # the time window the use is interested in.  If the window is more than
+        # 48 hours in the future we just return the last weather (it's our best
+        # guess...)
+        weatherAtPredictionTime = ""
+        for hourlyForecast in jsonWeatherData:
+            forecastTime = datetime.utcfromtimestamp(hourlyForecast['dt'])
 
-        # Now that we have the weather data, extract the predictions we're interested
-        # in:
-        
+
+#        stationInfo['occupancy']['available_bike_stands'] = stationState.available_bike_stands
 
         # Loop thru to grab test time from array for variables in X_test:
         # Midday - Weather at that point
@@ -280,11 +332,11 @@ def predict(four_hour_interval):
         print("       The response reason was \'" + str(weatherResponse.reason) + "\'")
 
 
-    # Temp X_test variable until resample data working
-    X_test = pd.DataFrame([[1,2,3,4]])
+    # # Temp X_test variable until resample data working
+    # X_test = pd.DataFrame([[1,2,3,4]])
 
     # Predictive Model - deserialization
-    with open('dwmb_linReg_model.pkl', 'rb') as handle:
+    with open('dwmb_resample_allStation_randomForest_model.pkl', 'rb') as handle:
         model = pickle.load(handle)
         result = model.predict(X_test)
     
