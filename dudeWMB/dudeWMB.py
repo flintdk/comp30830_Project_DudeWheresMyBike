@@ -8,6 +8,30 @@ from sqlalchemy import text
 import json
 from jinja2 import Template
 from models import db, Station, StationState, weatherHistory
+# Imports for Model/Pickle Libs
+import pickle
+import pandas as pd
+import numpy as np
+from sklearn.linear_model import LinearRegression
+
+import requests
+
+credentials = ""
+
+def loadCredentials():
+    """Load the credentials required for accessing the JCDecaux API
+
+    Returns a JSON object with the required credentials.
+    Implemented in a method as Credential storage will be subject to change.
+    """
+    # Our credentials are just stored in a JSON file (for now)
+    # This file is not saved to GitHub and is placed on each EC2 instance
+    # by a team member.
+    # Load the JSON file
+    file = open('../dudewmb.json')
+    credentials = json.load(file)
+    file.close  # Can close the file now we have the data loaded...
+    return credentials
 
 # Create our flask app.
 # Static files are server from the 'static' directory
@@ -181,6 +205,79 @@ def about():
     # This route renders a template from the template folder
     return render_template('about.html')
 
+# Predictive Model:
+# Predict output
+@dudeWMB.route("/predict")
+def predict():
+    print("\tRetrieving weather data from openweather.")
+    # Retrieve the Weather Data:
+    # Hard-code the Station Data URI
+    uri = 'https://api.openweathermap.org/data/2.5/onecall'
+    # Set the request parameters in JSON format
+    parameters = {'lat': credentials['open-weather']['lat'], 'lon': credentials['open-weather']['lon'],  'exclude':'current,minutely,daily,alerts', 'appid': credentials['open-weather']['api-key']}
+    weatherResponse = requests.get(uri, params=parameters)
+
+    if (weatherResponse.status_code == 200):
+        print("Retrieving forecast weather data.")
+
+        jsonWeatherData =weatherResponse.json()
+        # print(jsonWeatherData)
+
+
+        # Loop thru to grab test time from array for variables in X_test:
+        # Midday - Weather at that point
+
+        forecastWeather = {} # Declare a dict to hold the forecast weather data
+        print(forecastWeather)
+
+        #for i in forecastWeather[len(forecastWeather)-1]:
+         #   print(forecastWeather[i])
+
+        # weather['latitude'] = jsonWeatherData['coord']['lat']
+        # weather['longitude'] = jsonWeatherData['coord']['lon']
+        # weather['main'] = jsonWeatherData['weather'][0]['main']
+        # weather['description'] = jsonWeatherData['weather'][0]['description']
+        # if "temp" in jsonWeatherData['main']:
+        #     weather['temp'] = jsonWeatherData['main']['temp']
+        # if "feels_like" in jsonWeatherData['main']:
+        #     weather['feels_like'] = jsonWeatherData['main']['feels_like']
+        # if "temp_min" in jsonWeatherData['main']:
+        #     weather['temp_min'] = jsonWeatherData['main']['temp_min']
+        # if "temp_max" in jsonWeatherData['main']:
+        #     weather['temp_max'] = jsonWeatherData['main']['temp_max']
+        # if "pressure" in jsonWeatherData['main']:
+        #     weather['pressure'] = jsonWeatherData['main']['pressure']
+        # if "humidity" in jsonWeatherData['main']:
+        #     weather['humidity'] = jsonWeatherData['main']['humidity']
+
+
+    else:
+        # Our call to the API failed for some reason...  print some information
+        # Who knows... someone may even look at the logs!!
+        print("ERROR: Call to OpenWeather API failed with status code: ", weatherResponse.status_code)
+        print("       The response reason was \'" + str(weatherResponse.reason) + "\'")
+
+
+    # Temp X_test variable until resample data working
+    X_test = pd.DataFrame([[1,2,3,4]])
+
+    # Predictive Model - deserialization
+    with open('dwmb_linReg_model.pkl', 'rb') as handle:
+        model = pickle.load(handle)
+        result = model.predict(X_test)
+    
+    jsonResults = jsonify(result[0])
+    print("Retrieving Prediction Results")
+
+    return jsonResults
+
+
+
+
+
+##########################################################################################
+##########################################################################################
+##########################################################################################
 # Flask will automatically remove database sessions at the end of the request or
 # when the application shuts down:
 @dudeWMB.teardown_appcontext
@@ -188,4 +285,8 @@ def shutdown_session(exception=None):
     db.session.remove()
 
 if __name__ == "__main__":
+    print("Loading credentials.")
+    # Load our private credentials from a JSON file
+    credentials = loadCredentials()
+
     dudeWMB.run(debug=True, host=dudeWMB.config["FLASK_HOST"], port=dudeWMB.config["FLASK_PORT"])
