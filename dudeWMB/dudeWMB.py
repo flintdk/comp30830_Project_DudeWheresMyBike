@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 import functools
-from datetime import date
+from datetime import date, datetime, timedelta
 from sqlite3 import Date
 from flask import Flask, g, render_template, jsonify
 from flask_sqlalchemy import SQLAlchemy
@@ -237,10 +237,14 @@ def predict(four_hour_interval):
 
     if (weatherResponse.status_code == 200):
         #print("Retrieving forecast weather data.")
+        # Add our four hour interval to the current datetime (.now) object...
+        future_time = datetime.now() + timedelta(hours=four_hour_interval)
 
-        jsonWeatherData =weatherResponse.json()
-        # print(jsonWeatherData)
+        jsonWeatherData=weatherResponse.json()
 
+        # Now that we have the weather data, extract the predictions we're interested
+        # in:
+        
 
         # Loop thru to grab test time from array for variables in X_test:
         # Midday - Weather at that point
