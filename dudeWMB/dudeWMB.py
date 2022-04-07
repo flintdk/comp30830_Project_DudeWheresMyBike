@@ -207,9 +207,16 @@ def about():
 
 # Predictive Model:
 # Predict output
-@dudeWMB.route("/predict")
-def predict():
-    print("\tRetrieving weather data from openweather.")
+@dudeWMB.route("/predict/<int:four_hour_interval>")
+def predict(four_hour_interval):
+    # The slider on the main page sends in a 'four hour interval'.  That interval
+    # is 'how far in the future' we want to get the weather from.  Now... we're
+    # using the onecall API to get our weather predictions to source our future
+    # weather - so this doesn't affect out actual API call.  However it does
+    # tell us which weather prediction to use when calling our occupancy prediction
+    # model.
+
+    #print("\tRetrieving weather data from openweather.")
     # Retrieve the Weather Data:
     # Hard-code the Station Data URI
     uri = 'https://api.openweathermap.org/data/2.5/onecall'
@@ -218,7 +225,7 @@ def predict():
     weatherResponse = requests.get(uri, params=parameters)
 
     if (weatherResponse.status_code == 200):
-        print("Retrieving forecast weather data.")
+        #print("Retrieving forecast weather data.")
 
         jsonWeatherData =weatherResponse.json()
         # print(jsonWeatherData)
