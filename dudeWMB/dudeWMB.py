@@ -7,7 +7,7 @@ from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import text
 import json
 from jinja2 import Template
-from models import db, Station, StationState, weatherHistory
+from models import db, Station, StationState, StationStateResampled, weatherHistory
 # Imports for Model/Pickle Libs
 import pickle
 import pandas as pd
@@ -305,7 +305,7 @@ def get_stations():
         # forests voodoo and plan to predict occupancy... we need to load the
         # latest stationState record to get the total number of spaces at the station.
         # We should have added this data to the header record... :-(
-        stationState = StationState.query.filter_by(stationId=station.id).order_by(text('weatherTime desc')).limit(1).all()[0]
+        stationState = StationState.query.filter(StationState.stationId==station.id).order_by(text('weatherTime desc')).limit(1).all()[0]
 
         # Now the fun part... the predictive model!
         # If the time_delta is greater than zero then we want to use our predictive
@@ -369,6 +369,43 @@ def get_stations():
         stationsList.append(stationInfo)
 
     return jsonify(stationsList)
+
+##########################################################################################
+##########################################################################################
+
+@dudeWMB.route("/occupancy/<int:station_id>")
+def get_occupancy(station_id):
+
+    cutoffDatetime = datetime.now() - timedelta(weeks=1)
+    # .filter() and .filter_by:
+    # Both are used differently;
+    # .filters can write > < and other conditions like where conditions for sql,
+    # but when referring to column names, you need to use class names and attribute
+    # names.
+    # .filter_by can pass conditions using python’s normal parameter passing method,
+    # and no additional class names need to be specified when specifying column names.
+    # The parameter name corresponds to the attribute name in the name class, but does
+    # not seem to be able to use conditions such as > < etc..
+    # Each has its own strengths.http://docs.sqlalchemy.org/en/rel_0_7&#8230;
+
+    stStReQuery = StationStateResampled.query
+    stStReQuery = stStReQuery.filter(StationStateResampled.stationId == station_id)
+    stStReQuery = stStReQuery.filter(StationStateResampled.weatherHour > cutoffDatetime)
+    stStReQuery = stStReQuery.order_by(text('weatherHour asc'))
+
+    stationStatesList = []
+    for record in stStReQuery.all():
+        # What am I missing - why is it stoopid hard to convert an SQLAlchemy
+        # model to a dict??
+        recordInfo = {}
+        recordInfo['stationId'] = record.stationId
+        recordInfo['weatherHour'] = record.weatherHour
+        recordInfo['status'] = record.status
+        recordInfo['available_bike_stands'] = record.available_bike_stands
+        recordInfo['available_bikes'] = record.available_bikes
+        stationStatesList.append(recordInfo)
+
+    return jsonify(stationStatesList)
 
 ##########################################################################################
 ##########################################################################################

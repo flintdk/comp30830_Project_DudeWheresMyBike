@@ -66,6 +66,20 @@ class StationState(db.Model):
     def __repr__(self):
         return '<Station %r>' % self.stationName
 
+class StationStateResampled(db.Model):
+    __tablename__ = 'stationStateResampled'
+    stationId = db.Column(db.Integer, db.ForeignKey('station.id'), nullable=False, primary_key=True)
+    weatherHour = db.Column(db.DateTime, nullable=True, primary_key=True)
+    status = db.Column(db.String(45), nullable=True)
+    available_bike_stands = db.Column(db.Integer, nullable=True)
+    available_bikes = db.Column(db.Integer, nullable=True)
+
+    # place an index on col3, col4
+    __table_args__ = (Index('stationId_weatherHour', "stationId", "weatherHour"), )
+
+    def __repr__(self):
+        return '<StationId %r>' % self.stationId
+
 class weatherHistory(db.Model):
     __tablename__ = 'weatherHistory'
     weatherTime = db.Column(db.DateTime, primary_key=True)
