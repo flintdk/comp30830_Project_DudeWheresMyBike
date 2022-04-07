@@ -1,6 +1,8 @@
 "use strict";
 
+// varGlobStations is a array that contains the json objects for each station
 var varGlobStations;
+// varGlobStationSelected contains station data for the selected station
 var varGlobStationSelected;
 
 // Define modes as kind of enumerations in javascript
@@ -113,10 +115,6 @@ function getPercentage(value, max) {
 
     return percentage;
 }
-// status = db.Column(db.String(45), nullable=True)
-// bike_stands = db.Column(db.Integer, nullable=True)
-// available_bike_stands = db.Column(db.Integer, nullable=True)
-// available_bikes = db.Column(db.Integer, nullable=True)
 
 //-----------------------------------------------------------------------------
 // Function to initialize and add the map
@@ -189,6 +187,8 @@ async function initMap() {
 
         // Listener
         marker.addListener('click', function() { infoWindow.open(map, marker); })
+
+        
         // Following from Lecture notes - not sure what the difference is yet!
         // But it adds a chart... so leaving for reference.
         //google.maps.event.addListener(marker, 'click', function() { drawInfoWindowChart(this); } );
