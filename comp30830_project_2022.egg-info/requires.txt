@@ -4,3 +4,4 @@ mysql-connector-python>=8.0.0
 requests==2.27.1
 sqlalchemy==1.4.27
 pandas==1.4.2
+scikit-learn==1.0.2
