@@ -14,8 +14,8 @@ import pandas as pd
 import numpy as np
 from sklearn.ensemble import RandomForestRegressor
 # Suppress UserWarning when unpickling files...
-import warnings
-warnings.filterwarnings("ignore", category=UserWarning)
+# import warnings
+# warnings.filterwarnings("ignore", category=UserWarning)
 
 import requests
 
@@ -312,12 +312,17 @@ def get_stations():
         # model to estimate the occupancy etc. in the future.  If not we can just
         # use the current statistics.
         if time_delta > 0:
-            X_station = pd.DataFrame([[station.id, \
-                weather_hour, weather['temp'], weather['humidity'], weather['wind_speed'], \
-                stationState.bike_stands, weather['description_encoded'], weather_month, weather_day]])
+            X_station = pd.DataFrame([[station.id, weather_hour, \
+                weather['temp'], weather['humidity'], weather['wind_speed'], \
+                stationState.bike_stands, weather['description_encoded'], \
+                weather_month, weather_day]])
+            X_station.columns =['stationId', 'weatherHour', \
+                'temp', 'humidity','wind_speed', \
+                'cal_bike_stands', 'num_desc', \
+                'weatherMonth', 'weatherDay']
 
             # Predictive Model - deserialization
-            with open('dwmb_resample_allStation_randomForest_model.pkl', 'rb') as handle:
+            with open('allStation_randomForest_model.pkl', 'rb') as handle:
                 model = pickle.load(handle)
                 # Our model returns a numpy ndarray, hence the ".item(0)" at the
                 # end, to pluck out the prediction value.
