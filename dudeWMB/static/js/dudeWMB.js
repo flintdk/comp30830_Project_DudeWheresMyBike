@@ -1,12 +1,18 @@
 "use strict";
 
-var varGlobStations;
-var varGlobStationSelected;
-
 // Define modes as kind of enumerations in javascript
 const MODE_AVAILABLE_BIKES = "ModeAvailableBikes";
 const MODE_AVAILABLE_SPACES = "ModeAvailabeSpaces";
-var activeMode = MODE_AVAILABLE_BIKES;
+
+// varGlobStations is a array that contains the json objects for each station
+var varGlobStations;
+// varGlobStationSelected contains station data for the selected station
+var varGlobStationSelected;
+// varGlobMap allows to access the created map globally
+var varGlobMap;
+// varGlobActiveMode represents the active user mode (avalailable bikes, available spaces)
+var varGlobActiveMode = MODE_AVAILABLE_BIKES;
+
 
 //-----------------------------------------------------------------------------
 // Function onLoad is invoked when the website (DOM) is loaded the first time
@@ -34,11 +40,11 @@ async function onLoad() {
 //-----------------------------------------------------------------------------
 function onSetMode(mode) {
     if (mode === MODE_AVAILABLE_BIKES) {
-        activeMode = MODE_AVAILABLE_BIKES;
+        varGlobActiveMode = MODE_AVAILABLE_BIKES;
         document.getElementById("button_available_bikes").style.backgroundColor = "green"
         document.getElementById("button_available_spaces").style.backgroundColor = "lightgreen"
     } else if (mode === MODE_AVAILABLE_SPACES) {
-        activeMode = MODE_AVAILABLE_SPACES;
+        varGlobActiveMode = MODE_AVAILABLE_SPACES;
         document.getElementById("button_available_bikes").style.backgroundColor = "lightgreen"
         document.getElementById("button_available_spaces").style.backgroundColor = "green"
     }
@@ -134,35 +140,31 @@ function getPercentage(value, max) {
 // Function to initialize and add the map
 //-----------------------------------------------------------------------------
 async function initMap() {
-    // We load the stations on page load.  Yes - that means that if a new
-    // station is added while the user is on a page that it won't be displayed.
-    // That event is so unlikely, we consider the requirement for a page refresh
-    // to get the new station to display to be acceptable.
-    let stations = await getStationsJson();
+    // We load the stations on page load as well as here in initMap - whatever event occurs first 
+    varGlobStations = await getStationsJson();
 
     // Location of Dublin
     const dublin = { lat: 53.350140, lng: -6.266155 };
-    // Map, centered at Dublin
-    const map = new google.maps.Map(document.getElementById("map"), {
+    // Create new map, centered at Dublin
+    varGlobMap = new google.maps.Map(document.getElementById("map"), {
         zoom: 13,
         center: dublin,
     });
 
-    // Markers
-    // 'stations' is a nice javascript object.  We could "for station in stations"
-    // over it, or pick it apart by hand, or whatever!!
-    // Intial marker, positioned at Dublin
-    // const marker = new google.maps.Marker({
-    //     position: dublin,
-    //     map: map,
-    //     icon: 'bikeIcon.svg'
-    // });
+    createMarkers(varGlobMap, varGlobStations);
+}
 
-    console.log("active mode: " + activeMode);
+//-----------------------------------------------------------------------------
+// Create markers that are displayed on the map
+//-----------------------------------------------------------------------------
+// Note: The coloured bike icon (black, green, orange, red) may change when the user mode is changed,
+// depending on the availability of available bikes, spaces
+// That's why this function is also called if the user mode changes
+function createMarkers(map, stationData) {
 
-    for (let key in stations) {
-        let station = stations[key];
-  
+    for (let key in varGlobStations) {
+        let station = varGlobStations[key];
+
         //console.log(station.stationName, station.number);
         var marker = new google.maps.Marker({
             position: {
@@ -171,18 +173,14 @@ async function initMap() {
             },
             map: map,
             icon: {
-                url: getBikeIconUrl(activeMode, station),
+                url: getBikeIconUrl(varGlobActiveMode, station),
                 scaledSize: new google.maps.Size(42, 42)
             },
             title: station.stationName,
             station_number: station.number,
-            station_index: key           
+            station_index: key, // add key as index so that marker correlates with the array index in station data
+            
         });
-        // Add listener so that when station is clicked the map zooms in to the selcted station
-        marker.addListener("click", () => {
-            map.setZoom(16);
-            map.setCenter(marker.getPosition());
-          });
         
         // Create table containing information about the station
         let contentString = '<div id="content"><span id="markerStationName">' + station.stationName + '</span></div>' +
@@ -198,15 +196,36 @@ async function initMap() {
             '</div>';
         
         let infoWindow = new google.maps.InfoWindow({ content: contentString });
-
-        // Listener
-        marker.addListener('click', function() { infoWindow.open(map, marker); })
-
-        // Following from Lecture notes - not sure what the difference is yet!
-        // But it adds a chart... so leaving for reference.
-        //google.maps.event.addListener(marker, 'click', function() { drawInfoWindowChart(this); } );
+        // Add listener so that we can add actions that will be performed when clicking on a marker
+        marker.addListener("click", () => {
+            map.setZoom(16);
+            map.setCenter(marker.getPosition());
+            infoWindow.open(map, marker);
+            displayDetails(marker.station_index);
+          });
     }
+}
 
+//-----------------------------------------------------------------------------
+// Display station details such as weather info and occupancy 
+//-----------------------------------------------------------------------------
+async function displayDetails (stationIndex) {
+    
+}
+
+//-----------------------------------------------------------------------------
+// Display station weather detials such as weather icon, temperature, etc. 
+//-----------------------------------------------------------------------------
+function displayWeatherIcon (stationIndex) {
+    // TODO @ Will
+    ;
+}
+
+//-----------------------------------------------------------------------------
+// Display station occupancy chart 
+//-----------------------------------------------------------------------------
+function displayOccupancyChart (stationIndex) {
+    ;
 }
 
 //-----------------------------------------------------------------------------
@@ -247,33 +266,24 @@ async function getStationsJson() {
     } catch (error) {
         console.log(error);
     }
-
-    // There's a shorter/neater way to do the above. We're learning. I left it long for now.
-    // fetch(url)
-    // .then(stations => {
-    //     //console.log(stations.json())
-    //     return stations.json()
-    // })
-    // .catch(error => {
-    //     // handle the error
-    // });
 }
 
-async function displayStations() {
-    // 'stations' is now a nice javascript object.  We could "for station in stations"
-    // over it, or pick it apart by hand, or whatever!!
+// async function displayStations() {
 
-    // let html = '';
-    // stations.forEach(user => {
-    //     let htmlSegment = `<div class="user">
-    //                         <img src="${stations.bla-bla}" >
-    //                         <h2>${stations.bla-bla} ${stations.bla-bla}</h2>
-    //                         <div class="bla-bla">${stations.bla-bla}</div>
-    //                     </div>`;
+//     // 'stations' is now a nice javascript object.  We could "for station in stations"
+//     // over it, or pick it apart by hand, or whatever!!
+
+//     // let html = '';
+//     // stations.forEach(user => {
+//     //     let htmlSegment = `<div class="user">
+//     //                         <img src="${stations.bla-bla}" >
+//     //                         <h2>${stations.bla-bla} ${stations.bla-bla}</h2>
+//     //                         <div class="bla-bla">${stations.bla-bla}</div>
+//     //                     </div>`;
 
 
-    document.getElementById('tempTomShowJson').innerHTML=JSON.stringify(varGlobStations);
-}
+//     document.getElementById('tempTomShowJson').innerHTML=JSON.stringify(varGlobStations);
+// }
 
 function drawOccupancyHistogram(stationId) {
 
