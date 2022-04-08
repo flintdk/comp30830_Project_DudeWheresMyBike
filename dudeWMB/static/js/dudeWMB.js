@@ -3,11 +3,122 @@
 var varGlobStations;
 var varGlobStationSelected;
 
+// Define modes as kind of enumerations in javascript
+const MODE_AVAILABLE_BIKES = "ModeAvailableBikes";
+const MODE_AVAILABLE_SPACES = "ModeAvailabeSpaces";
+var activeMode = MODE_AVAILABLE_BIKES;
+
+// google.charts.load('current', {'packages':['corechart']});
+// google.charts.setOnLoadCallback(drawOccupancyHistogram);
+
+//-----------------------------------------------------------------------------
+// Function onLoad is invoked when the website (DOM) is loaded the first time
+//-----------------------------------------------------------------------------
 // This function is called onload.  It's the 'parent process' if you like that
 // kicks off all the work...
 async function onLoad() {
-    varGlobStations = await getStationsJson();
+    // Add event listener to mode buttons 
+    document.getElementById("button_available_bikes").addEventListener("click", function() {
+        onSetMode(MODE_AVAILABLE_BIKES);
+        });
+    document.getElementById("button_available_spaces").addEventListener("click", function() {
+        onSetMode(MODE_AVAILABLE_SPACES);
+    });
 
+    // set default mode
+    onSetMode(MODE_AVAILABLE_BIKES);
+    
+    // Draw the occupancy histogram from the json data stored in varOccupancy
+    // (Draw it for station 1 onLoad just so the chart isn't emtpy)
+    drawOccupancyHistogram(1)
+
+    // get station data in json format
+    varGlobStations = await getStationsJson();
+}
+
+//-----------------------------------------------------------------------------
+// Mode control - 'available bikes' OR 'available spaces' 
+//-----------------------------------------------------------------------------
+function onSetMode(mode) {
+    if (mode === MODE_AVAILABLE_BIKES) {
+        activeMode = MODE_AVAILABLE_BIKES;
+        document.getElementById("button_available_bikes").style.backgroundColor = "green"
+        document.getElementById("button_available_spaces").style.backgroundColor = "lightgreen"
+    } else if (mode === MODE_AVAILABLE_SPACES) {
+        activeMode = MODE_AVAILABLE_SPACES;
+        document.getElementById("button_available_bikes").style.backgroundColor = "lightgreen"
+        document.getElementById("button_available_spaces").style.backgroundColor = "green"
+    }
+    // Init map and coloured icons when user mode is changing
+    initMap();
+}
+
+//-----------------------------------------------------------------------------
+// Bike icon selection according to occupancy and user mode 
+//-----------------------------------------------------------------------------
+function getBikeIconUrl(mode, stationState) {
+
+    // Threshold values defined in percentage to select coloured bike icons accordingly
+    const THRESHOLD_GREEN = 70.0;
+    const THRESHOLD_ORANGE = 40.0;
+    const THRESHOLD_RED = 10.0;
+
+    // Relative paths to bike icons
+    const PATH_BIKE_ICON = "/img/bikeIcon.svg";
+    const PATH_BIKE_ICON_GREEN = "/img/bikeIconGreen.png";
+    const PATH_BIKE_ICON_ORANGE = "/img/bikeIconOrange.png";
+    const PATH_BIKE_ICON_RED = "/img/bikeIconRed.png";
+ 
+    let iconPathSelected = PATH_BIKE_ICON;
+
+    // If station is closed then show default icon
+    if (!(stationState.status == 'OPEN')) {
+        iconPathSelected = PATH_BIKE_ICON;
+    } 
+    // Select bike icons to user mode and occupancy accordingly
+    // If user mode is 'available bikes' then... 
+    else if (mode === MODE_AVAILABLE_BIKES) {
+        if (getPercentage(stationState.available_bikes, stationState.bike_stands) >= THRESHOLD_GREEN) {
+            iconPathSelected = PATH_BIKE_ICON_GREEN;
+        } 
+        else if (getPercentage(stationState.available_bikes, stationState.bike_stands) >= THRESHOLD_ORANGE) {
+            iconPathSelected = PATH_BIKE_ICON_ORANGE;
+        } 
+        else if (getPercentage(stationState.available_bikes, stationState.bike_stands) <= THRESHOLD_RED) {
+            iconPathSelected = PATH_BIKE_ICON_RED;
+        } 
+    } 
+    // If user mode is 'available bikes' then... 
+    else if (mode === MODE_AVAILABLE_SPACES) {
+        if (getPercentage(stationState.available_bike_stands, stationState.bike_stands) >= THRESHOLD_GREEN) {
+            iconPathSelected = PATH_BIKE_ICON_GREEN;
+        } 
+        else if (getPercentage(stationState.available_bike_stands, stationState.bike_stands) >= THRESHOLD_ORANGE) {
+            iconPathSelected = PATH_BIKE_ICON_ORANGE;
+        } 
+        else if (getPercentage(stationState.available_bike_stands, stationState.bike_stands) <= THRESHOLD_RED) {
+            iconPathSelected = PATH_BIKE_ICON_RED;
+        } 
+    }
+    // console.log("available bikes: " + stationState.available_bikes);
+    // console.log("available bike stands: " + stationState.available_bike_stands);
+    // console.log("stands bikes: " + stationState.bike_stands);
+    // console.log("stands status: " + stationState.status);
+    // console.log(iconPathSelected);
+    return iconPathSelected;
+
+}
+
+function getPercentage(value, max) {
+        
+        let percentage = 0.0;
+        if (max != 0) {
+            percentage = (value / max) * 100;
+        } else {
+            console.log("Error: Zero Division in getPercentage()");
+        }
+
+    return percentage;
 }
 
 // Function to initialize and add the map
@@ -112,7 +223,6 @@ async function getStationsJson() {
 }
 
 async function displayStations() {
-
     // 'stations' is now a nice javascript object.  We could "for station in stations"
     // over it, or pick it apart by hand, or whatever!!
 
@@ -126,6 +236,36 @@ async function displayStations() {
 
 
     document.getElementById('tempTomShowJson').innerHTML=JSON.stringify(varGlobStations);
+}
+
+function drawOccupancyHistogram(stationId) {
+
+    const occupancyFetchPromise = fetch('/occupancy/' + stationId);
+    // Define our event handler for what to do when the promise is fulfilled...
+    occupancyFetchPromise.then(
+        response => {
+            //console.log(`Received response: ${response.status}`);
+            var occupancyData = JSON.parse(response.text());
+            console.log(occupancyData);
+            var dataTableData = google.visualization.arrayToDataTable(occupancyData);
+        }
+    );
+
+    fetch("URL")
+   .then(response => response.text())
+   .then((response) => {
+       console.log(response)
+   })
+   .catch(err => console.log(err))
+
+
+
+
+    // var data = new google.visualization.DataTable(dataTableData);
+    // var options = {'title':'My Average Day', 'width':550, 'height':400};
+    // var chart =
+    //     new google.visualization.PieChart(document.getElementById('occupancy_histogram'));
+    // chart.draw(data, options);
 }
 
 // Function to dynamically create the dropdown content for station selection
@@ -154,6 +294,64 @@ function onStationSelected(stationId) {
     document.getElementById('selectedStation').innerHTML = varGlobStations[stationId].stationName;
 
 }
+
+//##############################################################################
+//##############################################################################
+//##############################################################################
+
+// SLIDER - IN PROGRESS
+// Credit http://jsfiddle.net/meghap/9pz5grru/5/
+
+// function toTimestamp(strDate){
+//     // The Date.parse() method parses a string representation of a date, and
+//     // returns the number of milliseconds since January 1, 1970, 00:00:00 UTC
+//     var datum = Date.parse(strDate);
+//     // We divide by 1000, just to use seconds.
+//     return datum/1000;
+//  }
+
+//  var currentDateTime = new Date();
+//  currentDateTime.setMinutes(0, 0, 0);  // Resets also seconds and milliseconds
+
+//  var dt_to = "01/13/2016 16:37:43";
+ 
+//  var sel_dt_from = "01/13/2016 00:34:44";
+//  var sel_dt_to = "01/14/2016 16:37:43";
+ 
+//  $('.slider-time').html(dt_from);
+//  $('.slider-time2').html(dt_to);
+//  var min_val = toTimestamp(sel_dt_from);
+//  var max_val = toTimestamp(sel_dt_to);
+ 
+//  function zeroPad(num, places) {
+//    var zero = places - num.toString().length + 1;
+//    return Array(+(zero > 0 && zero)).join("0") + num;
+//  }
+//  function formatDT(__dt) {
+//      var year = __dt.getFullYear();
+//      var month = zeroPad(__dt.getMonth()+1, 2);
+//      var date = zeroPad(__dt.getDate(), 2);
+//      var hours = zeroPad(__dt.getHours(), 2);
+//      var minutes = zeroPad(__dt.getMinutes(), 2);
+//      var seconds = zeroPad(__dt.getSeconds(), 2);
+//      return year + '-' + month + '-' + date + ' ' + hours + ':' + minutes + ':' + seconds;
+//  };
+ 
+ 
+//  $("#slider-range").slider({
+//      range: true,
+//      min: min_val,
+//      max: max_val,
+//      step: 10,
+//      values: [min_val, max_val],
+//      slide: function (e, ui) {
+//          var dt_cur_from = new Date(ui.values[0]*1000); //.format("yyyy-mm-dd hh:ii:ss");
+//          $('.slider-time').html(formatDT(dt_cur_from));
+ 
+//          var dt_cur_to = new Date(ui.values[1]*1000); //.format("yyyy-mm-dd hh:ii:ss");                
+//          $('.slider-time2').html(formatDT(dt_cur_to));
+//      }
+//  });
 
 //##############################################################################
 //##############################################################################
