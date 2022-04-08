@@ -305,17 +305,17 @@ def get_stations():
         # model to estimate the occupancy etc. in the future.  If not we can just
         # use the current statistics.
         if time_delta > 0:
-            X_station = pd.DataFrame([[station.id, weather_hour, \
-                weather['temp'], weather['humidity'], weather['wind_speed'], \
-                station.bike_stands, weather['description_encoded'], \
-                weather_month, weather_day]])
-            X_station.columns =['stationId', 'weatherHour', \
-                'temp', 'humidity','wind_speed', \
-                'cal_bike_stands', 'num_desc', \
-                'weatherMonth', 'weatherDay']
+            X_station = pd.DataFrame([[ \
+                weather['temp'], weather['humidity'], weather['wind_speed'], weather['description_encoded'], \
+                station.bike_stands, \
+                weather_month, weather_day, weather_hour]])
+            X_station.columns =[\
+                'temp', 'humidity','wind_speed', 'num_desc', \
+                'cal_bike_stands', \
+                'weatherMonth', 'weatherDay', 'weatherHour']
 
             # Predictive Model - deserialization
-            with open('pickles/allStation_randomForest_model.pkl', 'rb') as handle:
+            with open('pickles/station' + str(station.id) + '_randomForest_model.pkl', 'rb') as handle:
                 model = pickle.load(handle)
                 # Our model returns a numpy ndarray, hence the ".item(0)" at the
                 # end, to pluck out the prediction value.
