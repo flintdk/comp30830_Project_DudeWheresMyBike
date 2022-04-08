@@ -120,28 +120,13 @@ function getPercentage(value, max) {
     return percentage;
 }
 
-function getPercentage(value, max) {
-        
-        let percentage = 0.0;
-        if (max != 0) {
-            percentage = (value / max) * 100;
-        } else {
-            console.log("Error: Zero Division in getPercentage()");
-        }
-
-    return percentage;
-}
-// status = db.Column(db.String(45), nullable=True)
-// bike_stands = db.Column(db.Integer, nullable=True)
-// available_bike_stands = db.Column(db.Integer, nullable=True)
-// available_bikes = db.Column(db.Integer, nullable=True)
-
 //-----------------------------------------------------------------------------
 // Function to initialize and add the map
 //-----------------------------------------------------------------------------
 async function initMap() {
     // We load the stations on page load as well as here in initMap - whatever event occurs first 
-    varGlobStations = await getStationsJson();
+    let url = 'stations'
+    varGlobStations = await getStationsJson(url);
 
     // Location of Dublin
     const dublin = { lat: 53.350140, lng: -6.266155 };
@@ -209,7 +194,11 @@ function createMarkers(map, stationData) {
 //-----------------------------------------------------------------------------
 // Display station details such as weather info and occupancy 
 //-----------------------------------------------------------------------------
-async function displayDetails (stationIndex) {
+async function displayDetails (stationIndex, hours) {
+    let url = 'stations?hours_in_future';
+
+    url += hours.toString();
+    let StationDataPredicted = await getStationsJson(url);
     
 }
 
@@ -226,6 +215,31 @@ function displayWeatherIcon (stationIndex) {
 //-----------------------------------------------------------------------------
 function displayOccupancyChart (stationIndex) {
     ;
+//     const occupancyFetchPromise = fetch('/occupancy/' + stationId);
+//     // Define our event handler for what to do when the promise is fulfilled...
+//     occupancyFetchPromise.then(
+//         response => {
+//             //console.log(`Received response: ${response.status}`);
+//             var occupancyData = JSON.parse(response.text());
+//             console.log(occupancyData);
+//             var dataTableData = google.visualization.arrayToDataTable(occupancyData);
+//         }
+//     );
+
+//     fetch("URL")
+//    .then(response => response.text())
+//    .then((response) => {
+//        console.log(response)
+//    })
+//    .catch(err => console.log(err))
+
+// var data = new google.visualization.DataTable(dataTableData);
+// var options = {'title':'My Average Day', 'width':550, 'height':400};
+// var chart =
+//     new google.visualization.PieChart(document.getElementById('occupancy_histogram'));
+// chart.draw(data, options);
+
+
 }
 
 //-----------------------------------------------------------------------------
@@ -237,7 +251,7 @@ function displayOccupancyChart (stationIndex) {
 // our stations data in json format.  We might never use these once the dudeWMB
 // site is final. But its a helpful exercise to make sure we can access JSON data
 // sourced from an endpoint in the dudeWMB Flask app, using JavaScript fetch()
-async function getStationsJson() {
+async function getStationsJson(url) {
     // There is a good example on using JavaScript fetch here:
     //      https://www.javascripttutorial.net/javascript-fetch-api/
     // I chose not to reproduce that content here (because it's much easier to
@@ -246,7 +260,7 @@ async function getStationsJson() {
 
     // Key concept: A Promise is an object representing the eventual completion or failure of an asynchronous operation.
 
-    let url = 'stations';
+ //   let url = 'stations?hours_in_future=3';
     try {
         let stations = await fetch(url);
         // console.log(stations.status); // 200
@@ -268,54 +282,9 @@ async function getStationsJson() {
     }
 }
 
-// async function displayStations() {
-
-//     // 'stations' is now a nice javascript object.  We could "for station in stations"
-//     // over it, or pick it apart by hand, or whatever!!
-
-//     // let html = '';
-//     // stations.forEach(user => {
-//     //     let htmlSegment = `<div class="user">
-//     //                         <img src="${stations.bla-bla}" >
-//     //                         <h2>${stations.bla-bla} ${stations.bla-bla}</h2>
-//     //                         <div class="bla-bla">${stations.bla-bla}</div>
-//     //                     </div>`;
-
-
-//     document.getElementById('tempTomShowJson').innerHTML=JSON.stringify(varGlobStations);
-// }
-
-function drawOccupancyHistogram(stationId) {
-
-    const occupancyFetchPromise = fetch('/occupancy/' + stationId);
-    // Define our event handler for what to do when the promise is fulfilled...
-    occupancyFetchPromise.then(
-        response => {
-            //console.log(`Received response: ${response.status}`);
-            var occupancyData = JSON.parse(response.text());
-            console.log(occupancyData);
-            var dataTableData = google.visualization.arrayToDataTable(occupancyData);
-        }
-    );
-
-    fetch("URL")
-   .then(response => response.text())
-   .then((response) => {
-       console.log(response)
-   })
-   .catch(err => console.log(err))
-
-
-
-
-    // var data = new google.visualization.DataTable(dataTableData);
-    // var options = {'title':'My Average Day', 'width':550, 'height':400};
-    // var chart =
-    //     new google.visualization.PieChart(document.getElementById('occupancy_histogram'));
-    // chart.draw(data, options);
-}
-
+//-----------------------------------------------------------------------------
 // Function to dynamically create the dropdown content for station selection
+//-----------------------------------------------------------------------------
 function createStationDropdownContent() {
     // for example: <a href="#" onclick="onUpdateStationInfo(stationId)">SMITHFIELD NORTH</a>
     // where stationId is the index in the station-object
