@@ -24,6 +24,7 @@ class Station(db.Model):
     longitude = db.Column(db.Float, unique=False, nullable=True)
     banking = db.Column(db.String(120), unique=False, nullable=False)
     bonus = db.Column(TINYINT, unique=False, nullable=False)
+    available_bike_stands = db.Column(db.Integer, nullable=True)
 
     # Notes on SQLAlchemy relationship definitions here:
     # https://docs.sqlalchemy.org/en/14/orm/basic_relationships.html

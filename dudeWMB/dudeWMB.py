@@ -322,7 +322,7 @@ def get_stations():
                 'weatherMonth', 'weatherDay']
 
             # Predictive Model - deserialization
-            with open('allStation_randomForest_model.pkl', 'rb') as handle:
+            with open('pickles/allStation_randomForest_model.pkl', 'rb') as handle:
                 model = pickle.load(handle)
                 # Our model returns a numpy ndarray, hence the ".item(0)" at the
                 # end, to pluck out the prediction value.
