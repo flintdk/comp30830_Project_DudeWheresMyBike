@@ -113,6 +113,18 @@ function getPercentage(value, max) {
 
     return percentage;
 }
+
+function getPercentage(value, max) {
+        
+        let percentage = 0.0;
+        if (max != 0) {
+            percentage = (value / max) * 100;
+        } else {
+            console.log("Error: Zero Division in getPercentage()");
+        }
+
+    return percentage;
+}
 // status = db.Column(db.String(45), nullable=True)
 // bike_stands = db.Column(db.Integer, nullable=True)
 // available_bike_stands = db.Column(db.Integer, nullable=True)
@@ -247,7 +259,6 @@ async function getStationsJson() {
 }
 
 async function displayStations() {
-
     // 'stations' is now a nice javascript object.  We could "for station in stations"
     // over it, or pick it apart by hand, or whatever!!
 
@@ -261,6 +272,36 @@ async function displayStations() {
 
 
     document.getElementById('tempTomShowJson').innerHTML=JSON.stringify(varGlobStations);
+}
+
+function drawOccupancyHistogram(stationId) {
+
+    const occupancyFetchPromise = fetch('/occupancy/' + stationId);
+    // Define our event handler for what to do when the promise is fulfilled...
+    occupancyFetchPromise.then(
+        response => {
+            //console.log(`Received response: ${response.status}`);
+            var occupancyData = JSON.parse(response.text());
+            console.log(occupancyData);
+            var dataTableData = google.visualization.arrayToDataTable(occupancyData);
+        }
+    );
+
+    fetch("URL")
+   .then(response => response.text())
+   .then((response) => {
+       console.log(response)
+   })
+   .catch(err => console.log(err))
+
+
+
+
+    // var data = new google.visualization.DataTable(dataTableData);
+    // var options = {'title':'My Average Day', 'width':550, 'height':400};
+    // var chart =
+    //     new google.visualization.PieChart(document.getElementById('occupancy_histogram'));
+    // chart.draw(data, options);
 }
 
 // Function to dynamically create the dropdown content for station selection
@@ -297,56 +338,56 @@ function onStationSelected(stationId) {
 // SLIDER - IN PROGRESS
 // Credit http://jsfiddle.net/meghap/9pz5grru/5/
 
-function toTimestamp(strDate){
-    // The Date.parse() method parses a string representation of a date, and
-    // returns the number of milliseconds since January 1, 1970, 00:00:00 UTC
-    var datum = Date.parse(strDate);
-    // We divide by 1000, just to use seconds.
-    return datum/1000;
- }
+// function toTimestamp(strDate){
+//     // The Date.parse() method parses a string representation of a date, and
+//     // returns the number of milliseconds since January 1, 1970, 00:00:00 UTC
+//     var datum = Date.parse(strDate);
+//     // We divide by 1000, just to use seconds.
+//     return datum/1000;
+//  }
 
- var currentDateTime = new Date();
- currentDateTime.setMinutes(0, 0, 0);  // Resets also seconds and milliseconds
+//  var currentDateTime = new Date();
+//  currentDateTime.setMinutes(0, 0, 0);  // Resets also seconds and milliseconds
 
- var dt_to = "01/13/2016 16:37:43";
+//  var dt_to = "01/13/2016 16:37:43";
  
- var sel_dt_from = "01/13/2016 00:34:44";
- var sel_dt_to = "01/14/2016 16:37:43";
+//  var sel_dt_from = "01/13/2016 00:34:44";
+//  var sel_dt_to = "01/14/2016 16:37:43";
  
- $('.slider-time').html(dt_from);
- $('.slider-time2').html(dt_to);
- var min_val = toTimestamp(sel_dt_from);
- var max_val = toTimestamp(sel_dt_to);
+//  $('.slider-time').html(dt_from);
+//  $('.slider-time2').html(dt_to);
+//  var min_val = toTimestamp(sel_dt_from);
+//  var max_val = toTimestamp(sel_dt_to);
  
- function zeroPad(num, places) {
-   var zero = places - num.toString().length + 1;
-   return Array(+(zero > 0 && zero)).join("0") + num;
- }
- function formatDT(__dt) {
-     var year = __dt.getFullYear();
-     var month = zeroPad(__dt.getMonth()+1, 2);
-     var date = zeroPad(__dt.getDate(), 2);
-     var hours = zeroPad(__dt.getHours(), 2);
-     var minutes = zeroPad(__dt.getMinutes(), 2);
-     var seconds = zeroPad(__dt.getSeconds(), 2);
-     return year + '-' + month + '-' + date + ' ' + hours + ':' + minutes + ':' + seconds;
- };
+//  function zeroPad(num, places) {
+//    var zero = places - num.toString().length + 1;
+//    return Array(+(zero > 0 && zero)).join("0") + num;
+//  }
+//  function formatDT(__dt) {
+//      var year = __dt.getFullYear();
+//      var month = zeroPad(__dt.getMonth()+1, 2);
+//      var date = zeroPad(__dt.getDate(), 2);
+//      var hours = zeroPad(__dt.getHours(), 2);
+//      var minutes = zeroPad(__dt.getMinutes(), 2);
+//      var seconds = zeroPad(__dt.getSeconds(), 2);
+//      return year + '-' + month + '-' + date + ' ' + hours + ':' + minutes + ':' + seconds;
+//  };
  
  
- $("#slider-range").slider({
-     range: true,
-     min: min_val,
-     max: max_val,
-     step: 10,
-     values: [min_val, max_val],
-     slide: function (e, ui) {
-         var dt_cur_from = new Date(ui.values[0]*1000); //.format("yyyy-mm-dd hh:ii:ss");
-         $('.slider-time').html(formatDT(dt_cur_from));
+//  $("#slider-range").slider({
+//      range: true,
+//      min: min_val,
+//      max: max_val,
+//      step: 10,
+//      values: [min_val, max_val],
+//      slide: function (e, ui) {
+//          var dt_cur_from = new Date(ui.values[0]*1000); //.format("yyyy-mm-dd hh:ii:ss");
+//          $('.slider-time').html(formatDT(dt_cur_from));
  
-         var dt_cur_to = new Date(ui.values[1]*1000); //.format("yyyy-mm-dd hh:ii:ss");                
-         $('.slider-time2').html(formatDT(dt_cur_to));
-     }
- });
+//          var dt_cur_to = new Date(ui.values[1]*1000); //.format("yyyy-mm-dd hh:ii:ss");                
+//          $('.slider-time2').html(formatDT(dt_cur_to));
+//      }
+//  });
 
 //##############################################################################
 //##############################################################################
