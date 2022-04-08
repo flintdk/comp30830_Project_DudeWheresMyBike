@@ -300,13 +300,6 @@ def get_stations():
     #station_dict = dict((col, getattr(station, col)) for col in station.__table__.columns.keys())
     stationsList = []
     for station in stations:
-
-        # Unfortunately - even if we peering eerily into the future using our random
-        # forests voodoo and plan to predict occupancy... we need to load the
-        # latest stationState record to get the total number of spaces at the station.
-        # We should have added this data to the header record... :-(
-        stationState = StationState.query.filter(StationState.stationId==station.id).order_by(text('weatherTime desc')).limit(1).all()[0]
-
         # Now the fun part... the predictive model!
         # If the time_delta is greater than zero then we want to use our predictive
         # model to estimate the occupancy etc. in the future.  If not we can just
@@ -314,7 +307,7 @@ def get_stations():
         if time_delta > 0:
             X_station = pd.DataFrame([[station.id, weather_hour, \
                 weather['temp'], weather['humidity'], weather['wind_speed'], \
-                stationState.bike_stands, weather['description_encoded'], \
+                station.bike_stands, weather['description_encoded'], \
                 weather_month, weather_day]])
             X_station.columns =['stationId', 'weatherHour', \
                 'temp', 'humidity','wind_speed', \
@@ -332,7 +325,7 @@ def get_stations():
         else:
             # If we're not peering eerily into the future using our random
             # forests voodoo... then use the actual latest data...
-            stationState = StationState.query.filter_by(stationId=station.id).order_by(text('weatherTime desc')).limit(1).all()[0]
+            stationState = StationState.query.filter(StationState.stationId==station.id).order_by(text('weatherTime desc')).limit(1).all()[0]
 
         # Create dictionary for station-info
         stationInfo = {}
@@ -342,6 +335,7 @@ def get_stations():
         stationInfo['latitude'] = station.latitude
         stationInfo['longitude'] = station.longitude
         stationInfo['banking'] = station.banking
+        stationInfo['bike_stands'] = station.bike_stands
         stationInfo['info_supplied_for_time'] = info_requested_for_time
         # Create nested dictionary for occupancy related data
         stationInfo['occupancy'] = {}
@@ -353,8 +347,8 @@ def get_stations():
         else:
             stationInfo['occupancy']['status'] = '-'  # We don't show status for predicted times
                                                       # Perhaps address in future release?
-            stationInfo['occupancy']['bike_stands'] = stationState.bike_stands
-            stationInfo['occupancy']['available_bike_stands'] = stationState.bike_stands - randomForest_prediction
+            stationInfo['occupancy']['bike_stands'] = station.bike_stands
+            stationInfo['occupancy']['available_bike_stands'] = station.bike_stands - randomForest_prediction
             stationInfo['occupancy']['available_bikes'] = randomForest_prediction
 
         # Creating nested dictionary for weather related data
