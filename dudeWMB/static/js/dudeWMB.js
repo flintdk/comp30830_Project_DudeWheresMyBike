@@ -209,12 +209,24 @@ function displayWeatherIcon (stationIndex) {
     /* Function to display weather icon for current/future weather description
     as slider is moved
     */
-    // Relative paths to bike icons
+    // Relative paths to weather category icons
+    // Default Image for any errors etc.
     const PATH_TEMP_ICON = "/img/weather_forecast_icon.png";
-    // TODO: Icons for different weather categories
-    const PATH_TEMP_ICON_GREEN = "/img/bikeIconGreen.png";
-    const PATH_TEMP_ICON_ORANGE = "/img/bikeIconOrange.png";
-    const PATH_TEMP_ICON_RED = "/img/bikeIconRed.png";
+    // Icon paths for different weather categories
+    const PATH_ICON_BROKEN_CLOUDS = "/img/broken_clouds.svg";
+    const PATH_ICON_CLEAR_SKY = "/img/clear_sky.svg";
+    const PATH_ICON_FEW_CLOUDS = "/img/few_clouds.svg";
+    const PATH_ICON_FOG = "/img/fog.svg";
+    const PATH_ICON_HAZE = "/img/haze.svg";
+    const PATH_ICON_HVY_INT_RAIN = "/img/heavy_intensity_rain.svg";
+    const PATH_ICON_LIGHT_INT_DRIZ = "/img/light_intensity_drizzle.svg";
+    const PATH_ICON_LIGHT_INT_DRIZ_RAIN = "/img/light_intensity_drizzle_rain.svg";
+    const PATH_ICON_LIGHT_INT_SHOW_RAIN = "/img/light_intensity_shower_rain.svg";
+    const PATH_ICON_LIGHT_RAIN = "/img/light_rain.svg";
+    const PATH_ICON_MIST = "/img/mist.svg";
+    const PATH_ICON_MODERATE_RAIN = "/img/moderate_rain.svg";
+    const PATH_ICON_OVERCAST_CLOUDS = "/img/overcast_clouds.svg";
+    const PATH_ICON_SCATTERED_CLOUDS = "/img/scattered_clouds.svg";
  
     let weatherIconPath = PATH_TEMP_ICON;
 
