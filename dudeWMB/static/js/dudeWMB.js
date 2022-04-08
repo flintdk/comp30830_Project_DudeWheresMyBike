@@ -12,7 +12,8 @@ var varGlobStationSelected;
 var varGlobMap;
 // varGlobActiveMode represents the active user mode (avalailable bikes, available spaces)
 var varGlobActiveMode = MODE_AVAILABLE_BIKES;
-
+// varGlobPredictionInHours indicates the data prediction we want to get in x hours time, where hours == 0 stands for current time 
+var varGlobPredictionInHours = 0;
 
 //-----------------------------------------------------------------------------
 // Function onLoad is invoked when the website (DOM) is loaded the first time
@@ -186,7 +187,7 @@ function createMarkers(map, stationData) {
             map.setZoom(16);
             map.setCenter(marker.getPosition());
             infoWindow.open(map, marker);
-            displayDetails(marker.station_index);
+            displayDetails(marker.station_index, varGlobPredictionInHours);
           });
     }
 }
