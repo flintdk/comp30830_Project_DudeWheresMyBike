@@ -133,7 +133,8 @@ def updateStation(connection, station):
             + "latitude = " + str(station['lat']) + ", " \
             + "longitude = " + str(station['lng']) + ", " \
             + "banking = " + str(station['banking']) + ", " \
-            + "bonus = " + str(station['bonus']) + " " \
+            + "bonus = " + str(station['bonus']) + ", " \
+            + "bike_stands = " + str(station['bike_stands']) + " " \
             + "WHERE number = " + str(station['number']) + " " \
             + "and contractName = \"dublin\";")
     )
@@ -152,7 +153,8 @@ def insertStation(connection, station):
             + "latitude = " + str(station['lat']) + ", " \
             + "longitude = " + str(station['lng']) + ", " \
             + "banking = " + str(station['banking']) + ", " \
-            + "bonus = " + str(station['bonus']) + ";")
+            + "bonus = " + str(station['bonus']) + ", " \
+            + "bike_stands = " + str(station['bike_stands']) + ";")
     )
     return
 
@@ -253,6 +255,7 @@ def extractStation(jsonRow):
     station['lng'] = jsonRow['position']['lng']
     station['banking'] = jsonRow['banking']
     station['bonus'] = jsonRow['bonus']
+    station['bike_stands'] = jsonRow['bike_stands']
 
     return station
 

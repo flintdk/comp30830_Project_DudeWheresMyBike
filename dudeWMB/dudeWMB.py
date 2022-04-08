@@ -1,18 +1,21 @@
 # -*- coding: utf-8 -*-
 import functools
-from datetime import date
+from datetime import date, datetime, timedelta
 from sqlite3 import Date
-from flask import Flask, g, render_template, jsonify
+from flask import Flask, g, request, render_template, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import text
 import json
 from jinja2 import Template
-from models import db, Station, StationState, weatherHistory
+from models import db, Station, StationState, StationStateResampled, weatherHistory
 # Imports for Model/Pickle Libs
 import pickle
 import pandas as pd
 import numpy as np
-from sklearn.linear_model import LinearRegression
+from sklearn.ensemble import RandomForestRegressor
+# Suppress UserWarning when unpickling files...
+# import warnings
+# warnings.filterwarnings("ignore", category=UserWarning)
 
 import requests
 
@@ -32,6 +35,45 @@ def loadCredentials():
     credentials = json.load(file)
     file.close  # Can close the file now we have the data loaded...
     return credentials
+
+def convertWeatherStringToModelCode(weatherString):
+    """Convert the Weather string returned by the weather API to a code understood
+       and accepted by our prediction model.
+
+    Returns "scattered clouds" (a reasonable default for Ireland) if the received
+    weather string is not recognised.
+    """
+    code = "13"
+    if weatherString == 'broken clouds':
+        code = 0
+    elif weatherString == 'clear sky':
+        code = 1
+    elif weatherString == 'few clouds':
+        code = 2
+    elif weatherString == 'fog':
+        code = 3
+    elif weatherString == 'haze':
+        code = 4
+    elif weatherString == 'heavy intensity rain':
+        code = 5
+    elif weatherString == 'light intensity drizzle':
+        code = 6
+    elif weatherString == 'light intensity drizzle rain':
+        code = 7
+    elif weatherString == 'light intensity shower rain':
+        code = 8
+    elif weatherString == 'light rain':
+        code = 9
+    elif weatherString == 'mist':
+        code = 10
+    elif weatherString == 'moderate rain':
+        code = 11
+    elif weatherString == 'overcast clouds':
+        code = 12
+    elif weatherString == 'scattered clouds':
+        code = 13
+
+    return code
 
 # Create our flask app.
 # Static files are server from the 'static' directory
@@ -86,96 +128,6 @@ dudeWMB.config['SQLALCHEMY_DATABASE_URI'] = "mysql+mysqlconnector://" \
             + "/" + dudeWMB.config['DB_NAME'] + "?charset=utf8mb4"
 db.init_app(dudeWMB)
 
-# Note that in the following we use "functools.lru_cache(maxsize=128, typed=False)"
-# functools is a decorator to wrap a function with a memoizing callable that saves
-# up to the maxsize most recent calls. Since a dictionary is used to cache results,
-# the positional and keyword arguments to the function must be hashable.It can save
-# time when an expensive or I/O bound function is periodically called with the same
-# arguments.
-# If maxsize is set to None, the LRU feature is disabled and the cache can grow
-# without bound. The LRU feature performs best when maxsize is a power-of-two.
-# (See https://docs.python.org/3/library/functools.html)
-@dudeWMB.route("/stations")
-@functools.lru_cache(maxsize=128)
-def get_stations():
-    # If you want to access the 'session' using SQL Alchemy - you can do so as
-    # follows:
-    #   db.session. ...
-    # Lots of the SQLAlchemy documentation seem to use the session object whereas
-    # documentation on using models appears to be lighter.
-    #
-    # Station.query gives you a "BaseQuery"
-    # To get actual data from a "BaseQuery" you just use .all(), .first(), etc.
-    # db.session.query(Station) gives you a "BaseQuery" too (same??)
-    # Station.query.all() gives you a result set
-    # Station.query.join(StationState).all() seems to give me a result set
-    #                                        ... but it's huge and takes forever
-    #                                        and eventually just times out.
-    # Following are examples of filter_by (gives a BaseQuery)
-    # StationState.query.filter_by(stationId=1, weatherTime='2022-02-21 12:35:27')
-    # Station.query.filter_by(stationName='SomeRandomStationName').first()
-    # StationState.query.filter_by(stationId=1, weatherTime='2022-02-21 12:35:27').all()
-
-    ########################################################################
-    # Tested, working above this line, in progress below
-    ########################################################################
-
-    # We can filter results using filter_by
-    # db.users.filter_by(name='Joe')
-    # The same can be accomplished with filter, not using kwargs, but instead using
-    # the '==' equality operator, which has been overloaded on the db.users.name object:
-    # db.users.filter(db.users.name=='Joe')
-    # db.users.filter(or_(db.users.name=='Ryan', db.users.country=='England'))
-
-    stations = Station.query.all()  ## Returns results as a list...
-    # for station in stations:
-    #     print(station.id, station.number)
-
-    # Convert individual station to dicitonary
-    #station_dict = dict((col, getattr(station, col)) for col in station.__table__.columns.keys())
-    stationsList = []
-    for station in stations:
-        #stationState = StationState.query.filter_by(stationId=getattr(station, 'id')).order_by('weatherTime desc').limit(1).first()
-        stationState = StationState.query.filter_by(stationId=station.id).order_by(text('weatherTime desc')).limit(1).all()[0]
-        # TODO here needs to go in the query
-        stationWeather = weatherHistory       
-
-        # Create dictionary for station-info
-        stationInfo = {}
-        stationInfo['number'] = station.number
-        stationInfo['stationName'] = station.stationName
-        stationInfo['address'] = station.address
-        stationInfo['latitude'] = station.latitude
-        stationInfo['longitude'] = station.longitude
-        stationInfo['banking'] = station.banking
-        # Create nested dictionary for occupancy related data
-        stationInfo['occupancy'] = {}
-        stationInfo['occupancy']['status'] = stationState.status
-        stationInfo['occupancy']['bike_stands'] = stationState.bike_stands
-        stationInfo['occupancy']['available_bike_stands'] = stationState.available_bike_stands
-        stationInfo['occupancy']['available_bikes'] = stationState.available_bikes
-        # Create nested dictionary for weather related data
-        stationInfo['weather'] = {}
-        stationInfo['weather']['description'] = stationWeather.description
-        stationInfo['weather']['temp'] = stationWeather.temp
-        stationInfo['weather']['humidity'] = stationWeather.humidity
-        stationInfo['weather']['wind_speed'] = stationWeather.wind_speed
-
-        stationsList.append(stationInfo)
-
-    return jsonify(stationsList)
-
-
-@dudeWMB.route('/station/<int:station_id>')
-def station(station_id):
-    # show the station with the given id, the id is an integer
-    # station = load_station(station_id)
-    # Handle invalid station id...
-    # if not station:
-    #     abort(404)
-    # return ... station stuff ....
-    return 'Retrieving info for Station: {}'.format(station_id)
-
 # @app.route("/occupancy/<int:station_id>")
 # def get_occupancy(station_id):
 # engine = get_db()
@@ -216,10 +168,63 @@ def about():
     # This route renders a template from the template folder
     return render_template('about.html')
 
-# Predictive Model:
-# Predict output
-@dudeWMB.route("/predict/<int:four_hour_interval>")
-def predict(four_hour_interval):
+# Following endpoing caters for BOTH:
+#   -> Current state of the stations
+#   -> Predicted state of the stations at a future time.  The limit of 48 hours
+#      for how far into the future we can go is introduced only by our choice of
+#      weather API (and at the time of writing it's there's insufficient lead time
+#      to change that).
+@dudeWMB.route("/stations")
+def get_stations():
+    # if get_stations is called with no argument
+    #   -> get station data at the current time
+    # if get_stations is called with a 'four_hour_interval' argument
+    #   -> get predicted station data at the time 'now plus the interval'
+
+    hours_param = request.args.get('hours_in_future')
+    if (hours_param != None):
+        time_delta = int(hours_param)
+    else:
+        time_delta = 0  # No time delta was provided, return results as they are
+                        # now....
+
+    ########################################################################
+    #      vvvvv SqlAlchemy ORM DB Access reference notes BELOW vvvvv
+    ########################################################################
+
+    # If you want to access the 'session' using SQL Alchemy - you can do so as
+    # follows:
+    #   db.session. ...
+    # Lots of the SQLAlchemy documentation seem to use the session object whereas
+    # documentation on using models appears to be lighter.
+    #
+    # Station.query gives you a "BaseQuery"
+    # To get actual data from a "BaseQuery" you just use .all(), .first(), etc.
+    # db.session.query(Station) gives you a "BaseQuery" too (same??)
+    # Station.query.all() gives you a result set
+    # Station.query.join(StationState).all() seems to give me a result set
+    #                                        ... but it's huge and takes forever
+    #                                        and eventually just times out.
+    # Following are examples of filter_by (gives a BaseQuery)
+    # StationState.query.filter_by(stationId=1, weatherTime='2022-02-21 12:35:27')
+    # Station.query.filter_by(stationName='SomeRandomStationName').first()
+    # StationState.query.filter_by(stationId=1, weatherTime='2022-02-21 12:35:27').all()
+
+    #-----------------------------------------------------------------------
+    # Tested, working above this line, in progress below
+    #-----------------------------------------------------------------------
+
+    # We can filter results using filter_by
+    # db.users.filter_by(name='Joe')
+    # The same can be accomplished with filter, not using kwargs, but instead using
+    # the '==' equality operator, which has been overloaded on the db.users.name object:
+    # db.users.filter(db.users.name=='Joe')
+    # db.users.filter(or_(db.users.name=='Ryan', db.users.country=='England'))
+
+    ########################################################################
+    #      ^^^^^ SqlAlchemy ORM DB Access reference notes ABOVE ^^^^^
+    ########################################################################
+
     # The slider on the main page sends in a 'four hour interval'.  That interval
     # is 'how far in the future' we want to get the weather from.  Now... we're
     # using the onecall API to get our weather predictions to source our future
@@ -227,73 +232,200 @@ def predict(four_hour_interval):
     # tell us which weather prediction to use when calling our occupancy prediction
     # model.
 
-    #print("\tRetrieving weather data from openweather.")
+    # Add our (hour-based) interval to the current datetime (.now) object...
+    info_requested_for_time = datetime.now() + timedelta(hours=time_delta)
+
     # Retrieve the Weather Data:
-    # Hard-code the Station Data URI
+    # We're using the free 'onecall' api - which returns BOTH the current weather
+    # and the predicted weather in a single call.  So we make that call regardless
+    # at the start of our process.  We just treat the results differently if we're
+    # looking at the future (predicting availability)
+    weather = {} # Declare a dict to hold the forecast weather data
+    weather['temp'] = ''
+    weather['humidity'] = ''
+    weather['wind_speed'] = ''
+    weather['description'] = ''
+
     uri = 'https://api.openweathermap.org/data/2.5/onecall'
     # Set the request parameters in JSON format
     parameters = {'lat': credentials['open-weather']['lat'], 'lon': credentials['open-weather']['lon'],  'exclude':'current,minutely,daily,alerts', 'appid': credentials['open-weather']['api-key']}
     weatherResponse = requests.get(uri, params=parameters)
-
     if (weatherResponse.status_code == 200):
-        #print("Retrieving forecast weather data.")
+        jsonWeatherData = weatherResponse.json()
+        #print(jsonWeatherData)
 
-        jsonWeatherData =weatherResponse.json()
-        # print(jsonWeatherData)
-
-
-        # Loop thru to grab test time from array for variables in X_test:
-        # Midday - Weather at that point
-
-        forecastWeather = {} # Declare a dict to hold the forecast weather data
-        print(forecastWeather)
-
-        #for i in forecastWeather[len(forecastWeather)-1]:
-         #   print(forecastWeather[i])
-
-        # weather['latitude'] = jsonWeatherData['coord']['lat']
-        # weather['longitude'] = jsonWeatherData['coord']['lon']
-        # weather['main'] = jsonWeatherData['weather'][0]['main']
-        # weather['description'] = jsonWeatherData['weather'][0]['description']
-        # if "temp" in jsonWeatherData['main']:
-        #     weather['temp'] = jsonWeatherData['main']['temp']
-        # if "feels_like" in jsonWeatherData['main']:
-        #     weather['feels_like'] = jsonWeatherData['main']['feels_like']
-        # if "temp_min" in jsonWeatherData['main']:
-        #     weather['temp_min'] = jsonWeatherData['main']['temp_min']
-        # if "temp_max" in jsonWeatherData['main']:
-        #     weather['temp_max'] = jsonWeatherData['main']['temp_max']
-        # if "pressure" in jsonWeatherData['main']:
-        #     weather['pressure'] = jsonWeatherData['main']['pressure']
-        # if "humidity" in jsonWeatherData['main']:
-        #     weather['humidity'] = jsonWeatherData['main']['humidity']
-
-
+        if time_delta == 0:
+            # Use the current weather informatio:
+            index_of_forecast_we_want = 0
+        else:
+            # We need to loop over the jsonWeatherData to get find the prediction for
+            # the time window the use is interested in.  If the window is more than
+            # 48 hours in the future we just return the last weather (it's our best
+            # guess...)
+            index_of_forecast_we_want = 0
+            for idx, hourly_forecast in enumerate(jsonWeatherData['hourly']):
+                forecast_time = datetime.utcfromtimestamp(hourly_forecast['dt'])
+                if (forecast_time > info_requested_for_time):
+                    # if the forecast time is greater than the prediction time then
+                    # 'the last hourly_forecast' was the one we were interested in.
+                    if idx > 0:
+                        index_of_forecast_we_want = idx -1
+                    break
+            
+        forecast = jsonWeatherData['hourly'][index_of_forecast_we_want]
+        weather['temp'] = forecast['temp']
+        weather['humidity'] = forecast['humidity']
+        weather['wind_speed'] = forecast['wind_speed']
+        weather['description'] = forecast['weather'][0]['description']
+        weather['description_encoded'] = \
+            convertWeatherStringToModelCode(weather['description'])
     else:
         # Our call to the API failed for some reason...  print some information
         # Who knows... someone may even look at the logs!!
         print("ERROR: Call to OpenWeather API failed with status code: ", weatherResponse.status_code)
         print("       The response reason was \'" + str(weatherResponse.reason) + "\'")
 
+    # Calculate some of the parameters required by the predictive model.  It's
+    # simpler to calculate these all the time.  Technically of course they won't
+    # be used if the user has requested occupancy information for the cureent
+    # time.
+    weather_month = info_requested_for_time.month
+    weather_day = info_requested_for_time.day
+    weather_hour = info_requested_for_time.year
 
-    # Temp X_test variable until resample data working
-    X_test = pd.DataFrame([[1,2,3,4]])
+    # Get our list of all the stations...
+    stations = Station.query.all()  ## Returns results as a list...
 
-    # Predictive Model - deserialization
-    with open('dwmb_linReg_model.pkl', 'rb') as handle:
-        model = pickle.load(handle)
-        result = model.predict(X_test)
-    
-    jsonResults = jsonify(result[0])
-    print("Retrieving Prediction Results")
+    # Convert individual station to dicitonary
+    #station_dict = dict((col, getattr(station, col)) for col in station.__table__.columns.keys())
+    stationsList = []
+    for station in stations:
+        # Now the fun part... the predictive model!
+        # If the time_delta is greater than zero then we want to use our predictive
+        # model to estimate the occupancy etc. in the future.  If not we can just
+        # use the current statistics.
+        if time_delta > 0:
+            X_station = pd.DataFrame([[station.id, weather_hour, \
+                weather['temp'], weather['humidity'], weather['wind_speed'], \
+                station.bike_stands, weather['description_encoded'], \
+                weather_month, weather_day]])
+            X_station.columns =['stationId', 'weatherHour', \
+                'temp', 'humidity','wind_speed', \
+                'cal_bike_stands', 'num_desc', \
+                'weatherMonth', 'weatherDay']
 
-    return jsonResults
+            # Predictive Model - deserialization
+            with open('pickles/allStation_randomForest_model.pkl', 'rb') as handle:
+                model = pickle.load(handle)
+                # Our model returns a numpy ndarray, hence the ".item(0)" at the
+                # end, to pluck out the prediction value.
+                # Also, we use int() to truncate (round down) the result as we
+                # can never have a fraction of a bike available!
+                randomForest_prediction = int(model.predict(X_station).item(0))
+        else:
+            # If we're not peering eerily into the future using our random
+            # forests voodoo... then use the actual latest data...
+            stationState = StationState.query.filter(StationState.stationId==station.id).order_by(text('weatherTime desc')).limit(1).all()[0]
 
+        # Create dictionary for station-info
+        stationInfo = {}
+        stationInfo['number'] = station.number
+        stationInfo['stationName'] = station.stationName
+        stationInfo['address'] = station.address
+        stationInfo['latitude'] = station.latitude
+        stationInfo['longitude'] = station.longitude
+        stationInfo['banking'] = station.banking
+        stationInfo['bike_stands'] = station.bike_stands
+        stationInfo['info_supplied_for_time'] = info_requested_for_time
+        # Create nested dictionary for occupancy related data
+        stationInfo['occupancy'] = {}
+        if time_delta == 0:
+            stationInfo['occupancy']['status'] = stationState.status
+            stationInfo['occupancy']['bike_stands'] = stationState.bike_stands
+            stationInfo['occupancy']['available_bike_stands'] = stationState.available_bike_stands
+            stationInfo['occupancy']['available_bikes'] = stationState.available_bikes
+        else:
+            stationInfo['occupancy']['status'] = '-'  # We don't show status for predicted times
+                                                      # Perhaps address in future release?
+            stationInfo['occupancy']['bike_stands'] = station.bike_stands
+            stationInfo['occupancy']['available_bike_stands'] = station.bike_stands - randomForest_prediction
+            stationInfo['occupancy']['available_bikes'] = randomForest_prediction
 
+        # Creating nested dictionary for weather related data
+        # THIS MIGHT SEEM WASTEFUL (i.e. why attach weather to a station if all
+        # the stations are nearby?)  However we took the view that if this
+        # application was used nationally, it would be far more likely the weather
+        # would differ from station to station.  Yes - we would have to update how
+        # we sourced the weather data.  However our json model and the front end
+        # would already be capable of handling the data if send from the back end.
+        stationInfo['weather'] = weather
+ 
+        stationsList.append(stationInfo)
 
-
+    return jsonify(stationsList)
 
 ##########################################################################################
+##########################################################################################
+
+@dudeWMB.route("/occupancy/<int:station_id>")
+def get_occupancy(station_id):
+
+    cutoffDatetime = datetime.now() - timedelta(weeks=1)
+    # .filter() and .filter_by:
+    # Both are used differently;
+    # .filters can write > < and other conditions like where conditions for sql,
+    # but when referring to column names, you need to use class names and attribute
+    # names.
+    # .filter_by can pass conditions using python’s normal parameter passing method,
+    # and no additional class names need to be specified when specifying column names.
+    # The parameter name corresponds to the attribute name in the name class, but does
+    # not seem to be able to use conditions such as > < etc..
+    # Each has its own strengths.http://docs.sqlalchemy.org/en/rel_0_7&#8230;
+
+    stStReQuery = StationStateResampled.query
+    stStReQuery = stStReQuery.filter(StationStateResampled.stationId == station_id)
+    stStReQuery = stStReQuery.filter(StationStateResampled.weatherHour > cutoffDatetime)
+    stStReQuery = stStReQuery.order_by(text('weatherHour asc'))
+
+    stationStatesList = []
+    for record in stStReQuery.all():
+        # What am I missing - why is it stoopid hard to convert an SQLAlchemy
+        # model to a dict??
+        recordInfo = {}
+        recordInfo['stationId'] = record.stationId
+        recordInfo['weatherHour'] = record.weatherHour
+        recordInfo['status'] = record.status
+        recordInfo['available_bike_stands'] = record.available_bike_stands
+        recordInfo['available_bikes'] = record.available_bikes
+        stationStatesList.append(recordInfo)
+
+    return jsonify(stationStatesList)
+
+##########################################################################################
+##########################################################################################
+
+# Note that in the following we use "functools.lru_cache(maxsize=128, typed=False)"
+# functools is a decorator to wrap a function with a memoizing callable that saves
+# up to the maxsize most recent calls. Since a dictionary is used to cache results,
+# the positional and keyword arguments to the function must be hashable.It can save
+# time when an expensive or I/O bound function is periodically called with the same
+# arguments.
+# If maxsize is set to None, the LRU feature is disabled and the cache can grow
+# without bound. The LRU feature performs best when maxsize is a power-of-two.
+# (See https://docs.python.org/3/library/functools.html)
+@dudeWMB.route('/station/<int:station_id>')
+@functools.lru_cache(maxsize=128)
+def station(station_id):
+    # show the station with the given id, the id is an integer
+    # station = load_station(station_id)
+    # Handle invalid station id...
+    # if not station:
+    #     abort(404)
+    # return ... station stuff ....
+    # ********************* NOT IMPLEMENTED *****************************
+    return 'Retrieving info for Station: {}'.format(station_id)
+
+
 ##########################################################################################
 ##########################################################################################
 # Flask will automatically remove database sessions at the end of the request or

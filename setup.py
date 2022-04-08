@@ -40,7 +40,7 @@ setup(
       #   - MAJOR VERSION 0
       #   - MINOR VERSION 1
       #   - MAINTENANCE VERSION 0
-      version='0.5.0',
+      version='0.6.0',
 
       # Here is a small description of the library. This appears
       # when someone searches for the library on https://pypi.org/search.
@@ -62,7 +62,8 @@ setup(
             'mysql-connector-python>=8.0.0',
             'requests==2.27.1',
             'sqlalchemy==1.4.27',
-            'pandas==1.4.2'
+            'pandas==1.4.2',
+            'scikit-learn==1.0.2'
        ],
 
       # Here I can specify the python version necessary to run this library.
