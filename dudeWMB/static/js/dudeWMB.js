@@ -162,7 +162,7 @@ async function initMap() {
 
     for (let key in stations) {
         let station = stations[key];
-
+  
         //console.log(station.stationName, station.number);
         var marker = new google.maps.Marker({
             position: {
@@ -176,7 +176,7 @@ async function initMap() {
             },
             title: station.stationName,
             station_number: station.number,
-            
+            station_index: key           
         });
         // Add listener so that when station is clicked the map zooms in to the selcted station
         marker.addListener("click", () => {
@@ -185,7 +185,7 @@ async function initMap() {
           });
         
         // Create table containing information about the station
-        let contentString = '<div id="content"><h1>' + station.stationName + '</h1></div>' +
+        let contentString = '<div id="content"><span id="markerStationName">' + station.stationName + '</span></div>' +
             '<div id="station_details"><table>' +
             '<tr><td>Station name:</td><td>' + station.stationName + '</td></tr>' +
             '<tr><td>Address:</td><td>' + station.address + '</td></tr>' +
@@ -193,14 +193,15 @@ async function initMap() {
             '<tr><td>Longitude:</td><td>' + station.longitude + '</td></tr>' +
             '<tr><td>Banking:</td><td>' + station.banking + '</td></tr>' +
             '<tr><td>Total bike stands:</td><td>' + station.bike_stands + '</td></tr>' +
-            '<tr><td>Available bike stands:</td><td>' + station.available_bike_stands + '</td></tr>' +
-            '<tr><td>Available bikes:</td><td>' + station.available_bikes + '</td></tr>' +
+            '<tr><td>Available bike stands:</td><td>' + station.occupancy.available_bike_stands + '</td></tr>' +
+            '<tr><td>Available bikes:</td><td>' + station.occupancy.available_bikes + '</td></tr>' +
             '</div>';
         
         let infoWindow = new google.maps.InfoWindow({ content: contentString });
 
         // Listener
         marker.addListener('click', function() { infoWindow.open(map, marker); })
+
         // Following from Lecture notes - not sure what the difference is yet!
         // But it adds a chart... so leaving for reference.
         //google.maps.event.addListener(marker, 'click', function() { drawInfoWindowChart(this); } );
@@ -393,47 +394,6 @@ function onStationSelected(stationId) {
 //##############################################################################
 //##############################################################################
 
-// SAMPLE CODE FROM COMP30830 LECTURE NOTES / PDF's
-
-// jQuery Heatmap example from Lecture Slides:
-// TODO: Rework this using JavaScript 'fetch()'??
-// function drawHeatmap(me) {
-//     //console.log('toggle heatmap');
-//     console.log('clicked checkbox-1', me, me.prop('checked'));
-//     checked = me.prop('checked');
-//     if(checked) {
-//         if(heatmap == null) {
-//             var jqxhr = $.getJSON($SCRIPT_ROOT + "/heatmap",
-//             function(data) {
-//                 console.log('data', data);
-//                 var heatmapData = [];
-//                 _.forEach(data.data, function(row) {
-//                         heatmapData.push(
-//                             {
-//                             location: new google.maps.LatLng(row.position_lat, row.position_lng),
-//                             weight: row.available_bikes});
-//                             }
-//                         );
-//                     heatmap = new google.maps.visualization.HeatmapLayer({
-//                         data: heatmapData,
-//                         map: map
-//                         });
-//                     console.log(heatmap);
-//                     heatmap.setMap(map);
-//                     heatmap.set('radius', 40);
-//                     //heatmap.setMap(heatmap.getMap() ? null : map);
-//                 }).fail(function() {
-//                     console.log('failed');
-//                     });
-//         }
-//         else {
-//             heatmap.setMap(map);
-//         }
-//     }
-//     else {
-//         heatmap.setMap(null);
-//     }
-// }
 
 // jQuery Occupancy example from Lecture Slides:
 // TODO: Rework this using JavaScript 'fetch()'??
