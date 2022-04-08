@@ -206,8 +206,19 @@ async function displayDetails (stationIndex, hours) {
 // Display station weather detials such as weather icon, temperature, etc. 
 //-----------------------------------------------------------------------------
 function displayWeatherIcon (stationIndex) {
-    // TODO @ Will
-    ;
+    /* Function to display weather icon for current/future weather description
+    as slider is moved
+    */
+    // Relative paths to bike icons
+    const PATH_TEMP_ICON = "/img/weather_forecast_icon.png";
+    // TODO: Icons for different weather categories
+    const PATH_TEMP_ICON_GREEN = "/img/bikeIconGreen.png";
+    const PATH_TEMP_ICON_ORANGE = "/img/bikeIconOrange.png";
+    const PATH_TEMP_ICON_RED = "/img/bikeIconRed.png";
+ 
+    let weatherIconPath = PATH_TEMP_ICON;
+
+    return weatherIconPath;
 }
 
 //-----------------------------------------------------------------------------
