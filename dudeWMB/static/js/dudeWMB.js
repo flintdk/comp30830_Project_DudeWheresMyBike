@@ -14,8 +14,8 @@ var varGlobMap;
 var varGlobActiveMode = MODE_AVAILABLE_BIKES;
 
 // Head and Tail of src update
-headPath = "{{ url_for('static', filename=";
-tailPath = ") }}";
+const headPATH = "{{ url_for('static', filename=";
+const tailPATH = ") }}";
 
 
 //-----------------------------------------------------------------------------
@@ -67,10 +67,10 @@ function getBikeIconUrl(mode, stationState) {
     const THRESHOLD_RED = 10.0;
 
     // Relative paths to bike icons
-    const PATH_BIKE_ICON = "/img/bikeIcon.svg";
-    const PATH_BIKE_ICON_GREEN = "/img/bikeIconGreen.png";
-    const PATH_BIKE_ICON_ORANGE = "/img/bikeIconOrange.png";
-    const PATH_BIKE_ICON_RED = "/img/bikeIconRed.png";
+    const PATH_BIKE_ICON = headPATH + "/img/bikeIcon.svg" + tailPATH;
+    const PATH_BIKE_ICON_GREEN = headPATH + "/img/bikeIconGreen.png" + tailPATH;
+    const PATH_BIKE_ICON_ORANGE = headPATH + "/img/bikeIconOrange.png" + tailPATH;
+    const PATH_BIKE_ICON_RED = headPATH + "/img/bikeIconRed.png" + tailPATH;
  
     let iconPathSelected = PATH_BIKE_ICON;
 
@@ -215,22 +215,22 @@ function displayWeatherIcon (stationIndex) {
     */
     // Relative paths to weather category icons
     // Default Image for any errors etc.
-    const PATH_TEMP_ICON = headPath + "/img/weather_forecast_icon.png" + tailPath;
+    const PATH_TEMP_ICON = headPATH + "/img/weather_forecast_icon.png" + tailPATH;
     // Icon paths for different weather categories
-    const PATH_ICON_BROKEN_CLOUDS = headPath + "/img/broken_clouds.svg" + tailPath;
-    const PATH_ICON_CLEAR_SKY = headPath + "/img/clear_sky.svg" + tailPath;
-    const PATH_ICON_FEW_CLOUDS = headPath + "/img/few_clouds.svg" + tailPath;
-    const PATH_ICON_FOG = headPath + "/img/fog.svg" + tailPath;
-    const PATH_ICON_HAZE = headPath + "/img/haze.svg" + tailPath;
-    const PATH_ICON_HVY_INT_RAIN = headPath + "/img/heavy_intensity_rain.svg" + tailPath;
-    const PATH_ICON_LIGHT_INT_DRIZ = headPath + "/img/light_intensity_drizzle.svg" + tailPath;
-    const PATH_ICON_LIGHT_INT_DRIZ_RAIN = headPath + "/img/light_intensity_drizzle_rain.svg" + tailPath;
-    const PATH_ICON_LIGHT_INT_SHOW_RAIN = headPath + "/img/light_intensity_shower_rain.svg" + tailPath;
-    const PATH_ICON_LIGHT_RAIN = headPath + "/img/light_rain.svg" + tailPath;
-    const PATH_ICON_MIST = headPath + "/img/mist.svg" + tailPath;
-    const PATH_ICON_MODERATE_RAIN = headPath + "/img/moderate_rain.svg" + tailPath;
-    const PATH_ICON_OVERCAST_CLOUDS = headPath + "/img/overcast_clouds.svg" + tailPath;
-    const PATH_ICON_SCATTERED_CLOUDS = headPath + "/img/scattered_clouds.svg" + tailPath;
+    const PATH_ICON_BROKEN_CLOUDS = headPATH + "/img/broken_clouds.svg" + tailPATH;
+    const PATH_ICON_CLEAR_SKY = headPATH + "/img/clear_sky.svg" + tailPATH;
+    const PATH_ICON_FEW_CLOUDS = headPATH + "/img/few_clouds.svg" + tailPATH;
+    const PATH_ICON_FOG = headPATH + "/img/fog.svg" + tailPATH;
+    const PATH_ICON_HAZE = headPATH + "/img/haze.svg" + tailPATH;
+    const PATH_ICON_HVY_INT_RAIN = headPATH + "/img/heavy_intensity_rain.svg" + tailPATH;
+    const PATH_ICON_LIGHT_INT_DRIZ = headPATH + "/img/light_intensity_drizzle.svg" + tailPATH;
+    const PATH_ICON_LIGHT_INT_DRIZ_RAIN = headPATH + "/img/light_intensity_drizzle_rain.svg" + tailPATH;
+    const PATH_ICON_LIGHT_INT_SHOW_RAIN = headPATH + "/img/light_intensity_shower_rain.svg" + tailPATH;
+    const PATH_ICON_LIGHT_RAIN = headPATH + "/img/light_rain.svg" + tailPATH;
+    const PATH_ICON_MIST = headPATH + "/img/mist.svg" + tailPATH;
+    const PATH_ICON_MODERATE_RAIN = headPATH + "/img/moderate_rain.svg" + tailPATH;
+    const PATH_ICON_OVERCAST_CLOUDS = headPATH + "/img/overcast_clouds.svg" + tailPATH;
+    const PATH_ICON_SCATTERED_CLOUDS = headPATH + "/img/scattered_clouds.svg" + tailPATH;
  
     let weatherIconPath = PATH_TEMP_ICON;
 
