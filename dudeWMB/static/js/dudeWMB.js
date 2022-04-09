@@ -1,5 +1,7 @@
 "use strict";
 
+google.load("visualization", 'current', {packages:["corechart"]});
+
 // Define modes as kind of enumerations in javascript
 const MODE_AVAILABLE_BIKES = "ModeAvailableBikes";
 const MODE_AVAILABLE_SPACES = "ModeAvailabeSpaces";
@@ -21,7 +23,7 @@ var varGlobActiveMode = MODE_AVAILABLE_BIKES;
 // kicks off all the work...
 async function onLoad() {
     // get station data in json format
-    varGlobStations = await getStationsJson();
+    varGlobStations = await getStationsJson('stations');
 
     // Add event listener to mode buttons 
     document.getElementById("button_available_bikes").addEventListener("click", function() {
@@ -33,6 +35,8 @@ async function onLoad() {
 
     // set default mode
     onSetMode(MODE_AVAILABLE_BIKES);
+
+    displayOccupancyChart(16);
 }
 
 //-----------------------------------------------------------------------------
@@ -213,18 +217,60 @@ function displayWeatherIcon (stationIndex) {
 //-----------------------------------------------------------------------------
 // Display station occupancy chart 
 //-----------------------------------------------------------------------------
-function displayOccupancyChart (stationIndex) {
-    ;
-//     const occupancyFetchPromise = fetch('/occupancy/' + stationId);
-//     // Define our event handler for what to do when the promise is fulfilled...
-//     occupancyFetchPromise.then(
-//         response => {
-//             //console.log(`Received response: ${response.status}`);
-//             var occupancyData = JSON.parse(response.text());
-//             console.log(occupancyData);
-//             var dataTableData = google.visualization.arrayToDataTable(occupancyData);
-//         }
-//     );
+async function displayOccupancyChart(stationIndex) {
+
+    let station = varGlobStations[stationIndex];
+
+    let occupancyFetchPromise = fetch('/occupancy/' + station.id);
+    // Define our event handler for what to do when the promise is fulfilled...
+    occupancyFetchPromise.then(
+        response => {
+            //console.log(`Received response: ${response.status}`);
+
+            let responseTextPromise = response.text();
+            responseTextPromise.then (
+                responseText => {
+                    let occupancyData = JSON.parse(responseText)
+                    //console.log("occupancyData: " + JSON.stringify(occupancyData));
+
+                    // Google Visualisation API Reference:
+                    //   https://developers.google.com/chart/interactive/docs/reference#dataparam
+
+                    // Google Chart Tools charts require data to be wrapped in a
+                    // JavaScript class called google. visualization. DataTable
+
+                    // Can we load the json data directly into a Data Table??
+                    //let dataTableData = google.visualization.arrayToDataTable(occupancyData);
+                    var dataTable = new google.visualization.DataTable(occupancyData);
+
+                    google.charts.load("current", {packages:["corechart"]});
+
+                    // var options = {'title':'My Average Day'};
+                    var options = {
+                        title: 'Occupancy for ' + station.stationName + ', Last Seven Days',
+                        legend: { position: 'none' },
+                        width: 400,
+                        height:300,
+                        hAxis: {
+                            format: 'yy/MM/dd',
+                            gridlines: {count: 7}
+                        },
+                        vAxis: {
+                            gridlines: {color: 'none'},
+                            minValue: 0
+                        }
+                    };
+                
+                    //var chart = new google.visualization.Histogram(document.getElementById('occupancy_histogram'));
+                    //var chart = new google.visualization.PieChart(document.getElementById('occupancy_histogram'));
+                    //var chart = new google.visualization.BarChart(document.getElementById('occupancy_histogram'));
+                    var chart = new google.visualization.ColumnChart(document.getElementById('occupancy_histogram'));
+                    chart.draw(dataTable, options);
+                    
+                }
+            )
+        }
+    );
 
 //     fetch("URL")
 //    .then(response => response.text())
@@ -233,13 +279,27 @@ function displayOccupancyChart (stationIndex) {
 //    })
 //    .catch(err => console.log(err))
 
-// var data = new google.visualization.DataTable(dataTableData);
-// var options = {'title':'My Average Day', 'width':550, 'height':400};
-// var chart =
-//     new google.visualization.PieChart(document.getElementById('occupancy_histogram'));
-// chart.draw(data, options);
-
-
+    // var data = google.visualization.arrayToDataTable([
+    // ['Dinosaur', 'Length'],
+    // ['Acrocanthosaurus (top-spined lizard)', 12.2],
+    // ['Albertosaurus (Alberta lizard)', 9.1],
+    // ['Allosaurus (other lizard)', 12.2],
+    // ['Apatosaurus (deceptive lizard)', 22.9],
+    // ['Archaeopteryx (ancient wing)', 0.9],
+    // ['Argentinosaurus (Argentina lizard)', 36.6],
+    // ['Baryonyx (heavy claws)', 9.1],
+    // ['Brachiosaurus (arm lizard)', 30.5],
+    // ['Microvenator (small hunter)', 1.2],
+    // ['Ornithomimus (bird mimic)', 4.6],
+    // ['Oviraptor (egg robber)', 1.5],
+    // ['Plateosaurus (flat lizard)', 7.9],
+    // ['Sauronithoides (narrow-clawed lizard)', 2.0],
+    // ['Seismosaurus (tremor lizard)', 45.7],
+    // ['Spinosaurus (spiny lizard)', 12.2],
+    // ['Supersaurus (super lizard)', 30.5],
+    // ['Tyrannosaurus (tyrant lizard)', 15.2],
+    // ['Ultrasaurus (ultra lizard)', 30.5],
+    // ['Velociraptor (swift robber)', 1.8]]);
 }
 
 //-----------------------------------------------------------------------------

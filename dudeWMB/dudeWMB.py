@@ -4,6 +4,7 @@ from datetime import date, datetime, timedelta
 from sqlite3 import Date
 from flask import Flask, g, request, render_template, jsonify
 from flask_sqlalchemy import SQLAlchemy
+import gviz_api
 from sqlalchemy import text
 import json
 from jinja2 import Template
@@ -329,6 +330,7 @@ def get_stations():
 
         # Create dictionary for station-info
         stationInfo = {}
+        stationInfo['id'] = station.id
         stationInfo['number'] = station.number
         stationInfo['stationName'] = station.stationName
         stationInfo['address'] = station.address
@@ -387,19 +389,35 @@ def get_occupancy(station_id):
     stStReQuery = stStReQuery.filter(StationStateResampled.weatherHour > cutoffDatetime)
     stStReQuery = stStReQuery.order_by(text('weatherHour asc'))
 
-    stationStatesList = []
+    # Add column headers for our Google Charts chart...
+    # Create a schema for our gviz DataTable
+    gvizSchema = {'weatherHour': ('datetime', 'Date/Time'), \
+                  'available_bikes': ('number', 'Available Bikes')}
+    
+    occupancyList = []
     for record in stStReQuery.all():
-        # What am I missing - why is it stoopid hard to convert an SQLAlchemy
+        # What am I missing - why is it stooopid hard to convert an SQLAlchemy
         # model to a dict??
-        recordInfo = {}
-        recordInfo['stationId'] = record.stationId
-        recordInfo['weatherHour'] = record.weatherHour
-        recordInfo['status'] = record.status
-        recordInfo['available_bike_stands'] = record.available_bike_stands
-        recordInfo['available_bikes'] = record.available_bikes
-        stationStatesList.append(recordInfo)
 
-    return jsonify(stationStatesList)
+        # A Google Chart histogram appears to accept only two input columns (i.e.
+        # we can't send out a chunk of data and just select specific columns to
+        # chart...)
+        recordInfo = {'weatherHour': record.weatherHour, \
+                      'available_bikes': record.available_bikes}
+        occupancyList.append(recordInfo)
+    
+    # Create a data table:
+    gvizDataTable = gviz_api.DataTable(gvizSchema, occupancyList)
+    response = gvizDataTable.ToJSonResponse(columns_order=("weatherHour", "available_bikes"))
+    # I'm not sure why... but I'm under time pressure and can't explore further;
+    # -> The ToJSonResponse function seems to wrap the useful JSON in some redundant
+    #    text.  I assuming I've skipped a beat somewhere - but for now the expedient
+    #    solution has to win...
+    startIndex = response.index(':{') + 1
+    endIndex   = response.rindex(",\"status\":\"ok\"});")
+    jsonText = response[startIndex:endIndex]
+
+    return jsonText
 
 ##########################################################################################
 ##########################################################################################
