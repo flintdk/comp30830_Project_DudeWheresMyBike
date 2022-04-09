@@ -17,11 +17,6 @@ var varGlobActiveMode = MODE_AVAILABLE_BIKES;
 // varGlobPredictionInHours indicates the data prediction we want to get in x hours time, where hours == 0 stands for current time 
 var varGlobPredictionInHours = 0;
 
-// Head and Tail of src update
-const headPATH = "{{ url_for('static', filename=";
-const tailPATH = ") }}";
-
-
 //-----------------------------------------------------------------------------
 // Function onLoad is invoked when the website (DOM) is loaded the first time
 //-----------------------------------------------------------------------------
@@ -47,6 +42,25 @@ async function onLoad() {
 }
 
 //-----------------------------------------------------------------------------
+// Function to initialize and add the map
+//-----------------------------------------------------------------------------
+async function initMap() {
+    // We load the stations on page load as well as here in initMap - whatever event occurs first 
+    let url = 'stations'
+    varGlobStations = await getStationsJson(url);
+
+    // Location of Dublin
+    const dublin = { lat: 53.350140, lng: -6.266155 };
+    // Create new map, centered at Dublin
+    varGlobMap = new google.maps.Map(document.getElementById("map"), {
+        zoom: 13,
+        center: dublin,
+    });
+
+    createMarkers(varGlobMap);
+}
+
+//-----------------------------------------------------------------------------
 // Mode control - 'available bikes' OR 'available spaces' 
 //-----------------------------------------------------------------------------
 function onSetMode(mode) {
@@ -68,7 +82,7 @@ function onSetMode(mode) {
 //-----------------------------------------------------------------------------
 // Bike icon selection according to occupancy and user mode 
 //-----------------------------------------------------------------------------
-function getBikeIconUrl(mode, stationState) {
+function getBikeIconUrl(mode, station) {
 
     // Threshold values defined in percentage to select coloured bike icons accordingly
     const THRESHOLD_GREEN = 70.0;
@@ -76,39 +90,39 @@ function getBikeIconUrl(mode, stationState) {
     const THRESHOLD_RED = 10.0;
 
     // Relative paths to bike icons
-    const PATH_BIKE_ICON = headPATH + "/img/bikeIcon.svg" + tailPATH;
-    const PATH_BIKE_ICON_GREEN = headPATH + "/img/bikeIconGreen.png" + tailPATH;
-    const PATH_BIKE_ICON_ORANGE = headPATH + "/img/bikeIconOrange.png" + tailPATH;
-    const PATH_BIKE_ICON_RED = headPATH + "/img/bikeIconRed.png" + tailPATH;
+    const PATH_BIKE_ICON = "img/bikeIcon.svg";
+    const PATH_BIKE_ICON_GREEN = "img/bikeIconGreen.png";
+    const PATH_BIKE_ICON_ORANGE = "img/bikeIconOrange.png";
+    const PATH_BIKE_ICON_RED = "img/bikeIconRed.png";
  
     let iconPathSelected = PATH_BIKE_ICON;
-
+    //console.log("In getbikeIcon : " + JSON.stringify(station));
     // If station is closed then show default icon
-    if (!(stationState.status == 'OPEN')) {
+    if (!(station.occupancy.status == 'OPEN')) {
         iconPathSelected = PATH_BIKE_ICON;
     } 
     // Select bike icons to user mode and occupancy accordingly
     // If user mode is 'available bikes' then... 
     else if (mode === MODE_AVAILABLE_BIKES) {
-        if (getPercentage(stationState.available_bikes, stationState.bike_stands) >= THRESHOLD_GREEN) {
+        if (getPercentage(station.occupancy.available_bikes, station.bike_stands) >= THRESHOLD_GREEN) {
             iconPathSelected = PATH_BIKE_ICON_GREEN;
         } 
-        else if (getPercentage(stationState.available_bikes, stationState.bike_stands) >= THRESHOLD_ORANGE) {
+        else if (getPercentage(station.occupancy.available_bikes, station.bike_stands) >= THRESHOLD_ORANGE) {
             iconPathSelected = PATH_BIKE_ICON_ORANGE;
         } 
-        else if (getPercentage(stationState.available_bikes, stationState.bike_stands) <= THRESHOLD_RED) {
+        else if (getPercentage(station.occupancy.available_bikes, station.bike_stands) <= THRESHOLD_RED) {
             iconPathSelected = PATH_BIKE_ICON_RED;
         } 
     } 
     // If user mode is 'available bikes' then... 
     else if (mode === MODE_AVAILABLE_SPACES) {
-        if (getPercentage(stationState.available_bike_stands, stationState.bike_stands) >= THRESHOLD_GREEN) {
+        if (getPercentage(station.occupancy.available_bike_stands, station.bike_stands) >= THRESHOLD_GREEN) {
             iconPathSelected = PATH_BIKE_ICON_GREEN;
         } 
-        else if (getPercentage(stationState.available_bike_stands, stationState.bike_stands) >= THRESHOLD_ORANGE) {
+        else if (getPercentage(station.occupancy.available_bike_stands, station.bike_stands) >= THRESHOLD_ORANGE) {
             iconPathSelected = PATH_BIKE_ICON_ORANGE;
         } 
-        else if (getPercentage(stationState.available_bike_stands, stationState.bike_stands) <= THRESHOLD_RED) {
+        else if (getPercentage(station.occupancy.available_bike_stands, station.bike_stands) <= THRESHOLD_RED) {
             iconPathSelected = PATH_BIKE_ICON_RED;
         } 
     }
@@ -134,31 +148,12 @@ function getPercentage(value, max) {
 }
 
 //-----------------------------------------------------------------------------
-// Function to initialize and add the map
-//-----------------------------------------------------------------------------
-async function initMap() {
-    // We load the stations on page load as well as here in initMap - whatever event occurs first 
-    let url = 'stations'
-    varGlobStations = await getStationsJson(url);
-
-    // Location of Dublin
-    const dublin = { lat: 53.350140, lng: -6.266155 };
-    // Create new map, centered at Dublin
-    varGlobMap = new google.maps.Map(document.getElementById("map"), {
-        zoom: 13,
-        center: dublin,
-    });
-
-    createMarkers(varGlobMap, varGlobStations);
-}
-
-//-----------------------------------------------------------------------------
 // Create markers that are displayed on the map
 //-----------------------------------------------------------------------------
 // Note: The coloured bike icon (black, green, orange, red) may change when the user mode is changed,
 // depending on the availability of available bikes, spaces
 // That's why this function is also called if the user mode changes
-function createMarkers(map, stationData) {
+function createMarkers(map) {
 
     for (let key in varGlobStations) {
         let station = varGlobStations[key];
@@ -207,7 +202,7 @@ function createMarkers(map, stationData) {
 //-----------------------------------------------------------------------------
 // Display station details such as weather info and occupancy 
 //-----------------------------------------------------------------------------
-async function displayStationDetails (stationIndex) {
+async function displayStationDetails(stationIndex) {
 
     // Store the index of the selected station within the station array
     varGlobStationSelectedIndex = stationIndex;
@@ -225,9 +220,9 @@ async function displayStationDetails (stationIndex) {
     let StationDataPredicted = await getStationsJson(url);
 
     // Update station name headline
-    console.log("stationIndex: " + stationIndex.toString());
-    console.log(StationDataPredicted);
-    console.log(url);
+    //console.log("stationIndex: " + stationIndex.toString());
+    //console.log(StationDataPredicted);
+    //console.log(url);
     document.getElementById('selectedStation').innerHTML = StationDataPredicted[stationIndex].stationName;
 
     displayOccupancyChart(stationIndex);
@@ -238,28 +233,28 @@ async function displayStationDetails (stationIndex) {
 //-----------------------------------------------------------------------------
 // Display station weather detials such as weather icon, temperature, etc. 
 //-----------------------------------------------------------------------------
-function displayWeatherIcon (stationIndex) {
+function displayWeatherIcon(stationIndex) {
     /* Function to display weather icon for current/future weather description
     as slider is moved
     */
     // Relative paths to weather category icons
     // Default Image for any errors etc.
-    const PATH_TEMP_ICON = headPATH + "/img/weather_forecast_icon.png" + tailPATH;
+    const PATH_TEMP_ICON = "img/weather_forecast_icon.png";
     // Icon paths for different weather categories
-    const PATH_ICON_BROKEN_CLOUDS = headPATH + "/img/broken_clouds.svg" + tailPATH;
-    const PATH_ICON_CLEAR_SKY = headPATH + "/img/clear_sky.svg" + tailPATH;
-    const PATH_ICON_FEW_CLOUDS = headPATH + "/img/few_clouds.svg" + tailPATH;
-    const PATH_ICON_FOG = headPATH + "/img/fog.svg" + tailPATH;
-    const PATH_ICON_HAZE = headPATH + "/img/haze.svg" + tailPATH;
-    const PATH_ICON_HVY_INT_RAIN = headPATH + "/img/heavy_intensity_rain.svg" + tailPATH;
-    const PATH_ICON_LIGHT_INT_DRIZ = headPATH + "/img/light_intensity_drizzle.svg" + tailPATH;
-    const PATH_ICON_LIGHT_INT_DRIZ_RAIN = headPATH + "/img/light_intensity_drizzle_rain.svg" + tailPATH;
-    const PATH_ICON_LIGHT_INT_SHOW_RAIN = headPATH + "/img/light_intensity_shower_rain.svg" + tailPATH;
-    const PATH_ICON_LIGHT_RAIN = headPATH + "/img/light_rain.svg" + tailPATH;
-    const PATH_ICON_MIST = headPATH + "/img/mist.svg" + tailPATH;
-    const PATH_ICON_MODERATE_RAIN = headPATH + "/img/moderate_rain.svg" + tailPATH;
-    const PATH_ICON_OVERCAST_CLOUDS = headPATH + "/img/overcast_clouds.svg" + tailPATH;
-    const PATH_ICON_SCATTERED_CLOUDS = headPATH + "/img/scattered_clouds.svg" + tailPATH;
+    const PATH_ICON_BROKEN_CLOUDS = "img/broken_clouds.svg";
+    const PATH_ICON_CLEAR_SKY = "img/clear_sky.svg";
+    const PATH_ICON_FEW_CLOUDS = "img/few_clouds.svg";
+    const PATH_ICON_FOG = "img/fog.svg";
+    const PATH_ICON_HAZE = "img/haze.svg";
+    const PATH_ICON_HVY_INT_RAIN = "img/heavy_intensity_rain.svg";
+    const PATH_ICON_LIGHT_INT_DRIZ = "img/light_intensity_drizzle.svg";
+    const PATH_ICON_LIGHT_INT_DRIZ_RAIN = "img/light_intensity_drizzle_rain.svg";
+    const PATH_ICON_LIGHT_INT_SHOW_RAIN = "img/light_intensity_shower_rain.svg";
+    const PATH_ICON_LIGHT_RAIN = "img/light_rain.svg";
+    const PATH_ICON_MIST = "img/mist.svg";
+    const PATH_ICON_MODERATE_RAIN = "img/moderate_rain.svg";
+    const PATH_ICON_OVERCAST_CLOUDS = "img/overcast_clouds.svg";
+    const PATH_ICON_SCATTERED_CLOUDS = "img/scattered_clouds.svg";
  
     let weatherIconPath = PATH_TEMP_ICON;
 
@@ -313,7 +308,7 @@ function displayWeatherIcon (stationIndex) {
         document.getElementById("img-weather").src=weatherIconPath;
     }
     document.getElementById("sliderTemp").innerHTML=station.weather.temp;
-    console.log(station.weather.temp);
+    //console.log(station.weather.temp);
 
     return;
 }
