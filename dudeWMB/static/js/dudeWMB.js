@@ -52,6 +52,8 @@ function onSetMode(mode) {
     }
     // Init map and coloured icons when user mode is changing
     initMap();
+    // Also update station details
+//    displayStationDetails(varGlobStationSelectedIndex);
 }
 
 //-----------------------------------------------------------------------------
@@ -201,11 +203,26 @@ async function displayStationDetails (stationIndex) {
     // Store the index of the selected station within the station array
     varGlobStationSelectedIndex = stationIndex;
 
-    // Fetch data for stations at a specific time in the future
-    let url = 'stations?hours_in_future';
+    // Create URL to fetch data for stations at a specific time in the future
+    let url = 'stations?hours_in_future=';
     url += varGlobPredictionInHours.toString();
+    // After the following code line, our function will wait for the getStationJson to return a result.
+    // This website describes how promises using async/await works: https://developer.mozilla.org/en-US/docs/Learn/JavaScript/Asynchronous/Promises 
+    // Quoting from the website:
+    // "Inside an async function you can use the await keyword before a call to a function that returns a promise. 
+    // This makes the code wait at that point until the promise is settled, 
+    // at which point the fulfilled value of the promise is treated as a return value, or the rejected value is thrown.
+    // This enables you to write code that uses asynchronous functions but looks like synchronous code.
     let StationDataPredicted = await getStationsJson(url);
-    
+
+    // Update station name headline
+    console.log("stationIndex: " + stationIndex.toString());
+    console.log(StationDataPredicted);
+    console.log(url);
+    document.getElementById('selectedStation').innerHTML = StationDataPredicted[stationIndex].stationName;
+
+    displayOccupancyChart(stationIndex);
+    displayWeatherIcon(stationIndex);
     
 }
 
@@ -314,8 +331,8 @@ function onStationSelected(stationId) {
     // Store the index of the selected station within the station array
     varGlobStationSelectedIndex = stationId;
 
-    console.log(varGlobStations[stationId].stationName)
-    document.getElementById('selectedStation').innerHTML = varGlobStations[stationId].stationName;
+    // Also update station details
+    displayStationDetails(varGlobStationSelectedIndex);
 
 }
 
@@ -333,13 +350,16 @@ let predictedDateTime = new Date(CURRENT_DATETIME);
 output.innerHTML = CURRENT_DATETIME.toLocaleString();
 
 // On event call which is invoked each time you drag the slider handle
-slider.oninput = function() {
+slider.onchange = function() {
     // Write time prediction in hours to a global variable
     varGlobPredictionInHours =  this.value;
     // Add these hours to the current date & time and convert it into a string
     predictedDateTime = new Date(new Date().getTime() + this.value*60*60*1000).toLocaleString();
     // Update display element
     output.innerHTML = predictedDateTime;
+
+    // Also update station details
+    displayStationDetails(varGlobStationSelectedIndex);
 
     // debugging only!
     // console.log("slider value:" + slider.value.toString());
