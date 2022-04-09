@@ -1,3 +1,8 @@
-DWMB Flask Application is starting: 04/09/2022, 15:27:52
+DWMB Flask Application is starting: 04/09/2022, 17:06:28
 Loading credentials.
 Credentials Loaded:  Verifying:53.3497645
+ * Serving Flask app 'dudeWMB' (lazy loading)
+ * Environment: production
+   WARNING: This is a development server. Do not use it in a production deployment.
+   Use a production WSGI server instead.
+ * Debug mode: off
