@@ -308,6 +308,8 @@ function displayWeatherIcon (stationIndex) {
         weatherIconPath = PATH_TEMP_ICON;
         document.getElementById("img-weather").src=weatherIconPath;
     }
+    document.getElementById("sliderTemp").innerHTML=station.weather.temp;
+    console.log(station.weather.temp);
 
     return;
 }
