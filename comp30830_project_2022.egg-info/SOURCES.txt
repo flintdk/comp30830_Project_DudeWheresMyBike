@@ -9,7 +9,6 @@ comp30830_project_2022.egg-info/requires.txt
 comp30830_project_2022.egg-info/top_level.txt
 dwmb_scheduled_tasks/__init__.py
 dwmb_scheduled_tasks/data_loader.py
-dwmb_scheduled_tasks/data_resample.py
 dwmb_scheduled_tasks/data_resampler.py
 dwmb_scheduled_tasks/dwmb_scheduler.sh
 dwmb_scheduled_tasks/weather.py

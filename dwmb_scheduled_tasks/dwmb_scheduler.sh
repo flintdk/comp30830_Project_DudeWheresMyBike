@@ -18,7 +18,7 @@ home_dir="/home/ubuntu"
 cron_dir="/etc/cron.d"
 #cron_dir="/etc/cron.d"
 data_loader_module="dwmb_dl"
-data_resampler_module="dwmb_resampler"
+data_resampler_module="dwmb_resample"
 
 # Helper function - save me keying command summary twice, ensures consistancy in
 # user docs (such as they are)

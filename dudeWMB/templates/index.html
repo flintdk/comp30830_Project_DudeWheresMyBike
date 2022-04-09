@@ -47,36 +47,27 @@
                         <div class="flexbox-container-column">
                             <div class="flexbox-item">
                                 <!-- TODO: here goes the weather forecast thing, for now it's just a image -->
-                                <img id="img-weather" src="{{ url_for('static', filename='img/weather_forecast_icon.png') }}" alt="weather_icon">
+                                <!--<img id="img-weather" src="/img/weather_forecast_icon.png" alt="weather_icon"> -->
+                                <p>Temperature: <span id="sliderTemp"></span></p>
+                                <img id="img-weather" src="{{ url_for('static', filename='img/broken_clouds.svg') }}" alt="weather_icon">
                             </div>
                             <div class="flexbox-item">
                                 <!-- Slider to see the trend -->
                                 <div class="slidecontainer">
-                                    <p>Time range slider:</p>
-                                    <input type="range" min="0" max="23" value="12">
-                                </div>  
-                                
-                                <div id="time-range" id="slidecontainer">
-                                    <p>Time Range: <span class="slider-time"></span> - <span class="slider-time2"></span></p>
-                                    <div class="sliders_step1">
-                                        <div id="slider-range"></div>
-                                    </div>
+                                    <p>Date: <span id="futureTime"></span></p>
+                                    <input type="range" min="0" max="48" value="1" class="slider" id="sliderTimePrediction">
                                 </div>
-
                             </div>     
                         </div>
                     </div>
                     <!-- On the right: Occupancy trend as a histogram and day selection, e.g. today, tomorrow, etc. -->
                     <div class="flexbox-item">
                         <div class="flexbox-container-column">
-                            <div class="flexbox-item">
-                                <!-- TODO: here goes the weather forecast thing, for now it's just a image -->
+                            <div id="occupancy_histogram" class="flexbox-item">
+                                <!-- TODO: here goes the weather forecast thing, for now it's just a image
                                 <img id="img-histogram" src="{{ url_for('static', filename='img/occupancy_histogram.png') }}" alt="histogram_image">
+                                 -->
                             </div>
-                            <div class="flexbox-item">
-                                <!-- Slider to see the trend -->
-
-                            </div>     
                         </div>
                     </div>
                 </div>
@@ -89,9 +80,6 @@
             </div>            
         </section>
 
-        <!-- Include JavaScript files
-        <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAq0jgqddpYcpIUx3-LkVzVvfO-zngx4vg&callback=initMap" async defer></script>
-        -->
 
 {% endblock %}
 

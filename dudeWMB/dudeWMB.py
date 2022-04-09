@@ -4,10 +4,11 @@ from datetime import date, datetime, timedelta
 from sqlite3 import Date
 from flask import Flask, g, request, render_template, jsonify
 from flask_sqlalchemy import SQLAlchemy
+import gviz_api
 from sqlalchemy import text
 import json
 from jinja2 import Template
-from models import db, Station, StationState, weatherHistory
+from models import db, Station, StationState, StationStateResampled, weatherHistory
 # Imports for Model/Pickle Libs
 import pickle
 import pandas as pd
@@ -300,29 +301,22 @@ def get_stations():
     #station_dict = dict((col, getattr(station, col)) for col in station.__table__.columns.keys())
     stationsList = []
     for station in stations:
-
-        # Unfortunately - even if we peering eerily into the future using our random
-        # forests voodoo and plan to predict occupancy... we need to load the
-        # latest stationState record to get the total number of spaces at the station.
-        # We should have added this data to the header record... :-(
-        stationState = StationState.query.filter_by(stationId=station.id).order_by(text('weatherTime desc')).limit(1).all()[0]
-
         # Now the fun part... the predictive model!
         # If the time_delta is greater than zero then we want to use our predictive
         # model to estimate the occupancy etc. in the future.  If not we can just
         # use the current statistics.
         if time_delta > 0:
-            X_station = pd.DataFrame([[station.id, weather_hour, \
-                weather['temp'], weather['humidity'], weather['wind_speed'], \
-                stationState.bike_stands, weather['description_encoded'], \
-                weather_month, weather_day]])
-            X_station.columns =['stationId', 'weatherHour', \
-                'temp', 'humidity','wind_speed', \
-                'cal_bike_stands', 'num_desc', \
-                'weatherMonth', 'weatherDay']
+            X_station = pd.DataFrame([[ \
+                weather['temp'], weather['humidity'], weather['wind_speed'], weather['description_encoded'], \
+                station.bike_stands, \
+                weather_month, weather_day, weather_hour]])
+            X_station.columns =[\
+                'temp', 'humidity','wind_speed', 'num_desc', \
+                'cal_bike_stands', \
+                'weatherMonth', 'weatherDay', 'weatherHour']
 
             # Predictive Model - deserialization
-            with open('allStation_randomForest_model.pkl', 'rb') as handle:
+            with open('pickles/station' + str(station.id) + '_randomForest_model.pkl', 'rb') as handle:
                 model = pickle.load(handle)
                 # Our model returns a numpy ndarray, hence the ".item(0)" at the
                 # end, to pluck out the prediction value.
@@ -332,16 +326,18 @@ def get_stations():
         else:
             # If we're not peering eerily into the future using our random
             # forests voodoo... then use the actual latest data...
-            stationState = StationState.query.filter_by(stationId=station.id).order_by(text('weatherTime desc')).limit(1).all()[0]
+            stationState = StationState.query.filter(StationState.stationId==station.id).order_by(text('weatherTime desc')).limit(1).all()[0]
 
         # Create dictionary for station-info
         stationInfo = {}
+        stationInfo['id'] = station.id
         stationInfo['number'] = station.number
         stationInfo['stationName'] = station.stationName
         stationInfo['address'] = station.address
         stationInfo['latitude'] = station.latitude
         stationInfo['longitude'] = station.longitude
         stationInfo['banking'] = station.banking
+        stationInfo['bike_stands'] = station.bike_stands
         stationInfo['info_supplied_for_time'] = info_requested_for_time
         # Create nested dictionary for occupancy related data
         stationInfo['occupancy'] = {}
@@ -353,8 +349,8 @@ def get_stations():
         else:
             stationInfo['occupancy']['status'] = '-'  # We don't show status for predicted times
                                                       # Perhaps address in future release?
-            stationInfo['occupancy']['bike_stands'] = stationState.bike_stands
-            stationInfo['occupancy']['available_bike_stands'] = stationState.bike_stands - randomForest_prediction
+            stationInfo['occupancy']['bike_stands'] = station.bike_stands
+            stationInfo['occupancy']['available_bike_stands'] = station.bike_stands - randomForest_prediction
             stationInfo['occupancy']['available_bikes'] = randomForest_prediction
 
         # Creating nested dictionary for weather related data
@@ -369,6 +365,59 @@ def get_stations():
         stationsList.append(stationInfo)
 
     return jsonify(stationsList)
+
+##########################################################################################
+##########################################################################################
+
+@dudeWMB.route("/occupancy/<int:station_id>")
+def get_occupancy(station_id):
+
+    cutoffDatetime = datetime.now() - timedelta(weeks=1)
+    # .filter() and .filter_by:
+    # Both are used differently;
+    # .filters can write > < and other conditions like where conditions for sql,
+    # but when referring to column names, you need to use class names and attribute
+    # names.
+    # .filter_by can pass conditions using python’s normal parameter passing method,
+    # and no additional class names need to be specified when specifying column names.
+    # The parameter name corresponds to the attribute name in the name class, but does
+    # not seem to be able to use conditions such as > < etc..
+    # Each has its own strengths.http://docs.sqlalchemy.org/en/rel_0_7&#8230;
+
+    stStReQuery = StationStateResampled.query
+    stStReQuery = stStReQuery.filter(StationStateResampled.stationId == station_id)
+    stStReQuery = stStReQuery.filter(StationStateResampled.weatherHour > cutoffDatetime)
+    stStReQuery = stStReQuery.order_by(text('weatherHour asc'))
+
+    # Add column headers for our Google Charts chart...
+    # Create a schema for our gviz DataTable
+    gvizSchema = {'weatherHour': ('datetime', 'Date/Time'), \
+                  'available_bikes': ('number', 'Available Bikes')}
+    
+    occupancyList = []
+    for record in stStReQuery.all():
+        # What am I missing - why is it stooopid hard to convert an SQLAlchemy
+        # model to a dict??
+
+        # A Google Chart histogram appears to accept only two input columns (i.e.
+        # we can't send out a chunk of data and just select specific columns to
+        # chart...)
+        recordInfo = {'weatherHour': record.weatherHour, \
+                      'available_bikes': record.available_bikes}
+        occupancyList.append(recordInfo)
+    
+    # Create a data table:
+    gvizDataTable = gviz_api.DataTable(gvizSchema, occupancyList)
+    response = gvizDataTable.ToJSonResponse(columns_order=("weatherHour", "available_bikes"))
+    # I'm not sure why... but I'm under time pressure and can't explore further;
+    # -> The ToJSonResponse function seems to wrap the useful JSON in some redundant
+    #    text.  I assuming I've skipped a beat somewhere - but for now the expedient
+    #    solution has to win...
+    startIndex = response.index(':{') + 1
+    endIndex   = response.rindex(",\"status\":\"ok\"});")
+    jsonText = response[startIndex:endIndex]
+
+    return jsonText
 
 ##########################################################################################
 ##########################################################################################

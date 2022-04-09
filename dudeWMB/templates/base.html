@@ -23,9 +23,7 @@
     <title>Dude, Where's My Bike?</title>
 
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
-
-    <!-- Internal JS Resources -->
-    <script src="{{ url_for('static', filename='js/dudeWMB.js') }}"></script>
+    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
 
     <!-- External CSS files -->
     <!-- <link rel="stylesheet" href="{{ url_for('static', filename='bootstrap/css/bootstrap.css') }}"></link> -->
@@ -74,6 +72,11 @@
             <p>&copy; Copyright 2022, DudeWMB Ltd., All Rights Reserved</p>
         </div>
     </footer>
+
+    <!-- Internal JS Resources -->
+    <!-- IMPORTANT: This javascript reference needs to be referenced at the end of the body. It's been intentionally placed here! -->
+    <script src="{{ url_for('static', filename='js/dudeWMB.js') }}"></script>
+
 
 </body>
 
