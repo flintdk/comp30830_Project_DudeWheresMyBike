@@ -108,7 +108,7 @@ dudeWMB = Flask(__name__, static_url_path='')
 # This first line loads config from a Python object:
 #dudeWMB.config.from_object('config')
 # This next one loads up our good old json object!!!
-dudeWMB.config.from_file("../dudewmb.json", json.load)
+dudeWMB.config.from_file(os.path.join(dudeWMBParentDir, 'dudewmb.json'), json.load)
 # Following line disables some older stuff we don't use that is deprecated (and
 # suppresses a warning about using it). Please just leave it hard-coded here.
 dudeWMB.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
