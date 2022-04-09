@@ -9,11 +9,17 @@ const MODE_AVAILABLE_SPACES = "ModeAvailabeSpaces";
 // varGlobStations is a array that contains the json objects for each station
 var varGlobStations;
 // varGlobStationSelected contains station data for the selected station
-var varGlobStationSelected;
+var varGlobStationSelectedIndex;
 // varGlobMap allows to access the created map globally
 var varGlobMap;
 // varGlobActiveMode represents the active user mode (avalailable bikes, available spaces)
 var varGlobActiveMode = MODE_AVAILABLE_BIKES;
+// varGlobPredictionInHours indicates the data prediction we want to get in x hours time, where hours == 0 stands for current time 
+var varGlobPredictionInHours = 0;
+
+// Head and Tail of src update
+const headPATH = "{{ url_for('static', filename=";
+const tailPATH = ") }}";
 
 
 //-----------------------------------------------------------------------------
@@ -22,8 +28,9 @@ var varGlobActiveMode = MODE_AVAILABLE_BIKES;
 // This function is called onload.  It's the 'parent process' if you like that
 // kicks off all the work...
 async function onLoad() {
-    // get station data in json format
-    varGlobStations = await getStationsJson('stations');
+
+    let url = 'stations'
+    varGlobStations = await getStationsJson(url);
 
     // Add event listener to mode buttons 
     document.getElementById("button_available_bikes").addEventListener("click", function() {
@@ -54,6 +61,8 @@ function onSetMode(mode) {
     }
     // Init map and coloured icons when user mode is changing
     initMap();
+    // Also update station details
+//    displayStationDetails(varGlobStationSelectedIndex);
 }
 
 //-----------------------------------------------------------------------------
@@ -67,10 +76,10 @@ function getBikeIconUrl(mode, stationState) {
     const THRESHOLD_RED = 10.0;
 
     // Relative paths to bike icons
-    const PATH_BIKE_ICON = "/img/bikeIcon.svg";
-    const PATH_BIKE_ICON_GREEN = "/img/bikeIconGreen.png";
-    const PATH_BIKE_ICON_ORANGE = "/img/bikeIconOrange.png";
-    const PATH_BIKE_ICON_RED = "/img/bikeIconRed.png";
+    const PATH_BIKE_ICON = headPATH + "/img/bikeIcon.svg" + tailPATH;
+    const PATH_BIKE_ICON_GREEN = headPATH + "/img/bikeIconGreen.png" + tailPATH;
+    const PATH_BIKE_ICON_ORANGE = headPATH + "/img/bikeIconOrange.png" + tailPATH;
+    const PATH_BIKE_ICON_RED = headPATH + "/img/bikeIconRed.png" + tailPATH;
  
     let iconPathSelected = PATH_BIKE_ICON;
 
@@ -190,7 +199,7 @@ function createMarkers(map, stationData) {
             map.setZoom(16);
             map.setCenter(marker.getPosition());
             infoWindow.open(map, marker);
-            displayDetails(marker.station_index);
+            displayStationDetails(marker.station_index);
           });
     }
 }
@@ -198,11 +207,31 @@ function createMarkers(map, stationData) {
 //-----------------------------------------------------------------------------
 // Display station details such as weather info and occupancy 
 //-----------------------------------------------------------------------------
-async function displayDetails (stationIndex, hours) {
-    let url = 'stations?hours_in_future';
+async function displayStationDetails (stationIndex) {
 
-    url += hours.toString();
+    // Store the index of the selected station within the station array
+    varGlobStationSelectedIndex = stationIndex;
+
+    // Create URL to fetch data for stations at a specific time in the future
+    let url = 'stations?hours_in_future=';
+    url += varGlobPredictionInHours.toString();
+    // After the following code line, our function will wait for the getStationJson to return a result.
+    // This website describes how promises using async/await works: https://developer.mozilla.org/en-US/docs/Learn/JavaScript/Asynchronous/Promises 
+    // Quoting from the website:
+    // "Inside an async function you can use the await keyword before a call to a function that returns a promise. 
+    // This makes the code wait at that point until the promise is settled, 
+    // at which point the fulfilled value of the promise is treated as a return value, or the rejected value is thrown.
+    // This enables you to write code that uses asynchronous functions but looks like synchronous code.
     let StationDataPredicted = await getStationsJson(url);
+
+    // Update station name headline
+    console.log("stationIndex: " + stationIndex.toString());
+    console.log(StationDataPredicted);
+    console.log(url);
+    document.getElementById('selectedStation').innerHTML = StationDataPredicted[stationIndex].stationName;
+
+    displayOccupancyChart(stationIndex);
+    displayWeatherIcon(stationIndex);
     
 }
 
@@ -210,9 +239,86 @@ async function displayDetails (stationIndex, hours) {
 // Display station weather detials such as weather icon, temperature, etc. 
 //-----------------------------------------------------------------------------
 function displayWeatherIcon (stationIndex) {
-    // TODO @ Will
-    ;
+    /* Function to display weather icon for current/future weather description
+    as slider is moved
+    */
+    // Relative paths to weather category icons
+    // Default Image for any errors etc.
+    const PATH_TEMP_ICON = headPATH + "/img/weather_forecast_icon.png" + tailPATH;
+    // Icon paths for different weather categories
+    const PATH_ICON_BROKEN_CLOUDS = headPATH + "/img/broken_clouds.svg" + tailPATH;
+    const PATH_ICON_CLEAR_SKY = headPATH + "/img/clear_sky.svg" + tailPATH;
+    const PATH_ICON_FEW_CLOUDS = headPATH + "/img/few_clouds.svg" + tailPATH;
+    const PATH_ICON_FOG = headPATH + "/img/fog.svg" + tailPATH;
+    const PATH_ICON_HAZE = headPATH + "/img/haze.svg" + tailPATH;
+    const PATH_ICON_HVY_INT_RAIN = headPATH + "/img/heavy_intensity_rain.svg" + tailPATH;
+    const PATH_ICON_LIGHT_INT_DRIZ = headPATH + "/img/light_intensity_drizzle.svg" + tailPATH;
+    const PATH_ICON_LIGHT_INT_DRIZ_RAIN = headPATH + "/img/light_intensity_drizzle_rain.svg" + tailPATH;
+    const PATH_ICON_LIGHT_INT_SHOW_RAIN = headPATH + "/img/light_intensity_shower_rain.svg" + tailPATH;
+    const PATH_ICON_LIGHT_RAIN = headPATH + "/img/light_rain.svg" + tailPATH;
+    const PATH_ICON_MIST = headPATH + "/img/mist.svg" + tailPATH;
+    const PATH_ICON_MODERATE_RAIN = headPATH + "/img/moderate_rain.svg" + tailPATH;
+    const PATH_ICON_OVERCAST_CLOUDS = headPATH + "/img/overcast_clouds.svg" + tailPATH;
+    const PATH_ICON_SCATTERED_CLOUDS = headPATH + "/img/scattered_clouds.svg" + tailPATH;
+ 
+    let weatherIconPath = PATH_TEMP_ICON;
+
+    let station = varGlobStations[stationIndex];
+
+    // Checking current and future weather description to update path to weather icon
+    if (station.description == 'broken clouds') {
+        weatherIconPath = PATH_ICON_BROKEN_CLOUDS;
+        document.getElementById("img-weather").src=weatherIconPath;
+    } else if(station.description == 'clear sky') {
+        weatherIconPath = PATH_ICON_CLEAR_SKY;
+        document.getElementById("img-weather").src=weatherIconPath;
+    } else if(station.description == 'few clouds') {
+        weatherIconPath = PATH_ICON_FEW_CLOUDS;
+        document.getElementById("img-weather").src=weatherIconPath;
+    } else if(station.description == 'fog') {
+        weatherIconPath = PATH_ICON_FOG;
+        document.getElementById("img-weather").src=weatherIconPath;
+    } else if(station.description == 'haze') {
+        weatherIconPath = PATH_ICON_HAZE;
+        document.getElementById("img-weather").src=weatherIconPath;
+    } else if(station.description == 'heavy intensity rain') {
+        weatherIconPath = PATH_ICON_HVY_INT_RAIN;
+        document.getElementById("img-weather").src=weatherIconPath;
+    } else if(station.description == 'light intensity drizzle') {
+        weatherIconPath = PATH_ICON_LIGHT_INT_DRIZ;
+        document.getElementById("img-weather").src=weatherIconPath;
+    } else if(station.description == 'light intensity drizzle rain') {
+        weatherIconPath = PATH_ICON_LIGHT_INT_DRIZ_RAIN;
+        document.getElementById("img-weather").src=weatherIconPath;
+    } else if(station.description == 'light intensity shower rain') {
+        weatherIconPath = PATH_ICON_LIGHT_INT_SHOW_RAIN;
+        document.getElementById("img-weather").src=weatherIconPath;
+    } else if(station.description == 'light rain') {
+        weatherIconPath = PATH_ICON_LIGHT_RAIN;
+        document.getElementById("img-weather").src=weatherIconPath;
+    } else if(station.description == 'mist') {
+        weatherIconPath = PATH_ICON_MIST;
+        document.getElementById("img-weather").src=weatherIconPath;
+    } else if(station.description == 'moderate rain') {
+        weatherIconPath = PATH_ICON_MODERATE_RAIN;
+        document.getElementById("img-weather").src=weatherIconPath;
+    } else if(station.description == 'overcast clouds') {
+        weatherIconPath = PATH_ICON_OVERCAST_CLOUDS;
+        document.getElementById("img-weather").src=weatherIconPath;
+    } else if(station.description == 'scattered clouds') {
+        weatherIconPath = PATH_ICON_SCATTERED_CLOUDS;
+        document.getElementById("img-weather").src=weatherIconPath;
+    } else {
+        weatherIconPath = PATH_TEMP_ICON;
+        document.getElementById("img-weather").src=weatherIconPath;
+    }
+    document.getElementById("sliderTemp").innerHTML=station.weather.temp;
+    console.log(station.weather.temp);
+
+    return;
 }
+
+// document.getElementById("img-weather").src
 
 //-----------------------------------------------------------------------------
 // Display station occupancy chart 
@@ -364,94 +470,40 @@ function createStationDropdownContent() {
 }
 
 function onStationSelected(stationId) {
-    varGlobStationSelected = varGlobStations[stationId];
+    // Store the index of the selected station within the station array
+    varGlobStationSelectedIndex = stationId;
 
-    console.log(varGlobStations[stationId].stationName)
-    document.getElementById('selectedStation').innerHTML = varGlobStations[stationId].stationName;
+    // Also update station details
+    displayStationDetails(varGlobStationSelectedIndex);
 
 }
 
-//##############################################################################
-//##############################################################################
-//##############################################################################
+//-----------------------------------------------------------------------------
+// Range slider for time prediction
+//-----------------------------------------------------------------------------
 
-// SLIDER - IN PROGRESS
-// Credit http://jsfiddle.net/meghap/9pz5grru/5/
+var slider = document.getElementById("sliderTimePrediction");
+var output = document.getElementById("futureTime");
 
-// function toTimestamp(strDate){
-//     // The Date.parse() method parses a string representation of a date, and
-//     // returns the number of milliseconds since January 1, 1970, 00:00:00 UTC
-//     var datum = Date.parse(strDate);
-//     // We divide by 1000, just to use seconds.
-//     return datum/1000;
-//  }
+const CURRENT_DATETIME = new Date();
+let predictedDateTime = new Date(CURRENT_DATETIME);
 
-//  var currentDateTime = new Date();
-//  currentDateTime.setMinutes(0, 0, 0);  // Resets also seconds and milliseconds
+// Intialise display element with current time
+output.innerHTML = CURRENT_DATETIME.toLocaleString();
 
-//  var dt_to = "01/13/2016 16:37:43";
- 
-//  var sel_dt_from = "01/13/2016 00:34:44";
-//  var sel_dt_to = "01/14/2016 16:37:43";
- 
-//  $('.slider-time').html(dt_from);
-//  $('.slider-time2').html(dt_to);
-//  var min_val = toTimestamp(sel_dt_from);
-//  var max_val = toTimestamp(sel_dt_to);
- 
-//  function zeroPad(num, places) {
-//    var zero = places - num.toString().length + 1;
-//    return Array(+(zero > 0 && zero)).join("0") + num;
-//  }
-//  function formatDT(__dt) {
-//      var year = __dt.getFullYear();
-//      var month = zeroPad(__dt.getMonth()+1, 2);
-//      var date = zeroPad(__dt.getDate(), 2);
-//      var hours = zeroPad(__dt.getHours(), 2);
-//      var minutes = zeroPad(__dt.getMinutes(), 2);
-//      var seconds = zeroPad(__dt.getSeconds(), 2);
-//      return year + '-' + month + '-' + date + ' ' + hours + ':' + minutes + ':' + seconds;
-//  };
- 
- 
-//  $("#slider-range").slider({
-//      range: true,
-//      min: min_val,
-//      max: max_val,
-//      step: 10,
-//      values: [min_val, max_val],
-//      slide: function (e, ui) {
-//          var dt_cur_from = new Date(ui.values[0]*1000); //.format("yyyy-mm-dd hh:ii:ss");
-//          $('.slider-time').html(formatDT(dt_cur_from));
- 
-//          var dt_cur_to = new Date(ui.values[1]*1000); //.format("yyyy-mm-dd hh:ii:ss");                
-//          $('.slider-time2').html(formatDT(dt_cur_to));
-//      }
-//  });
+// On event call which is invoked each time you drag the slider handle
+slider.onchange = function() {
+    // Write time prediction in hours to a global variable
+    varGlobPredictionInHours =  this.value;
+    // Add these hours to the current date & time and convert it into a string
+    predictedDateTime = new Date(new Date().getTime() + this.value*60*60*1000).toLocaleString();
+    // Update display element
+    output.innerHTML = predictedDateTime;
 
-//##############################################################################
-//##############################################################################
-//##############################################################################
+    // Also update station details
+    displayStationDetails(varGlobStationSelectedIndex);
 
-
-// jQuery Occupancy example from Lecture Slides:
-// TODO: Rework this using JavaScript 'fetch()'??
-//  var jqxhr = $.getJSON($SCRIPT_ROOT + "/occupancy/" + marker.station_number,
-//         function(data) {
-//         data = JSON.parse(data.data);
-//         console.log('data', data);
-//         var node = document.createElement('div'),
-//         infowindow = new google.maps.InfoWindow(),
-//         chart = new google.visualization.ColumnChart(node);
-//         var chart_data = new google.visualization.DataTable();
-//         chart_data.addColumn('datetime', 'Time of Day');
-//         chart_data.addColumn('number', '#');
-//         _.forEach(data, function(row){
-//         chart_data.addRow([new Date(row[0]), row[1]]);
-//         })
-//         chart.draw(chart_data, options);
-//         infowindow.setContent(node);
-//         infowindow.open(marker.getMap(), marker);
-//         }).fail(function() {
-//         console.log( "error" );
-//         })
+    // debugging only!
+    // console.log("slider value:" + slider.value.toString());
+    // console.log(predictedDateTime);
+}
