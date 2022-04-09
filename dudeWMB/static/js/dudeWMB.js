@@ -15,6 +15,11 @@ var varGlobActiveMode = MODE_AVAILABLE_BIKES;
 // varGlobPredictionInHours indicates the data prediction we want to get in x hours time, where hours == 0 stands for current time 
 var varGlobPredictionInHours = 0;
 
+// Head and Tail of src update
+const headPATH = "{{ url_for('static', filename=";
+const tailPATH = ") }}";
+
+
 //-----------------------------------------------------------------------------
 // Function onLoad is invoked when the website (DOM) is loaded the first time
 //-----------------------------------------------------------------------------
@@ -67,10 +72,10 @@ function getBikeIconUrl(mode, stationState) {
     const THRESHOLD_RED = 10.0;
 
     // Relative paths to bike icons
-    const PATH_BIKE_ICON = "/img/bikeIcon.svg";
-    const PATH_BIKE_ICON_GREEN = "/img/bikeIconGreen.png";
-    const PATH_BIKE_ICON_ORANGE = "/img/bikeIconOrange.png";
-    const PATH_BIKE_ICON_RED = "/img/bikeIconRed.png";
+    const PATH_BIKE_ICON = headPATH + "/img/bikeIcon.svg" + tailPATH;
+    const PATH_BIKE_ICON_GREEN = headPATH + "/img/bikeIconGreen.png" + tailPATH;
+    const PATH_BIKE_ICON_ORANGE = headPATH + "/img/bikeIconOrange.png" + tailPATH;
+    const PATH_BIKE_ICON_RED = headPATH + "/img/bikeIconRed.png" + tailPATH;
  
     let iconPathSelected = PATH_BIKE_ICON;
 
@@ -230,9 +235,84 @@ async function displayStationDetails (stationIndex) {
 // Display station weather detials such as weather icon, temperature, etc. 
 //-----------------------------------------------------------------------------
 function displayWeatherIcon (stationIndex) {
-    // TODO @ Will
-    ;
+    /* Function to display weather icon for current/future weather description
+    as slider is moved
+    */
+    // Relative paths to weather category icons
+    // Default Image for any errors etc.
+    const PATH_TEMP_ICON = headPATH + "/img/weather_forecast_icon.png" + tailPATH;
+    // Icon paths for different weather categories
+    const PATH_ICON_BROKEN_CLOUDS = headPATH + "/img/broken_clouds.svg" + tailPATH;
+    const PATH_ICON_CLEAR_SKY = headPATH + "/img/clear_sky.svg" + tailPATH;
+    const PATH_ICON_FEW_CLOUDS = headPATH + "/img/few_clouds.svg" + tailPATH;
+    const PATH_ICON_FOG = headPATH + "/img/fog.svg" + tailPATH;
+    const PATH_ICON_HAZE = headPATH + "/img/haze.svg" + tailPATH;
+    const PATH_ICON_HVY_INT_RAIN = headPATH + "/img/heavy_intensity_rain.svg" + tailPATH;
+    const PATH_ICON_LIGHT_INT_DRIZ = headPATH + "/img/light_intensity_drizzle.svg" + tailPATH;
+    const PATH_ICON_LIGHT_INT_DRIZ_RAIN = headPATH + "/img/light_intensity_drizzle_rain.svg" + tailPATH;
+    const PATH_ICON_LIGHT_INT_SHOW_RAIN = headPATH + "/img/light_intensity_shower_rain.svg" + tailPATH;
+    const PATH_ICON_LIGHT_RAIN = headPATH + "/img/light_rain.svg" + tailPATH;
+    const PATH_ICON_MIST = headPATH + "/img/mist.svg" + tailPATH;
+    const PATH_ICON_MODERATE_RAIN = headPATH + "/img/moderate_rain.svg" + tailPATH;
+    const PATH_ICON_OVERCAST_CLOUDS = headPATH + "/img/overcast_clouds.svg" + tailPATH;
+    const PATH_ICON_SCATTERED_CLOUDS = headPATH + "/img/scattered_clouds.svg" + tailPATH;
+ 
+    let weatherIconPath = PATH_TEMP_ICON;
+
+    let station = varGlobStations[stationIndex];
+
+    // Checking current and future weather description to update path to weather icon
+    if (station.description == 'broken clouds') {
+        weatherIconPath = PATH_ICON_BROKEN_CLOUDS;
+        document.getElementById("img-weather").src=weatherIconPath;
+    } else if(station.description == 'clear sky') {
+        weatherIconPath = PATH_ICON_CLEAR_SKY;
+        document.getElementById("img-weather").src=weatherIconPath;
+    } else if(station.description == 'few clouds') {
+        weatherIconPath = PATH_ICON_FEW_CLOUDS;
+        document.getElementById("img-weather").src=weatherIconPath;
+    } else if(station.description == 'fog') {
+        weatherIconPath = PATH_ICON_FOG;
+        document.getElementById("img-weather").src=weatherIconPath;
+    } else if(station.description == 'haze') {
+        weatherIconPath = PATH_ICON_HAZE;
+        document.getElementById("img-weather").src=weatherIconPath;
+    } else if(station.description == 'heavy intensity rain') {
+        weatherIconPath = PATH_ICON_HVY_INT_RAIN;
+        document.getElementById("img-weather").src=weatherIconPath;
+    } else if(station.description == 'light intensity drizzle') {
+        weatherIconPath = PATH_ICON_LIGHT_INT_DRIZ;
+        document.getElementById("img-weather").src=weatherIconPath;
+    } else if(station.description == 'light intensity drizzle rain') {
+        weatherIconPath = PATH_ICON_LIGHT_INT_DRIZ_RAIN;
+        document.getElementById("img-weather").src=weatherIconPath;
+    } else if(station.description == 'light intensity shower rain') {
+        weatherIconPath = PATH_ICON_LIGHT_INT_SHOW_RAIN;
+        document.getElementById("img-weather").src=weatherIconPath;
+    } else if(station.description == 'light rain') {
+        weatherIconPath = PATH_ICON_LIGHT_RAIN;
+        document.getElementById("img-weather").src=weatherIconPath;
+    } else if(station.description == 'mist') {
+        weatherIconPath = PATH_ICON_MIST;
+        document.getElementById("img-weather").src=weatherIconPath;
+    } else if(station.description == 'moderate rain') {
+        weatherIconPath = PATH_ICON_MODERATE_RAIN;
+        document.getElementById("img-weather").src=weatherIconPath;
+    } else if(station.description == 'overcast clouds') {
+        weatherIconPath = PATH_ICON_OVERCAST_CLOUDS;
+        document.getElementById("img-weather").src=weatherIconPath;
+    } else if(station.description == 'scattered clouds') {
+        weatherIconPath = PATH_ICON_SCATTERED_CLOUDS;
+        document.getElementById("img-weather").src=weatherIconPath;
+    } else {
+        weatherIconPath = PATH_TEMP_ICON;
+        document.getElementById("img-weather").src=weatherIconPath;
+    }
+
+    return;
 }
+
+// document.getElementById("img-weather").src
 
 //-----------------------------------------------------------------------------
 // Display station occupancy chart 
