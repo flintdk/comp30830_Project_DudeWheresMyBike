@@ -14,7 +14,7 @@ import pickle
 import pandas as pd
 import numpy as np
 from sklearn.ensemble import RandomForestRegressor
-import sys
+import os, sys
 
 import requests
 
@@ -28,12 +28,23 @@ def loadCredentials():
     # This file is not saved to GitHub and is placed on each EC2 instance
     # by a team member.
     # Load the JSON file
-    file = open('../dudewmb.json', 'r')
+    file = open(os.path.join(dudeWMBParentDir, 'dudewmb.json'), 'r')
     credentials = json.load(file)
     file.close  # Can close the file now we have the data loaded...
     return credentials
 
-credentials = ""
+# According to the article here:
+
+# ... Python, if needing to use relative paths in order to make it easier to 
+# relocate an application, one can determine the directory that a specific code
+# module is located in using os.path.dirname(__file__). A full path name can then
+# be constructed by using os.path.join()...
+# Application Startup...
+dudeWMBParentDir = os.path.dirname(os.path.dirname(__file__))
+print("===================================================================")
+print("DudeWMB: Application Start-up.")
+print("\tDudeWMB Parent Dir. is -> " + str(dudeWMBParentDir))
+
 # Load our private credentials from a JSON file.  Nothing runs without these...
 credentials = loadCredentials()
 
