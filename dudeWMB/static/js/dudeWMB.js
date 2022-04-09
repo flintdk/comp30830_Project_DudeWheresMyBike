@@ -232,51 +232,55 @@ function displayWeatherIcon (stationIndex) {
 
     let station = varGlobStations[stationIndex];
 
+    // Head and Tail of src update
+    headPath = "{{ url_for('static', filename=";
+    tailPath = ") }}";
+
     // Checking current and future weather description to update path to weather icon
     if (station.description == 'broken clouds') {
-        weatherIconPath = PATH_ICON_BROKEN_CLOUDS;
+        weatherIconPath = headPath + PATH_ICON_BROKEN_CLOUDS + tailPath;
         document.getElementById("img-weather").src=weatherIconPath;
     } else if(station.description == 'clear sky') {
-        weatherIconPath = PATH_ICON_CLEAR_SKY;
+        weatherIconPath = headPath + PATH_ICON_CLEAR_SKY + tailPath;
         document.getElementById("img-weather").src=weatherIconPath;
     } else if(station.description == 'few clouds') {
-        weatherIconPath = PATH_ICON_FEW_CLOUDS;
+        weatherIconPath = headPath + PATH_ICON_FEW_CLOUDS + tailPath;
         document.getElementById("img-weather").src=weatherIconPath;
     } else if(station.description == 'fog') {
-        weatherIconPath = PATH_ICON_FOG;
+        weatherIconPath = headPath + PATH_ICON_FOG + tailPath;
         document.getElementById("img-weather").src=weatherIconPath;
     } else if(station.description == 'haze') {
-        weatherIconPath = PATH_ICON_HAZE;
+        weatherIconPath = headPath + PATH_ICON_HAZE + tailPath;
         document.getElementById("img-weather").src=weatherIconPath;
     } else if(station.description == 'heavy intensity rain') {
-        weatherIconPath = PATH_ICON_HVY_INT_RAIN;
+        weatherIconPath = headPath + PATH_ICON_HVY_INT_RAIN + tailPath;
         document.getElementById("img-weather").src=weatherIconPath;
     } else if(station.description == 'light intensity drizzle') {
-        weatherIconPath = PATH_ICON_LIGHT_INT_DRIZ;
+        weatherIconPath = headPath + PATH_ICON_LIGHT_INT_DRIZ + tailPath;
         document.getElementById("img-weather").src=weatherIconPath;
     } else if(station.description == 'light intensity drizzle rain') {
-        weatherIconPath = PATH_ICON_LIGHT_INT_DRIZ_RAIN;
+        weatherIconPath = headPath + PATH_ICON_LIGHT_INT_DRIZ_RAIN + tailPath;
         document.getElementById("img-weather").src=weatherIconPath;
     } else if(station.description == 'light intensity shower rain') {
-        weatherIconPath = PATH_ICON_LIGHT_INT_SHOW_RAIN;
+        weatherIconPath = headPath + PATH_ICON_LIGHT_INT_SHOW_RAIN + tailPath;
         document.getElementById("img-weather").src=weatherIconPath;
     } else if(station.description == 'light rain') {
-        weatherIconPath = PATH_ICON_LIGHT_RAIN;
+        weatherIconPath = headPath + PATH_ICON_LIGHT_RAIN + tailPath;
         document.getElementById("img-weather").src=weatherIconPath;
     } else if(station.description == 'mist') {
-        weatherIconPath = PATH_ICON_MIST;
+        weatherIconPath = headPath + PATH_ICON_MIST + tailPath;
         document.getElementById("img-weather").src=weatherIconPath;
     } else if(station.description == 'moderate rain') {
-        weatherIconPath = PATH_ICON_MODERATE_RAIN;
+        weatherIconPath = headPath + PATH_ICON_MODERATE_RAIN + tailPath;
         document.getElementById("img-weather").src=weatherIconPath;
     } else if(station.description == 'overcast clouds') {
-        weatherIconPath = PATH_ICON_OVERCAST_CLOUDS;
+        weatherIconPath = headPath + PATH_ICON_OVERCAST_CLOUDS + tailPath;
         document.getElementById("img-weather").src=weatherIconPath;
     } else if(station.description == 'scattered clouds') {
-        weatherIconPath = PATH_ICON_SCATTERED_CLOUDS;
+        weatherIconPath = headPath + PATH_ICON_SCATTERED_CLOUDS + tailPath;
         document.getElementById("img-weather").src=weatherIconPath;
     } else {
-        weatherIconPath = PATH_TEMP_ICON;
+        weatherIconPath = headPath + PATH_TEMP_ICON + tailPath;
         document.getElementById("img-weather").src=weatherIconPath;
     }
 
