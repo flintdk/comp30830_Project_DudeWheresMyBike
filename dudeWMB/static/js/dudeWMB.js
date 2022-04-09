@@ -7,7 +7,7 @@ const MODE_AVAILABLE_SPACES = "ModeAvailabeSpaces";
 // varGlobStations is a array that contains the json objects for each station
 var varGlobStations;
 // varGlobStationSelected contains station data for the selected station
-var varGlobStationSelected;
+var varGlobStationSelectedIndex;
 // varGlobMap allows to access the created map globally
 var varGlobMap;
 // varGlobActiveMode represents the active user mode (avalailable bikes, available spaces)
@@ -21,8 +21,9 @@ var varGlobPredictionInHours = 0;
 // This function is called onload.  It's the 'parent process' if you like that
 // kicks off all the work...
 async function onLoad() {
-    // get station data in json format
-    varGlobStations = await getStationsJson();
+
+    let url = 'stations'
+    varGlobStations = await getStationsJson(url);
 
     // Add event listener to mode buttons 
     document.getElementById("button_available_bikes").addEventListener("click", function() {
@@ -187,7 +188,7 @@ function createMarkers(map, stationData) {
             map.setZoom(16);
             map.setCenter(marker.getPosition());
             infoWindow.open(map, marker);
-            displayDetails(marker.station_index, varGlobPredictionInHours);
+            displayStationDetails(marker.station_index);
           });
     }
 }
@@ -195,11 +196,16 @@ function createMarkers(map, stationData) {
 //-----------------------------------------------------------------------------
 // Display station details such as weather info and occupancy 
 //-----------------------------------------------------------------------------
-async function displayDetails (stationIndex, hours) {
-    let url = 'stations?hours_in_future';
+async function displayStationDetails (stationIndex) {
 
-    url += hours.toString();
+    // Store the index of the selected station within the station array
+    varGlobStationSelectedIndex = stationIndex;
+
+    // Fetch data for stations at a specific time in the future
+    let url = 'stations?hours_in_future';
+    url += varGlobPredictionInHours.toString();
     let StationDataPredicted = await getStationsJson(url);
+    
     
 }
 
@@ -305,94 +311,37 @@ function createStationDropdownContent() {
 }
 
 function onStationSelected(stationId) {
-    varGlobStationSelected = varGlobStations[stationId];
+    // Store the index of the selected station within the station array
+    varGlobStationSelectedIndex = stationId;
 
     console.log(varGlobStations[stationId].stationName)
     document.getElementById('selectedStation').innerHTML = varGlobStations[stationId].stationName;
 
 }
 
-//##############################################################################
-//##############################################################################
-//##############################################################################
+//-----------------------------------------------------------------------------
+// Range slider for time prediction
+//-----------------------------------------------------------------------------
 
-// SLIDER - IN PROGRESS
-// Credit http://jsfiddle.net/meghap/9pz5grru/5/
+var slider = document.getElementById("sliderTimePrediction");
+var output = document.getElementById("futureTime");
 
-// function toTimestamp(strDate){
-//     // The Date.parse() method parses a string representation of a date, and
-//     // returns the number of milliseconds since January 1, 1970, 00:00:00 UTC
-//     var datum = Date.parse(strDate);
-//     // We divide by 1000, just to use seconds.
-//     return datum/1000;
-//  }
+const CURRENT_DATETIME = new Date();
+let predictedDateTime = new Date(CURRENT_DATETIME);
 
-//  var currentDateTime = new Date();
-//  currentDateTime.setMinutes(0, 0, 0);  // Resets also seconds and milliseconds
+// Intialise display element with current time
+output.innerHTML = CURRENT_DATETIME.toLocaleString();
 
-//  var dt_to = "01/13/2016 16:37:43";
- 
-//  var sel_dt_from = "01/13/2016 00:34:44";
-//  var sel_dt_to = "01/14/2016 16:37:43";
- 
-//  $('.slider-time').html(dt_from);
-//  $('.slider-time2').html(dt_to);
-//  var min_val = toTimestamp(sel_dt_from);
-//  var max_val = toTimestamp(sel_dt_to);
- 
-//  function zeroPad(num, places) {
-//    var zero = places - num.toString().length + 1;
-//    return Array(+(zero > 0 && zero)).join("0") + num;
-//  }
-//  function formatDT(__dt) {
-//      var year = __dt.getFullYear();
-//      var month = zeroPad(__dt.getMonth()+1, 2);
-//      var date = zeroPad(__dt.getDate(), 2);
-//      var hours = zeroPad(__dt.getHours(), 2);
-//      var minutes = zeroPad(__dt.getMinutes(), 2);
-//      var seconds = zeroPad(__dt.getSeconds(), 2);
-//      return year + '-' + month + '-' + date + ' ' + hours + ':' + minutes + ':' + seconds;
-//  };
- 
- 
-//  $("#slider-range").slider({
-//      range: true,
-//      min: min_val,
-//      max: max_val,
-//      step: 10,
-//      values: [min_val, max_val],
-//      slide: function (e, ui) {
-//          var dt_cur_from = new Date(ui.values[0]*1000); //.format("yyyy-mm-dd hh:ii:ss");
-//          $('.slider-time').html(formatDT(dt_cur_from));
- 
-//          var dt_cur_to = new Date(ui.values[1]*1000); //.format("yyyy-mm-dd hh:ii:ss");                
-//          $('.slider-time2').html(formatDT(dt_cur_to));
-//      }
-//  });
+// On event call which is invoked each time you drag the slider handle
+slider.oninput = function() {
+    // Write time prediction in hours to a global variable
+    varGlobPredictionInHours =  this.value;
+    // Add these hours to the current date & time and convert it into a string
+    predictedDateTime = new Date(new Date().getTime() + this.value*60*60*1000).toLocaleString();
+    // Update display element
+    output.innerHTML = predictedDateTime;
 
-//##############################################################################
-//##############################################################################
-//##############################################################################
-
-
-// jQuery Occupancy example from Lecture Slides:
-// TODO: Rework this using JavaScript 'fetch()'??
-//  var jqxhr = $.getJSON($SCRIPT_ROOT + "/occupancy/" + marker.station_number,
-//         function(data) {
-//         data = JSON.parse(data.data);
-//         console.log('data', data);
-//         var node = document.createElement('div'),
-//         infowindow = new google.maps.InfoWindow(),
-//         chart = new google.visualization.ColumnChart(node);
-//         var chart_data = new google.visualization.DataTable();
-//         chart_data.addColumn('datetime', 'Time of Day');
-//         chart_data.addColumn('number', '#');
-//         _.forEach(data, function(row){
-//         chart_data.addRow([new Date(row[0]), row[1]]);
-//         })
-//         chart.draw(chart_data, options);
-//         infowindow.setContent(node);
-//         infowindow.open(marker.getMap(), marker);
-//         }).fail(function() {
-//         console.log( "error" );
-//         })
+    // debugging only!
+    // console.log("slider value:" + slider.value.toString());
+    // console.log(predictedDateTime);
+}
