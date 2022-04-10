@@ -153,13 +153,18 @@ function getPercentage(value, max) {
 // Note: The coloured bike icon (black, green, orange, red) may change when the user mode is changed,
 // depending on the availability of available bikes, spaces
 // That's why this function is also called if the user mode changes
+
+// We want only one info window open at a time.  We hold the opened (active)
+// infoWindow in a variable so we can access it's .close() method in click event
+// of each marker.
+var varGlobInfoWindow = new google.maps.InfoWindow();
 function createMarkers(map) {
 
     for (let key in varGlobStations) {
         let station = varGlobStations[key];
 
         //console.log(station.stationName, station.number);
-        var marker = new google.maps.Marker({
+        let marker = new google.maps.Marker({
             position: {
                 lat: station.latitude,
                 lng: station.longitude
@@ -188,12 +193,17 @@ function createMarkers(map) {
             '<tr><td>Available bikes:</td><td>' + station.occupancy.available_bikes + '</td></tr>' +
             '</div>';
         
-        let infoWindow = new google.maps.InfoWindow({ content: contentString });
         // Add listener so that we can add actions that will be performed when clicking on a marker
         marker.addListener("click", () => {
-            map.setZoom(16);
+            //Close active window if exists
+            if (varGlobInfoWindow != null) {
+                varGlobInfoWindow.close();
+            }
+            map.setZoom(14);
+            console.log(marker.getPosition().lat() + " - " + marker.getPosition().lng())
             map.setCenter(marker.getPosition());
-            infoWindow.open(map, marker);
+            varGlobInfoWindow.setContent(contentString);
+            varGlobInfoWindow.open(map, marker);
             displayStationDetails(marker.station_index);
           });
     }
