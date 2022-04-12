@@ -63,7 +63,8 @@ setup(
             'requests==2.27.1',
             'sqlalchemy==1.4.27',
             'pandas==1.4.2',
-            'scikit-learn==1.0.2'
+            'scikit-learn==1.0.2',
+            'gviz-api==1.10.0'
        ],
 
       # Here I can specify the python version necessary to run this library.
