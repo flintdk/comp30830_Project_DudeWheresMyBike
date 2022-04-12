@@ -19,7 +19,7 @@ var varGlobPredictionInHours = 0;
 // We want only one info window open at a time.  We hold the opened (active)
 // infoWindow in a variable so we can access it's .close() method in click event
 // of each marker.
-var varGlobInfoWindow = new google.maps.InfoWindow();
+var varGlobInfoWindow;
 
 //-----------------------------------------------------------------------------
 // Function onLoad is invoked when the website (DOM) is loaded the first time
@@ -201,8 +201,7 @@ function createMarkers(map) {
                 varGlobInfoWindow = new google.maps.InfoWindow();
             }
             else {
-                // Should really never happen I believe... but if we find we have no
-                // info-window make sure to create one...
+                // If this is the very first info window... create a fresh one.
                 varGlobInfoWindow = new google.maps.InfoWindow();
             }
             map.setZoom(14);
