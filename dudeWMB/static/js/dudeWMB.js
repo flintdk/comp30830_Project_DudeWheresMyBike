@@ -16,6 +16,10 @@ var varGlobMap;
 var varGlobActiveMode = MODE_AVAILABLE_BIKES;
 // varGlobPredictionInHours indicates the data prediction we want to get in x hours time, where hours == 0 stands for current time 
 var varGlobPredictionInHours = 0;
+// We want only one info window open at a time.  We hold the opened (active)
+// infoWindow in a variable so we can access it's .close() method in click event
+// of each marker.
+var varGlobInfoWindow = new google.maps.InfoWindow();
 
 //-----------------------------------------------------------------------------
 // Function onLoad is invoked when the website (DOM) is loaded the first time
@@ -154,10 +158,6 @@ function getPercentage(value, max) {
 // depending on the availability of available bikes, spaces
 // That's why this function is also called if the user mode changes
 
-// We want only one info window open at a time.  We hold the opened (active)
-// infoWindow in a variable so we can access it's .close() method in click event
-// of each marker.
-var varGlobInfoWindow = new google.maps.InfoWindow();
 function createMarkers(map) {
 
     for (let key in varGlobStations) {
@@ -198,9 +198,15 @@ function createMarkers(map) {
             //Close active window if exists
             if (varGlobInfoWindow != null) {
                 varGlobInfoWindow.close();
+                varGlobInfoWindow = new google.maps.InfoWindow();
+            }
+            else {
+                // Should really never happen I believe... but if we find we have no
+                // info-window make sure to create one...
+                varGlobInfoWindow = new google.maps.InfoWindow();
             }
             map.setZoom(14);
-            console.log(marker.getPosition().lat() + " - " + marker.getPosition().lng())
+            //console.log(marker.getPosition().lat() + " - " + marker.getPosition().lng())
             map.setCenter(marker.getPosition());
             varGlobInfoWindow.setContent(contentString);
             varGlobInfoWindow.open(map, marker);
@@ -318,7 +324,7 @@ function displayWeatherIcon(stationIndex) {
         document.getElementById("img-weather").src=weatherIconPath;
     }
     document.getElementById("sliderTemp").innerHTML=station.weather.temp;
-    console.log(station.weather.description);
+    //console.log(station.weather.description);
 
     return;
 }
