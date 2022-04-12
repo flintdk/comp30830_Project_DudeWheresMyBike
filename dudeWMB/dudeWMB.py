@@ -347,7 +347,10 @@ def get_stations():
         stationInfo['address'] = station.address
         stationInfo['latitude'] = station.latitude
         stationInfo['longitude'] = station.longitude
-        stationInfo['banking'] = station.banking
+        if station.banking == 0:
+            stationInfo['banking'] = 'Cash Machine Not Available'
+        else:
+            stationInfo['banking'] = 'Cash Machine Available'
         stationInfo['bike_stands'] = station.bike_stands
         stationInfo['info_supplied_for_time'] = info_requested_for_time
         # Create nested dictionary for occupancy related data
