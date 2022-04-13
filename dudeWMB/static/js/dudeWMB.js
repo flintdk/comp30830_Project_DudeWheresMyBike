@@ -90,7 +90,6 @@ function getBikeIconUrl(mode, station) {
 
     // Threshold values defined in percentage to select coloured bike icons accordingly
     const THRESHOLD_GREEN = 70.0;
-    const THRESHOLD_ORANGE = 40.0;
     const THRESHOLD_RED = 10.0;
 
     // Relative paths to bike icons
