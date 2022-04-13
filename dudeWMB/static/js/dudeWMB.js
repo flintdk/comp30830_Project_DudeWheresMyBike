@@ -111,11 +111,11 @@ function getBikeIconUrl(mode, station) {
         if (getPercentage(station.occupancy.available_bikes, station.bike_stands) >= THRESHOLD_GREEN) {
             iconPathSelected = PATH_BIKE_ICON_GREEN;
         } 
-        else if (getPercentage(station.occupancy.available_bikes, station.bike_stands) >= THRESHOLD_ORANGE) {
-            iconPathSelected = PATH_BIKE_ICON_ORANGE;
-        } 
         else if (getPercentage(station.occupancy.available_bikes, station.bike_stands) <= THRESHOLD_RED) {
             iconPathSelected = PATH_BIKE_ICON_RED;
+        }
+        else {
+            iconPathSelected = PATH_BIKE_ICON_ORANGE;
         } 
     } 
     // If user mode is 'available bikes' then... 
@@ -123,11 +123,11 @@ function getBikeIconUrl(mode, station) {
         if (getPercentage(station.occupancy.available_bike_stands, station.bike_stands) >= THRESHOLD_GREEN) {
             iconPathSelected = PATH_BIKE_ICON_GREEN;
         } 
-        else if (getPercentage(station.occupancy.available_bike_stands, station.bike_stands) >= THRESHOLD_ORANGE) {
-            iconPathSelected = PATH_BIKE_ICON_ORANGE;
-        } 
         else if (getPercentage(station.occupancy.available_bike_stands, station.bike_stands) <= THRESHOLD_RED) {
             iconPathSelected = PATH_BIKE_ICON_RED;
+        } 
+        else {
+            iconPathSelected = PATH_BIKE_ICON_ORANGE;
         } 
     }
     // console.log("available bikes: " + stationState.available_bikes);
