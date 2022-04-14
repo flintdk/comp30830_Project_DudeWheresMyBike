@@ -20,6 +20,9 @@ var varGlobPredictionInHours = 0;
 // infoWindow in a variable so we can access it's .close() method in click event
 // of each marker.
 var varGlobInfoWindow;
+// We want to keep a list of markers we've created, so we can make them display
+// etc. as we wish.
+var varGlobMarkers;
 
 //-----------------------------------------------------------------------------
 // Function onLoad is invoked when the website (DOM) is loaded the first time
@@ -39,6 +42,8 @@ async function onLoad() {
         onSetMode(MODE_AVAILABLE_SPACES);
     });
 
+    populateStationSelect();
+
     // set default mode
     onSetMode(MODE_AVAILABLE_BIKES);
 
@@ -46,16 +51,23 @@ async function onLoad() {
 }
 
 //-----------------------------------------------------------------------------
-// Function to initialize and add the map
+// Function to initialize and add the map/redraw the map
 //-----------------------------------------------------------------------------
-async function initMap() {
+async function initMap(noHoursInFuture) {
     // We load the stations on page load as well as here in initMap - whatever event occurs first 
     let url = 'stations'
+    if (noHoursInFuture != null && noHoursInFuture > 0) {
+        url += "?hours_in_future=" + noHoursInFuture
+    }
+    //console.log("In init map function, derived URL is -> " + url)
     varGlobStations = await getStationsJson(url);
 
     // Location of Dublin
     const dublin = { lat: 53.350140, lng: -6.266155 };
-    // Create new map, centered at Dublin
+    // Create new map, centered at Dublin.
+    // Creating a new map will remove all markers from the existing map and 
+    // let us start afresh, so no need to, for e.g., remove existing markers
+    // when displaying a prediction.
     varGlobMap = new google.maps.Map(document.getElementById("map"), {
         zoom: 13,
         center: dublin,
@@ -101,7 +113,8 @@ function getBikeIconUrl(mode, station) {
     let iconPathSelected = PATH_BIKE_ICON;
     //console.log("In getbikeIcon : " + JSON.stringify(station));
     // If station is closed then show default icon
-    if (!(station.occupancy.status == 'OPEN')) {
+    // TEMPORARY WORK AROUND: Our predictions don't currently 
+    if (!(station.occupancy.status == 'OPEN' || station.occupancy.status == '-')) {
         iconPathSelected = PATH_BIKE_ICON;
     } 
     // Select bike icons to user mode and occupancy accordingly
@@ -158,9 +171,25 @@ function getPercentage(value, max) {
 // That's why this function is also called if the user mode changes
 
 function createMarkers(map) {
+    // Every time we're called upon to create markers, create a fresh array to
+    // store them in...
+    varGlobMarkers = [];
 
     for (let key in varGlobStations) {
         let station = varGlobStations[key];
+
+        // Create table containing information about the station...
+        let contentString = '<div id="content"><span id="markerStationName">' + station.stationName + '</span></div>' +
+            '<div id="station_details"><table>' +
+            '<tr><td>Station name:</td><td>' + station.stationName + '</td></tr>' +
+            '<tr><td>Address:</td><td>' + station.address + '</td></tr>' +
+            '<tr><td>Latitude:</td><td>' + station.latitude + '</td></tr>' +
+            '<tr><td>Longitude:</td><td>' + station.longitude + '</td></tr>' +
+            '<tr><td>Banking:</td><td>' + station.banking + '</td></tr>' +
+            '<tr><td>Total bike stands:</td><td>' + station.bike_stands + '</td></tr>' +
+            '<tr><td>Available bike stands:</td><td>' + station.occupancy.available_bike_stands + '</td></tr>' +
+            '<tr><td>Available bikes:</td><td>' + station.occupancy.available_bikes + '</td></tr>' +
+            '</div>';
 
         //console.log(station.stationName, station.number);
         let marker = new google.maps.Marker({
@@ -176,40 +205,17 @@ function createMarkers(map) {
             title: station.stationName,
             station_number: station.number,
             station_index: key, // add key as index so that marker correlates with the array index in station data
-            
+            content_string: contentString  // store the content string IN the marker, so we can access it wherever...
         });
-        
-        // Create table containing information about the station
-        let contentString = '<div id="content"><span id="markerStationName">' + station.stationName + '</span></div>' +
-            '<div id="station_details"><table>' +
-            '<tr><td>Station name:</td><td>' + station.stationName + '</td></tr>' +
-            '<tr><td>Address:</td><td>' + station.address + '</td></tr>' +
-            '<tr><td>Latitude:</td><td>' + station.latitude + '</td></tr>' +
-            '<tr><td>Longitude:</td><td>' + station.longitude + '</td></tr>' +
-            '<tr><td>Banking:</td><td>' + station.banking + '</td></tr>' +
-            '<tr><td>Total bike stands:</td><td>' + station.bike_stands + '</td></tr>' +
-            '<tr><td>Available bike stands:</td><td>' + station.occupancy.available_bike_stands + '</td></tr>' +
-            '<tr><td>Available bikes:</td><td>' + station.occupancy.available_bikes + '</td></tr>' +
-            '</div>';
         
         // Add listener so that we can add actions that will be performed when clicking on a marker
         marker.addListener("click", () => {
-            //Close active window if exists
-            if (varGlobInfoWindow != null) {
-                varGlobInfoWindow.close();
-                varGlobInfoWindow = new google.maps.InfoWindow();
-            }
-            else {
-                // If this is the very first info window... create a fresh one.
-                varGlobInfoWindow = new google.maps.InfoWindow();
-            }
-            map.setZoom(14);
-            //console.log(marker.getPosition().lat() + " - " + marker.getPosition().lng())
-            map.setCenter(marker.getPosition());
-            varGlobInfoWindow.setContent(contentString);
-            varGlobInfoWindow.open(map, marker);
             displayStationDetails(marker.station_index);
-          });
+          }
+        );
+        // With an array of markers stored in scope, we can play with them, make
+        // them display etc. from other functions.
+        varGlobMarkers.push(marker);
     }
 }
 
@@ -221,27 +227,64 @@ async function displayStationDetails(stationIndex) {
     // Store the index of the selected station within the station array
     varGlobStationSelectedIndex = stationIndex;
 
-    // Create URL to fetch data for stations at a specific time in the future
-    let url = 'stations?hours_in_future=';
-    url += varGlobPredictionInHours.toString();
-    // After the following code line, our function will wait for the getStationJson to return a result.
-    // This website describes how promises using async/await works: https://developer.mozilla.org/en-US/docs/Learn/JavaScript/Asynchronous/Promises 
-    // Quoting from the website:
-    // "Inside an async function you can use the await keyword before a call to a function that returns a promise. 
-    // This makes the code wait at that point until the promise is settled, 
-    // at which point the fulfilled value of the promise is treated as a return value, or the rejected value is thrown.
-    // This enables you to write code that uses asynchronous functions but looks like synchronous code.
-    let StationDataPredicted = await getStationsJson(url);
+//###########################################################################################################################################################################
+//###########################################################################################################################################################################
+//###########################################################################################################################################################################
+    // Jörg - IS THIS REQUIRED ANY MORE - I DON'T THINK SO.  THIS WOULD LOAD THE
+    // DATA FOR ALL STATIONS AT 'N' HOURS IN THE FUTURE, EVERY TIME WE WANT TO 
+    // DISPLAY THE DATA FOR ONE STATION.  bUT THE SLIDER HAS ALREADY LOADED WHATEVER
+    // DATA WE NEED AT THE POINT SOMEONE SLID IT?  FOR DISCUSSION - WE NEED TO MAKE SURE THIS ASSERTION IS CORRECT.
+
+    // // Create URL to fetch data for stations at a specific time in the future
+    // let url = 'stations?hours_in_future=';
+    // url += varGlobPredictionInHours.toString();
+    // // After the following code line, our function will wait for the getStationJson to return a result.
+    // // This website describes how promises using async/await works: https://developer.mozilla.org/en-US/docs/Learn/JavaScript/Asynchronous/Promises 
+    // // Quoting from the website:
+    // // "Inside an async function you can use the await keyword before a call to a function that returns a promise. 
+    // // This makes the code wait at that point until the promise is settled, 
+    // // at which point the fulfilled value of the promise is treated as a return value, or the rejected value is thrown.
+    // // This enables you to write code that uses asynchronous functions but looks like synchronous code.
+    // let StationDataPredicted = await getStationsJson(url);
+//###########################################################################################################################################################################
+//###########################################################################################################################################################################
+//###########################################################################################################################################################################
 
     // Update station name headline
     //console.log("stationIndex: " + stationIndex.toString());
     //console.log(StationDataPredicted);
     //console.log(url);
-    document.getElementById('selectedStation').innerHTML = StationDataPredicted[stationIndex].stationName;
+    //document.getElementById('selectedStation').innerHTML = StationDataPredicted[stationIndex].stationName;
+    document.getElementById('selectedStation').innerHTML = varGlobStations[stationIndex].stationName;
 
     displayOccupancyChart(stationIndex);
     displayWeatherIcon(stationIndex);
+    displayMapMarkerInfoWindow(stationIndex);
     
+}
+
+function displayMapMarkerInfoWindow(stationIndex) {
+    for (let i = 0; i < varGlobMarkers.length; i++) {
+        let marker = varGlobMarkers[i];
+
+        if (marker.station_index == stationIndex) {
+            //console.log("found marker" + marker.title)
+            //Close active window if exists
+            if (varGlobInfoWindow != null) {
+                varGlobInfoWindow.close();
+                varGlobInfoWindow = new google.maps.InfoWindow();
+            }
+            else {
+                // If this is the very first info window... create a fresh one.
+                varGlobInfoWindow = new google.maps.InfoWindow();
+            }
+            varGlobMap.setZoom(14);
+            //console.log(marker.getPosition().lat() + " - " + marker.getPosition().lng())
+            varGlobMap.setCenter(marker.getPosition());
+            varGlobInfoWindow.setContent(marker.content_string);
+            varGlobInfoWindow.open(varGlobMap, marker);
+        }
+    }
 }
 
 //-----------------------------------------------------------------------------
@@ -277,50 +320,37 @@ function displayWeatherIcon(stationIndex) {
     // Checking current and future weather description to update path to weather icon
     if (station.weather.description == 'broken clouds') {
         weatherIconPath = PATH_ICON_BROKEN_CLOUDS;
-        document.getElementById("img-weather").src=weatherIconPath;
     } else if(station.weather.description == 'clear sky') {
         weatherIconPath = PATH_ICON_CLEAR_SKY;
-        document.getElementById("img-weather").src=weatherIconPath;
     } else if(station.weather.description == 'few clouds') {
         weatherIconPath = PATH_ICON_FEW_CLOUDS;
-        document.getElementById("img-weather").src=weatherIconPath;
     } else if(station.weather.description == 'fog') {
         weatherIconPath = PATH_ICON_FOG;
-        document.getElementById("img-weather").src=weatherIconPath;
     } else if(station.weather.description == 'haze') {
         weatherIconPath = PATH_ICON_HAZE;
-        document.getElementById("img-weather").src=weatherIconPath;
     } else if(station.weather.description == 'heavy intensity rain') {
         weatherIconPath = PATH_ICON_HVY_INT_RAIN;
-        document.getElementById("img-weather").src=weatherIconPath;
     } else if(station.weather.description == 'light intensity drizzle') {
         weatherIconPath = PATH_ICON_LIGHT_INT_DRIZ;
-        document.getElementById("img-weather").src=weatherIconPath;
     } else if(station.weather.description == 'light intensity drizzle rain') {
         weatherIconPath = PATH_ICON_LIGHT_INT_DRIZ_RAIN;
-        document.getElementById("img-weather").src=weatherIconPath;
     } else if(station.weather.description == 'light intensity shower rain') {
         weatherIconPath = PATH_ICON_LIGHT_INT_SHOW_RAIN;
-        document.getElementById("img-weather").src=weatherIconPath;
     } else if(station.weather.description == 'light rain') {
         weatherIconPath = PATH_ICON_LIGHT_RAIN;
-        document.getElementById("img-weather").src=weatherIconPath;
     } else if(station.weather.description == 'mist') {
         weatherIconPath = PATH_ICON_MIST;
-        document.getElementById("img-weather").src=weatherIconPath;
     } else if(station.weather.description == 'moderate rain') {
         weatherIconPath = PATH_ICON_MODERATE_RAIN;
-        document.getElementById("img-weather").src=weatherIconPath;
     } else if(station.weather.description == 'overcast clouds') {
         weatherIconPath = PATH_ICON_OVERCAST_CLOUDS;
-        document.getElementById("img-weather").src=weatherIconPath;
     } else if(station.weather.description == 'scattered clouds') {
         weatherIconPath = PATH_ICON_SCATTERED_CLOUDS;
-        document.getElementById("img-weather").src=weatherIconPath;
     } else {
         weatherIconPath = PATH_TEMP_ICON;
-        document.getElementById("img-weather").src=weatherIconPath;
     }
+    document.getElementById("img-weather").src=weatherIconPath;
+
     document.getElementById("sliderTemp").innerHTML=station.weather.temp;
     //console.log(station.weather.description);
 
@@ -478,9 +508,20 @@ function createStationDropdownContent() {
 
 }
 
-function onStationSelected(stationId) {
+function populateStationSelect() {
+    var output = "";
+    for (let i = 0; i < varGlobStations.length; i++) {
+        output += "<option onclick=\"onStationSelected('" + i + "')\">";
+        output += varGlobStations[i].stationName; 
+        output += "</option>";
+    }
+    //console.log("generated content is..." + output)
+    document.getElementById('stationSelect').innerHTML = output;
+}
+
+function onStationSelected(stationIndexInGlobStationsList) {
     // Store the index of the selected station within the station array
-    varGlobStationSelectedIndex = stationId;
+    varGlobStationSelectedIndex = stationIndexInGlobStationsList;
 
     // Also update station details
     displayStationDetails(varGlobStationSelectedIndex);
@@ -511,6 +552,10 @@ slider.onchange = function() {
 
     // Also update station details
     displayStationDetails(varGlobStationSelectedIndex);
+
+    // Redraw the map and coloured icons to show the predicted occupancies etc.
+    // when the slider changes.
+    initMap(varGlobPredictionInHours);
 
     // debugging only!
     // console.log("slider value:" + slider.value.toString());
