@@ -173,7 +173,7 @@ Source: https://hookagency.com/blog/html-wrapper-tutorial/
 
 #flexbox-item-map {
     min-width: 70%;
-    min-height: 300px;
+    /* min-height: 300px; */
 }
 
 .selection {
@@ -309,12 +309,16 @@ Source: https://www.w3schools.com/css/tryit.asp?filename=trycss_dropdown_button
 /* CITATION end - Dropdown Menu */
 
 
-  /* Styling for embedded Google maps */ 
-  #map {
-      height: 100%;
-      margin: 0;
-      padding: 0;
-  }
+/* Styling for embedded Google maps */ 
+#map {
+    /* height: 100%;
+    margin: 0;
+    padding: 0; */
+    position: relative;
+    padding-bottom: 56.25%; /* This is the aspect ratio, 16:9 */
+    height: 0;
+    overflow: hidden;
+}
 
   #img-logo {
       width: 20%;
