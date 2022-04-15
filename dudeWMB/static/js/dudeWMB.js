@@ -146,10 +146,10 @@ async function initMap() {
         zoom: 13,
         center: dublin,
     });
-// //########################################################################################################
-//     if (document.getElementById("mapContentDescription") != null) {
-//         document.getElementById("mapContentDescription").innerHTML("tommmy tommy");
-//     } 
+//########################################################################################################
+    if (document.getElementById("mapContentDescription") != null) {
+        document.getElementById("mapContentDescription").innerHTML = "tommmy tommy";
+    } 
 
     createMarkers();
 }
@@ -309,25 +309,28 @@ async function displayStationDetails() {
 
 // Populate information window for selected marker
 function displayMapMarkerInfoWindow(stationIndex) {
-    for (let i = 0; i < varGlobMarkers.length; i++) {
-        let marker = varGlobMarkers[i];
+    // Don't update the map if the global markers windows hasn't updated yet.
+    if (varGlobMarkers != null && varGlobMarkers.length > 0) {
+        for (let i = 0; i < varGlobMarkers.length; i++) {
+            let marker = varGlobMarkers[i];
 
-        if (marker.station_index == stationIndex) {
-            //console.log("found marker" + marker.title)
-            //Close active window if exists
-            if (varGlobInfoWindow != null) {
-                varGlobInfoWindow.close();
-                varGlobInfoWindow = new google.maps.InfoWindow();
+            if (marker.station_index == stationIndex) {
+                //console.log("found marker" + marker.title)
+                //Close active window if exists
+                if (varGlobInfoWindow != null) {
+                    varGlobInfoWindow.close();
+                    varGlobInfoWindow = new google.maps.InfoWindow();
+                }
+                else {
+                    // If this is the very first info window... create a fresh one.
+                    varGlobInfoWindow = new google.maps.InfoWindow();
+                }
+                varGlobMap.setZoom(14);
+                //console.log(marker.getPosition().lat() + " - " + marker.getPosition().lng())
+                varGlobMap.setCenter(marker.getPosition());
+                varGlobInfoWindow.setContent(marker.content_string);
+                varGlobInfoWindow.open(varGlobMap, marker);
             }
-            else {
-                // If this is the very first info window... create a fresh one.
-                varGlobInfoWindow = new google.maps.InfoWindow();
-            }
-            varGlobMap.setZoom(14);
-            //console.log(marker.getPosition().lat() + " - " + marker.getPosition().lng())
-            varGlobMap.setCenter(marker.getPosition());
-            varGlobInfoWindow.setContent(marker.content_string);
-            varGlobInfoWindow.open(varGlobMap, marker);
         }
     }
 }
