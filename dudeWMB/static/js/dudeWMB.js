@@ -391,8 +391,9 @@ function displayWeatherIcon(stationIndex) {
         weatherIconPath = PATH_TEMP_ICON;
     }
     document.getElementById("img-weather").src=weatherIconPath;
-
-    document.getElementById("sliderTemp").innerHTML=station.weather.temp;
+    // Temperature from openweather.org is in Kelvin - change to degrees C
+    document.getElementById("sliderTemp").innerHTML
+        = (station.weather.temp - 273.15).toFixed(1) + "&#176;C";
     //console.log(station.weather.description);
 
     return;
