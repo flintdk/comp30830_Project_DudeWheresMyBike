@@ -40,10 +40,12 @@ def loadCredentials():
 # module is located in using os.path.dirname(__file__). A full path name can then
 # be constructed by using os.path.join()...
 # Application Startup...
-dudeWMBParentDir = os.path.dirname(os.path.dirname(__file__))
+dudeWMBFlaskAppDir = os.path.dirname(__file__)
+dudeWMBParentDir = os.path.dirname(dudeWMBFlaskAppDir)
 print("===================================================================")
 print("DudeWMB: Application Start-up.")
-print("\tDudeWMB Parent Dir. is -> " + str(dudeWMBParentDir))
+print("\tDudeWMB Flask App. Dir. is -> " + str(dudeWMBFlaskAppDir))
+print("\tDudeWMB Parent Dir. is -> " + str(dudeWMBParentDir) + "\n")
 
 # Load our private credentials from a JSON file.  Nothing runs without these...
 credentials = loadCredentials()
@@ -327,7 +329,7 @@ def get_stations():
                 'weatherMonth', 'weatherDay', 'weatherHour']
 
             # Predictive Model - deserialization
-            with open('pickles/station' + str(station.id) + '_randomForest_model.pkl', 'rb') as handle:
+            with open(os.path.join(dudeWMBFlaskAppDir, 'pickles', 'station' + str(station.id) + '_randomForest_model.pkl'), 'rb') as handle:
                 model = pickle.load(handle)
                 # Our model returns a numpy ndarray, hence the ".item(0)" at the
                 # end, to pluck out the prediction value.
