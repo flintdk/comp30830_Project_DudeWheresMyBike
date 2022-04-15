@@ -52,7 +52,7 @@ async function onLoad() {
     await loadDataAsRequired();
 
     // Add event listener to mode buttons 
-    // *** REMEMEBER *** onSetMode will also call initMap
+    // *** REMEMEBER *** "On Set Mode" will also call initMap
     document.getElementById("button_available_bikes").addEventListener("click", function() {
         onSetMode(MODE_AVAILABLE_BIKES);
       });
@@ -149,7 +149,7 @@ async function initMap() {
     });
     if (document.getElementById("mapContentDescription") != null) {
         let modeDesc = "";
-        if (varGlobActiveMode = MODE_AVAILABLE_BIKES) {
+        if (varGlobActiveMode == MODE_AVAILABLE_BIKES) {
             modeDesc = "Available Bikes";
         }
         else {
