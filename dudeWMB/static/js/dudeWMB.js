@@ -577,7 +577,7 @@ slider.onchange = function() {
     varGlobPredictedDateTime = new Date(new Date().getTime() + this.value*60*60*1000).toLocaleString();
     // Update display element
 
-    document.getElementById("futureTime").innerHTML = predictedDateTime;
+    document.getElementById("futureTime").innerHTML = varGlobPredictedDateTime;
 
     // Also update station details
     displayStationDetails(varGlobStationSelectedIndex);
