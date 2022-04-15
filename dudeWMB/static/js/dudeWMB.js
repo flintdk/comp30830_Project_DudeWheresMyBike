@@ -94,7 +94,7 @@ async function loadDataAsRequired() {
         )
     {
         //console.log("loadDataAsRequired: fresh data load in progress");
-        console.trace()
+        //console.trace()
         // Our data has either:
         //  -> Never been loaded (varGlobStationsLUPTimestamp == null)
         // ... or ...
@@ -146,6 +146,10 @@ async function initMap() {
         zoom: 13,
         center: dublin,
     });
+// //########################################################################################################
+//     if (document.getElementById("mapContentDescription") != null) {
+//         document.getElementById("mapContentDescription").innerHTML("tommmy tommy");
+//     } 
 
     createMarkers();
 }
