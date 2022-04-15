@@ -71,6 +71,9 @@ h3 {
     font-weight: bold;
 }
 
+#mapContentDescription {
+    font-size: 14px;
+}
 /* horizontal line to seperate sections */
 
 hr {
