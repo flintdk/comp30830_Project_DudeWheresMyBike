@@ -169,8 +169,8 @@ Source: https://hookagency.com/blog/html-wrapper-tutorial/
 }
 
 #flexbox-item-map {
-    min-width: 950px;
-    min-height: 450px;
+    min-width: 70%;
+    min-height: 300px;
 }
 
 .selection {
