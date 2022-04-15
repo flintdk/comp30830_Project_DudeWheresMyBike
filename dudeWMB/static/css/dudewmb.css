@@ -1,7 +1,3 @@
-/* ?????? Add a style foor markerStationName */
-
-
-
 /* || General Styles */
 
 body {
@@ -71,6 +67,9 @@ h3 {
     color: black;
 }
 
+#markerStationName {
+    font-weight: bold;
+}
 
 /* horizontal line to seperate sections */
 
@@ -151,6 +150,9 @@ Source: https://hookagency.com/blog/html-wrapper-tutorial/
 .flexbox-item {
     flex-basis: 100%;
     flex: 1;
+    padding-left: 10px;
+    padding-right: 10px;
+    padding-top: 10px;
 }
 
 .flexbox-container-column {
