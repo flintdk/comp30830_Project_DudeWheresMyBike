@@ -93,6 +93,8 @@ async function loadDataAsRequired() {
         varGlobForceReloadPredictionHasChanged
         )
     {
+        //console.log("loadDataAsRequired: fresh data load in progress");
+        console.trace()
         // Our data has either:
         //  -> Never been loaded (varGlobStationsLUPTimestamp == null)
         // ... or ...
@@ -103,7 +105,7 @@ async function loadDataAsRequired() {
         varGlobStationsLUPTimestamp = new Date();
         varGlobForceReloadPredictionHasChanged = false;
     }
-    console.log("loadDataAsRequired: end of function (data loaded)");
+    //console.log("loadDataAsRequired: end of function (data loaded)");
 }
 
 //-----------------------------------------------------------------------------
@@ -145,7 +147,7 @@ async function initMap() {
         center: dublin,
     });
 
-    createMarkers(varGlobMap);
+    createMarkers();
 }
 
 //-----------------------------------------------------------------------------
@@ -223,7 +225,7 @@ function getPercentage(value, max) {
 // depending on the availability of available bikes, spaces
 // That's why this function is also called if the user mode changes
 
-function createMarkers(map) {
+function createMarkers() {
     // Every time we're called upon to create markers, create a fresh array to
     // store them in...
     varGlobMarkers = [];
@@ -250,7 +252,7 @@ function createMarkers(map) {
                 lat: station.latitude,
                 lng: station.longitude
             },
-            map: map,
+            map: varGlobMap,
             icon: {
                 url: getBikeIconUrl(varGlobActiveMode, station),
                 scaledSize: new google.maps.Size(42, 42)
@@ -263,7 +265,10 @@ function createMarkers(map) {
         
         // Add listener so that we can add actions that will be performed when clicking on a marker
         marker.addListener("click", () => {
-            displayStationDetails(marker.station_index);
+            // When this marker is clicked - pop it's reference in to the global
+            // holder - and display again.
+            varGlobStationSelectedIndex = marker.station_index;
+            displayStationDetails();
           }
         );
         // With an array of markers stored in scope, we can play with them, make
@@ -386,8 +391,9 @@ function displayWeatherIcon(stationIndex) {
         weatherIconPath = PATH_TEMP_ICON;
     }
     document.getElementById("img-weather").src=weatherIconPath;
-
-    document.getElementById("sliderTemp").innerHTML=station.weather.temp;
+    // Temperature from openweather.org is in Kelvin - change to degrees C
+    document.getElementById("sliderTemp").innerHTML
+        = (station.weather.temp - 273.15).toFixed(1) + "&#176;C";
     //console.log(station.weather.description);
 
     return;
